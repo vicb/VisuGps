@@ -1,0 +1,26 @@
+STRMconv
+--------
+
+Convert STRM files to VisuGps format.
+
+This application has been developped with Ultimate++ <http://www.ultimatepp.org/>
+
+STRM files can be found at <http://srtm.csi.cgiar.org/index.asp>
+
+Author
+------
+
+Victor Berchet
+
+
+VisuGPS STRM file format
+------------------------
+
+VisuGps expect STRM data in the following format:
+filename: strm3_<low left corner longitude>_<low left corner latitude>.strmb
+data: 6000*6000 points (5*5 degree). Each point being a single byte = elevation in meter / 20.
+	
+History
+-------
+
+Jun 18, 2007: Initial revision

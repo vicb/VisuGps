@@ -1,0 +1,12 @@
+uses
+	CtrlLib;
+
+file
+	STRMconv.h,
+	README,
+	main.cpp,
+	STRMconv.lay;
+
+mainconfig
+	"" = "GUI";
+

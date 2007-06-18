@@ -21,20 +21,23 @@ STRMconv::STRMconv()
 	btnConvert <<= THISBACK(Convert);
 	btnOpen <<= THISBACK(Open);
 	
-	fs.Multi(false);
-    fs.Type("STRM files (*.asc)", "*.asc")
-      .Type("All Files (*.*)", "*.*");	
+	fs.Multi(false)
+	  .NoEditFileName()
+      .Type("STRM files (*.asc)", "*.asc")
+      .Type("STRMB file (*.strmb)", "*.strmb")
+      .Type("All Files (*.*)", "*.*");
 }
 
 
 void STRMconv::ComputeImg(void)
 {
-	ImageBuffer ib(600, 600);
-
-	for(int y = 0; y < 600; y++) {
+	ImageBuffer ib(previewSize, previewSize);
+	
+	for(int y = 0; y < previewSize; y++) {
 		RGBA *l = ib[y];
-		for(int x = 0; x < 600; x++) {			
-			byte height = min(raster.At(6000 * 10 * y + 10 * x) / 15 + 40, 255);
+		for(int x = 0; x < previewSize; x++) {			
+			int step = strmSize / previewSize;
+			byte height = min(raster.At(strmSize * step * y + step * x) / 15 + 40, 255);
 			l->a = 255;
 			l->r = height;
 			l->g = height;
@@ -42,23 +45,29 @@ void STRMconv::ComputeImg(void)
 			l++;
 		}
 	}
-	
+
 	img.SetImage(ib);
 
 }
 
 void STRMconv::Open(void)
 {
+	fs.ActiveType(0);
     if (!fs.ExecuteOpen("Select a STRM file")) {
     	return;
-    } else {
+    } else {        
     	txt.SetText(~fs);  
+    	if (ToLower(GetFileExt(~fs)) == ".asc") {
+    		btnConvert.SetLabel("Convert");
+    	} else {
+    		btnConvert.SetLabel("Display");
+    	}
     }    			
 }
 
 void STRMconv::StoreStrm(void)
 {
-	if (raster.GetCount() == 6000 * 6000) {
+	if (raster.GetCount() == strmSize * strmSize) {
 		
 		String fName = txt.GetText();
 		
@@ -70,19 +79,23 @@ void STRMconv::StoreStrm(void)
 							GetFileTitle(fName) + ".strmb");		
 		}
 				
-		FileOut f(fName);			
+		FileOut f(fName);
 		
-		for (int i = 0; i < 6000 * 6000; i++) {
+		Progress progress(this, "Storing the output file...", strmSize * strmSize);			
+		
+		for (int i = 0; i < strmSize * strmSize; i++) {
 			int val;
 			if (raster[i] <= 0) {
 				val = 0;
 			} else {
-				val = ((raster[i] + 10) / 20) + 1;
+				val = ((raster[i] + (elevFactor / 2)) / elevFactor) + 1;
 				val = minmax(val, 0, 255);
 			}
 			f.Put(val);
+			progress.Step();
 		}
 		
+		progress.Hide();
 		f.Close();
 	}
 }
@@ -113,6 +126,8 @@ void STRMconv::Convert(void)
 				}			
 			}
 					
+			Progress progress(this, "Reading the input file...", strmSize * strmSize);					
+					
 			while (!file.IsEof()) {
 				int b = file.Get();
 				if (b == ' ') {			
@@ -120,35 +135,47 @@ void STRMconv::Convert(void)
 					if (val < 0) val = 0;
 					raster.Add(val);
 					s = "";
+					progress.Step();
 				} else {
-					s += b;
+					s += b;					
 				}
 			}
-			
+
+			progress.Hide();
 			file.Close();
 			
 			ComputeImg();
 			StoreStrm();
 		}
-	} else {
+	} else if (ToLower(GetFileExt(fName)) == ".strmb") {
+		
 		raster.Clear();
 		
-		FileIn file(fName);
-		
-		while (!file.IsEof()) {
-			raster.Add(file.Get() * 20);
+		if (FileExists(fName)) {
+			FileIn file(fName);
+			
+			Progress progress(this, "Reading the input file...", strmSize * strmSize);
+			
+			while (!file.IsEof()) {
+				raster.Add(file.Get() * elevFactor);
+				progress.Step();
+			}
+			
+			progress.Hide();
+			file.Close();
+			
+			if (raster.GetCount() == strmSize * strmSize) {
+				ComputeImg();
+			}		
 		}
-		
-		file.Close();
-		
-		if (raster.GetCount() == 6000 * 6000) {
-			ComputeImg();
-		}		
 	}
 }
 
 GUI_APP_MAIN
 {
-	STRMconv().Run();
+	STRMconv conv;
+	LoadFromFile(conv);
+	conv.Run();
+	StoreToFile(conv);
 }
 

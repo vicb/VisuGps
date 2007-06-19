@@ -35,6 +35,7 @@ Class: CChart
 */
 var CChart = Chart.extend({
     options: {
+        cursor : true,
         onMouseMove: Class.empty,
         onMouseDown: Class.empty,
         onMouseWheel: Class.empty
@@ -49,22 +50,31 @@ var CChart = Chart.extend({
             options - an object representing CChart options. See Options below.
 
     Options:
+            cursor - true to show the cursor
             onMouseMove - event fired on mouse move
             onMouseDown - event fired on left click
             onMouseWheel - event fire on mouse wheel change 
     */           
-    initialize: function(div, cur, options) {
+    initialize: function(div, options) {
         this.setOptions(options);
         this.parent(div);
         this.chartDiv = $(div);
-        this.cursorDiv = $(cur);
+        if (this.options.cursor) {
+            this.cursorDiv = new Element('div', {'styles' : { 'position' : 'absolute',
+                                                              'border-left' : 'dashed 1px #508',
+                                                              'width' : 0,
+                                                              'z-index' : 200,
+                                                              'visibility' : 'hidden'}
+                                                }
+                                        ).injectInside(document.body)
+                                         .addEvents({'mousedown' : this._down.bindWithEvent(this),
+                                                     'mousewheel' : this._wheel.bindWithEvent(this)});
+        }
         this.position = 0;
         // Add events to both divs
-        $(div).addEvent('mousemove', this._move.bindWithEvent(this));
-        $(cur).addEvent('mousedown', this._down.bindWithEvent(this));
-        $(div).addEvent('mousedown', this._down.bindWithEvent(this));
-        $(cur).addEvent('mousewheel', this._wheel.bindWithEvent(this));
-        $(div).addEvent('mousewheel', this._wheel.bindWithEvent(this));
+        $(div).addEvents({'mousemove' : this._move.bindWithEvent(this),
+                          'mousedown' : this._down.bindWithEvent(this),
+                          'mousewheel' : this._wheel.bindWithEvent(this)});
     },
     /*
     Property: draw
@@ -72,9 +82,11 @@ var CChart = Chart.extend({
     */        
     draw: function() {
         this.parent();
-        var dim = this.getCoordinates();
-        this.cursorDiv.setStyles({'top' : dim.top + this.chartDiv.getTop(),
-                                  'height': dim.height});
+        if (this.options.cursor) {
+            var dim = this.getCoordinates();
+            this.cursorDiv.setStyles({'top' : dim.top + this.chartDiv.getTop(),
+                                      'height': dim.height});
+        }
     },
     /*
     Property: setCursor
@@ -84,11 +96,13 @@ var CChart = Chart.extend({
             pos - position (0...1000)            
     */        
     setCursor: function(pos) {
-        var dim = this.getCoordinates();
-        var left = dim.left + this.chartDiv.getLeft();
-        var x = (pos * dim.width / 1000) + left;
-        this.cursorDiv.setStyle('left', x);
-        this.showCursor();
+        if (this.options.cursor) {
+            var dim = this.getCoordinates();
+            var left = dim.left + this.chartDiv.getLeft();
+            var x = (pos * dim.width / 1000) + left;
+            this.cursorDiv.setStyle('left', x);
+            this.showCursor();
+        }
     },
     /*
     Property: showCursor
@@ -98,9 +112,11 @@ var CChart = Chart.extend({
             visible - true to show to cursor (default)                       
     */    
     showCursor: function(visible) {
-        visible = $pick(visible, true);
-        this.cursorDiv.setStyle('visibility', visible?'visible':'hidden');
-    },    
+        if (this.options.cursor) {
+            visible = $pick(visible, true);
+            this.cursorDiv.setStyle('visibility', visible?'visible':'hidden');
+        }
+    },
     /*
     Property: clean
             Remove events to help with memory leaks           
@@ -108,7 +124,7 @@ var CChart = Chart.extend({
     clean: function() {
         this.showCursor(false);
         this.chartDiv.removeEvents();
-        this.cursorDiv.removeEvents();
+        if (this.options.cursor) this.cursorDiv.removeEvents();
     },    
     /*
     Property: _move (INTERNAL)

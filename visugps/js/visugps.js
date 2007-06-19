@@ -34,10 +34,7 @@ var VisuGps = new Class({
     options: {
         mapDiv : 'map',
         chartDiv : 'chart',
-        cursorDiv : 'cursor',
         loadDiv : 'load',
-        mapElev : false,
-        mapWeather : false,
         elevTileUrl : null,
         weatherTileUrl : null
     },
@@ -52,7 +49,6 @@ var VisuGps = new Class({
     Options:
             mapDiv - the map container
             chartDiv - the chart container
-            cursorDiv - the chart's cursor container
             loadDiv - an overlay displayed masking the map during initialization
             elevTileURL - list of base URLs for elevation tiles (null = no elevation map)
             weatherTileURL - list of base URLs for weather tiles (null = no weather map)
@@ -206,7 +202,6 @@ var VisuGps = new Class({
         if (this.chart.clean) this.chart.clean();
         delete this.chart;
         this.chart = new CChart($(this.options.chartDiv),
-                                $(this.options.cursorDiv),
                                 {onMouseMove : this._showMarker.bind(this),
                                  onMouseDown : this._showMarkerCenter.bind(this),
                                  onMouseWheel : this._showMarkerCenterZoom.bind(this)});
@@ -562,11 +557,3 @@ var VisuGps = new Class({
 });
 
 VisuGps.implement(new Options);
-
-
-/*
-
-  // Custom map types
-
-
-*/

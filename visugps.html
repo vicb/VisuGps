@@ -1,0 +1,71 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <title>Carte du Vol</title>
+
+    <style type="text/css">
+    v\:* { behavior:url(#default#VML);}
+    html, body {width: 100%; height: 100%}
+    body {margin-top: 0px; margin-right: 0px; margin-left: 0px; margin-bottom: 0px}
+    #map {width: 100%; height: 80%}
+    #chart {width: 98%; height: 20%; z-index:100; margin:auto;}
+    #load {width: 100%; height: 100%; top:0px; left:0px; position:absolute; z-index:3000;
+           background: AliceBlue url("img/loading.gif") no-repeat center center;}
+    #cursor {position:absolute; border-left: dashed 1px #4B0082;
+             width: 0px; z-index:200; visibility:hidden;}
+
+    </style>
+
+    <link rel="stylesheet" type="text/css" href="css/visugps.css" />    
+    <link rel="stylesheet" type="text/css" href="lib/chart/canvaschart.css" />
+    <script type="text/javascript" src="lib/mootools/mootools.v1.1.js"></script>
+    <script type="text/javascript" src="js/radio.js"></script>
+    <script type="text/javascript" src="lib/chart/excanvas.js"></script>
+    <script type="text/javascript" src="lib/chart/chart.js"></script>
+    <script type="text/javascript" src="lib/chart/canvaschartpainter.js"></script>
+    <script type="text/javascript" src="js/cchart.js"></script>
+    <script type="text/javascript" src="js/visugps.js"></script>
+
+    <script>
+        if (location.href.indexOf('victorb.fr') < 0) {
+            document.write("<" + "script src='http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAJPvmQMZVrrV3inIwT2t4RBT2yXp_ZAY8_ufC3CFXhHIE1NvwkxQ8EnbOAnRmv__e0HVMfZBZOLMgdA'" +
+                           " type='text/javascript'></" + "script>");
+        } else {
+            document.write("<" + "script src='http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAJPvmQMZVrrV3inIwT2t4RBQf-JSUIEMNUNF63gcoYgskNGvaZRQmUvzGcFUdj4nlylxP8SK4sRKYsg'" +
+                           " type='text/javascript'></" + "script>");
+        }
+
+        function initMap() {
+            kMap = new VisuGps({elevTileUrl: ['ts0.victorb.fr',
+                                              'ts1.victorb.fr',
+                                              'ts2.victorb.fr',
+                                              'ts3.victorb.fr'],
+                                weatherTileUrl: ['ts0.victorb.fr',
+                                                 'ts1.victorb.fr',
+                                                 'ts2.victorb.fr',
+                                                 'ts3.victorb.fr']});
+
+           var trackName = decodeURIComponent(location.search) || "noparam";
+
+            if (m = /^\?track=(.*)$/i.exec(trackName)) {
+                kMap.downloadTrack(m[1]);
+            } else {
+                kMap.downloadTrack(location.href.replace(/[\w\.]*$/, 'test.igc'));
+            }
+        }
+
+        function closeMap() {
+            kMap.clean();
+        }
+    </script>
+
+  </head>
+  <body onload="initMap()" onunload="closeMap()">
+    <div id="map"></div>
+    <div id="chart" class="chart"></div>
+    <div id="cursor"></div>
+    <div id="load"></div>
+
+  </body>
+</html>

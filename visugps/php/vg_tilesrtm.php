@@ -1,7 +1,7 @@
 <?php
 /*
-Script: vg_tilestrm.php
-        Create STRM tiles for google maps
+Script: vg_tilesrtm.php
+        Create SRTM tiles for google maps
 
 License: GNU General Public License
 
@@ -34,7 +34,7 @@ Copyright (c) 2007 Victor Berchet, <http://www.victorb.fr>
 
         require('vg_cache.php');
 
-        $cache = new Cache(CACHE_BASE_FOLDER . CACHE_FOLDER_STRM, CACHE_NB_STRM);
+        $cache = new Cache(CACHE_BASE_FOLDER . CACHE_FOLDER_SRTM, CACHE_NB_SRTM);
 
         $id = "x=$x&y=$y&z=$z";
 
@@ -84,12 +84,12 @@ Copyright (c) 2007 Victor Berchet, <http://www.victorb.fr>
 
         $lonBound[0] = $lonL;
 
-        $nextBound = floor($lonL / STRM_TILE_SIZE_DEG) * STRM_TILE_SIZE_DEG + STRM_TILE_SIZE_DEG;
+        $nextBound = floor($lonL / SRTM_TILE_SIZE_DEG) * SRTM_TILE_SIZE_DEG + SRTM_TILE_SIZE_DEG;
 
         for ($i = 1;; $i++) {
             if ($nextBound >= $lonR) break;
             $lonBound[$i] = $nextBound;
-            $nextBound += STRM_TILE_SIZE_DEG;
+            $nextBound += SRTM_TILE_SIZE_DEG;
         }
 
         $lonBound[$i] = $lonR;
@@ -99,12 +99,12 @@ Copyright (c) 2007 Victor Berchet, <http://www.victorb.fr>
 
         $latBound[0] = $latB;
 
-        $nextBound = floor($latB / STRM_TILE_SIZE_DEG) * STRM_TILE_SIZE_DEG + STRM_TILE_SIZE_DEG;
+        $nextBound = floor($latB / SRTM_TILE_SIZE_DEG) * SRTM_TILE_SIZE_DEG + SRTM_TILE_SIZE_DEG;
 
         for ($j = 1;; $j++) {
             if ($nextBound >= $latT) break;
             $latBound[$j] = $nextBound;
-            $nextBound += STRM_TILE_SIZE_DEG;
+            $nextBound += SRTM_TILE_SIZE_DEG;
         }
 
         $latBound[$j] = $latT;
@@ -123,9 +123,9 @@ Copyright (c) 2007 Victor Berchet, <http://www.victorb.fr>
     {
         global $cMap;
 
-        $fileLat = (int)floor($latB / STRM_TILE_SIZE_DEG) * STRM_TILE_SIZE_DEG;;
-        $startLon = (int)floor($lonL / STRM_TILE_SIZE_DEG) * STRM_TILE_SIZE_DEG;
-        $startLat  = $fileLat + STRM_TILE_SIZE_DEG;
+        $fileLat = (int)floor($latB / SRTM_TILE_SIZE_DEG) * SRTM_TILE_SIZE_DEG;;
+        $startLon = (int)floor($lonL / SRTM_TILE_SIZE_DEG) * SRTM_TILE_SIZE_DEG;
+        $startLat  = $fileLat + SRTM_TILE_SIZE_DEG;
 
         $xL = (int)$proj->X($lonL) % G_TILE_SIZE;
         $xR = (int)($proj->X($lonR) - 1) % G_TILE_SIZE;
@@ -136,20 +136,20 @@ Copyright (c) 2007 Victor Berchet, <http://www.victorb.fr>
         if (($xL == $xR) || ($yT == $yB)) return;
 
         $fName = "strm3_" . $fileLat . "_" . $startLon . ".strmb";
-        $handle = @fopen(STRM_PATH . $fName, "rb");
+        $handle = @fopen(SRTM_PATH . $fName, "rb");
 
         if ($handle && flock($handle, LOCK_SH)) {
 
-            $offLonPx = ($lonL - $startLon) * (STRM_TILE_SIZE_PX - 1) / STRM_TILE_SIZE_DEG;
-            $stepLonPx = ($lonR - $lonL) * (STRM_TILE_SIZE_PX - 1) / ($xR - $xL) / STRM_TILE_SIZE_DEG;
+            $offLonPx = ($lonL - $startLon) * (SRTM_TILE_SIZE_PX - 1) / SRTM_TILE_SIZE_DEG;
+            $stepLonPx = ($lonR - $lonL) * (SRTM_TILE_SIZE_PX - 1) / ($xR - $xL) / SRTM_TILE_SIZE_DEG;
 
             $startLatPx = $proj->Y($latT);
 
             for ($row = $yT; $row <= $yB; $row++) {
                 $lat = $proj->Lat($startLatPx + $row - $yT);
-                $offLatPx = ($startLat - $lat) * (STRM_TILE_SIZE_PX - 1) / STRM_TILE_SIZE_DEG;
-                fseek($handle, (int)($offLatPx) * STRM_TILE_SIZE_PX);
-                $line = fread($handle, STRM_TILE_SIZE_PX);
+                $offLatPx = ($startLat - $lat) * (SRTM_TILE_SIZE_PX - 1) / SRTM_TILE_SIZE_DEG;
+                fseek($handle, (int)($offLatPx) * SRTM_TILE_SIZE_PX);
+                $line = fread($handle, SRTM_TILE_SIZE_PX);
                 $lonPx = $offLonPx;
                 for ($col = $xL; $col <= $xR; $col++) {
                     $elevation = ord($line[(int)round($lonPx)]);

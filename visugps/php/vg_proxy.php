@@ -124,20 +124,20 @@ Copyright (c) 2007 Victor Berchet, <http://www.victorb.fr>
         for ($i = 0, $idx = 0, $step = ($track['nbPt'] - 1) / ($dstPts - 1); $i < $dstPts; $i++, $idx += $step) {
             $lat = $track['lat'][$idx];
             $lon = $track['lon'][$idx];
-            $fileLat = (int)floor($lat / STRM_TILE_SIZE_DEG) * STRM_TILE_SIZE_DEG;
-            $fileLon = (int)floor($lon / STRM_TILE_SIZE_DEG) * STRM_TILE_SIZE_DEG;
+            $fileLat = (int)floor($lat / SRTM_TILE_SIZE_DEG) * SRTM_TILE_SIZE_DEG;
+            $fileLon = (int)floor($lon / SRTM_TILE_SIZE_DEG) * SRTM_TILE_SIZE_DEG;
             $fileName = "strm3_" . $fileLat . "_" . $fileLon . ".strmb";
-            $latPx = (int)floor(($fileLat + STRM_TILE_SIZE_DEG - $lat) * (STRM_TILE_SIZE_PX - 1) / STRM_TILE_SIZE_DEG);
-            $lonPx = (int)floor(($lon - $fileLon) * (STRM_TILE_SIZE_PX - 1) / STRM_TILE_SIZE_DEG);
+            $latPx = (int)floor(($fileLat + SRTM_TILE_SIZE_DEG - $lat) * (SRTM_TILE_SIZE_PX - 1) / SRTM_TILE_SIZE_DEG);
+            $lonPx = (int)floor(($lon - $fileLon) * (SRTM_TILE_SIZE_PX - 1) / SRTM_TILE_SIZE_DEG);
             $elev[$fileName][$latPx][$lonPx][] = $i;
         }
 
         foreach ($elev as $file => $lats) {
-            $handle = @fopen(STRM_PATH . $file, "rb");
+            $handle = @fopen(SRTM_PATH . $file, "rb");
             if ($handle) {
                 foreach ($lats as $latPx => $lons) {
-                    fseek($handle, $latPx * STRM_TILE_SIZE_PX);
-                    $line = fread($handle, STRM_TILE_SIZE_PX);
+                    fseek($handle, $latPx * SRTM_TILE_SIZE_PX);
+                    $line = fread($handle, SRTM_TILE_SIZE_PX);
                     foreach ($lons as $lonPx => $idxs) {
                         foreach ($idxs as $idx) {
                             $elevGnd[$idx] = ord($line[$lonPx]) * 20;

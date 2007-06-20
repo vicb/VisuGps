@@ -1,8 +1,8 @@
 /*
-Convert STRM files to VisuGps format.
+Convert SRTM files to VisuGps format.
 This application has been developped with Ultimate++ <http://www.ultimatepp.org/>
 
-STRM files can be found at <http://srtm.csi.cgiar.org/index.asp>
+SRTM files can be found at <http://srtm.csi.cgiar.org/index.asp>
 
 Author:
 	Victor Berchet
@@ -12,32 +12,32 @@ History:
 	
 */
 
-#include "STRMconv.h"
+#include "SRTMconv.h"
 
-STRMconv::STRMconv()
+SRTMconv::SRTMconv()
 {
-	CtrlLayout(*this, "STRM to VisuGPS converter");
+	CtrlLayout(*this, "SRTM to VisuGPS converter");
 
 	btnConvert <<= THISBACK(Convert);
 	btnOpen <<= THISBACK(Open);
 	
 	fs.Multi(false)
 	  .NoEditFileName()
-      .Type("STRM files (*.asc)", "*.asc")
-      .Type("STRMB file (*.strmb)", "*.strmb")
+      .Type("SRTM files (*.asc)", "*.asc")
+      .Type("SRTMB file (*.strmb)", "*.strmb")
       .Type("All Files (*.*)", "*.*");
 }
 
 
-void STRMconv::ComputeImg(void)
+void SRTMconv::ComputeImg(void)
 {
 	ImageBuffer ib(previewSize, previewSize);
 	
 	for(int y = 0; y < previewSize; y++) {
 		RGBA *l = ib[y];
 		for(int x = 0; x < previewSize; x++) {			
-			int step = strmSize / previewSize;
-			byte height = min(raster.At(strmSize * step * y + step * x) / 15 + 40, 255);
+			int step = srtmSize / previewSize;
+			byte height = min(raster.At(srtmSize * step * y + step * x) / 15 + 40, 255);
 			l->a = 255;
 			l->r = height;
 			l->g = height;
@@ -50,10 +50,10 @@ void STRMconv::ComputeImg(void)
 
 }
 
-void STRMconv::Open(void)
+void SRTMconv::Open(void)
 {
 	fs.ActiveType(0);
-    if (!fs.ExecuteOpen("Select a STRM file")) {
+    if (!fs.ExecuteOpen("Select a SRTM file")) {
     	return;
     } else {        
     	txt.SetText(~fs);  
@@ -65,9 +65,9 @@ void STRMconv::Open(void)
     }    			
 }
 
-void STRMconv::StoreStrm(void)
+void SRTMconv::StoreSrtm(void)
 {
-	if (raster.GetCount() == strmSize * strmSize) {
+	if (raster.GetCount() == srtmSize * srtmSize) {
 		
 		String fName = txt.GetText();
 		
@@ -76,14 +76,14 @@ void STRMconv::StoreStrm(void)
 					Format("strm3_%d_%d.strmb", llCorner.y, llCorner.x);
 		} else {
 			fName = ToLower(GetFileDirectory(fName) + 
-							GetFileTitle(fName) + ".strmb");		
+							GetFileTitle(fName) + ".srtmb");		
 		}
 				
 		FileOut f(fName);
 		
-		Progress progress(this, "Storing the output file...", strmSize * strmSize);			
+		Progress progress(this, "Storing the output file...", srtmSize * srtmSize);			
 		
-		for (int i = 0; i < strmSize * strmSize; i++) {
+		for (int i = 0; i < srtmSize * srtmSize; i++) {
 			int val;
 			if (raster[i] <= 0) {
 				val = 0;
@@ -100,7 +100,7 @@ void STRMconv::StoreStrm(void)
 	}
 }
 
-void STRMconv::Convert(void)
+void SRTMconv::Convert(void)
 {
 	String fName = txt.GetText();
 	
@@ -114,7 +114,7 @@ void STRMconv::Convert(void)
 			
 			raster.Clear();
 			
-			// Process STRM header 
+			// Process SRTM header 
 			for (int i = 0; i < 6; i++) {				
 				Vector<String> fields = Split(file.GetLine(), ' ');
 				if (fields.GetCount() >= 2) {				
@@ -126,7 +126,7 @@ void STRMconv::Convert(void)
 				}			
 			}
 					
-			Progress progress(this, "Reading the input file...", strmSize * strmSize);					
+			Progress progress(this, "Reading the input file...", srtmSize * srtmSize);					
 					
 			while (!file.IsEof()) {
 				int b = file.Get();
@@ -145,16 +145,16 @@ void STRMconv::Convert(void)
 			file.Close();
 			
 			ComputeImg();
-			StoreStrm();
+			StoreSrtm();
 		}
-	} else if (ToLower(GetFileExt(fName)) == ".strmb") {
+	} else if (ToLower(GetFileExt(fName)) == ".srtmb") {
 		
 		raster.Clear();
 		
 		if (FileExists(fName)) {
 			FileIn file(fName);
 			
-			Progress progress(this, "Reading the input file...", strmSize * strmSize);
+			Progress progress(this, "Reading the input file...", srtmSize * srtmSize);
 			
 			while (!file.IsEof()) {
 				raster.Add(file.Get() * elevFactor);
@@ -164,7 +164,7 @@ void STRMconv::Convert(void)
 			progress.Hide();
 			file.Close();
 			
-			if (raster.GetCount() == strmSize * strmSize) {
+			if (raster.GetCount() == srtmSize * srtmSize) {
 				ComputeImg();
 			}		
 		}
@@ -173,7 +173,7 @@ void STRMconv::Convert(void)
 
 GUI_APP_MAIN
 {
-	STRMconv conv;
+	SRTMconv conv;
 	LoadFromFile(conv);
 	conv.Run();
 	StoreToFile(conv);

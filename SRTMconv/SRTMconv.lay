@@ -1,4 +1,4 @@
-LAYOUT(STRMconvLayout, 668, 680)
+LAYOUT(SRTMconvLayout, 668, 680)
 	ITEM(StaticText, txt, LeftPosZ(16, 640).TopPosZ(16, 20))
 	ITEM(Button, btnOpen, SetLabel(t_("Open")).LeftPosZ(16, 88).TopPosZ(44, 28))
 	ITEM(ImageCtrl, img, LeftPosZ(12, 648).TopPosZ(96, 572))

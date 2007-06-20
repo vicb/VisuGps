@@ -27,21 +27,21 @@ Copyright (c) 2007 Victor Berchet, <http://www.victorb.fr>
     // Google maps tile size (pixels)
     define('G_TILE_SIZE', 256);
     
-    // STRM tile size (pixels)
-    define('STRM_TILE_SIZE_PX', 6000);
-    // STRM tile size (degre)
-    define('STRM_TILE_SIZE_DEG', 5);
-    // Path to STRM files    
-    define('STRM_PATH', '../../../data/strm/');
+    // SRTM tile size (pixels)
+    define('SRTM_TILE_SIZE_PX', 6000);
+    // SRTM tile size (degre)
+    define('SRTM_TILE_SIZE_DEG', 5);
+    // Path to SRTM files
+    define('SRTM_PATH', '../../../data/srtm/');
 
     // CHACHE base folder
     define('CACHE_BASE_FOLDER', '../cache/');
 
 
-    // STRM tiles cache folder
-    define('CACHE_FOLDER_STRM', 'cache_strm/');
-    // STRM tiles cache size
-    define('CACHE_NB_STRM', 1000);
+    // SRTM tiles cache folder
+    define('CACHE_FOLDER_SRTM', 'cache_srtm/');
+    // SRTM tiles cache size
+    define('CACHE_NB_SRTM', 1000);
 
     // MODIS tiles cache folders
     define('CACHE_FOLDER_MODIST', 'cache_modis/tile/');

@@ -164,7 +164,7 @@ var VisuGps = new Class({
         this.titleCtrl.setText(flightTitle);
 
         if ($type(this.options.elevTileUrl) === 'array') {
-            this._createStrmMap();
+            this._createSrtmMap();
         }
 
         new RadioBtn(['btnelev', 'btnvario', 'btnspeed'], {onSelect: this._setGraph.bind(this),
@@ -450,32 +450,32 @@ var VisuGps = new Class({
         this.infoCtrl = new InfoControl();
     },
     /*
-    Property: _createStrmMap (INTERNAL)
-            Create the STRM (elevation) map
+    Property: _createSrtmMap (INTERNAL)
+            Create the SRTM (elevation) map
     */
-    _createStrmMap : function() {
-        // STRM custom map
-        var strmCpy = new GCopyright(1, new GLatLngBounds(new GLatLng(-90, -180),
+    _createSrtmMap : function() {
+        // SRTM custom map
+        var srtmCpy = new GCopyright(1, new GLatLngBounds(new GLatLng(-90, -180),
                                                           new GLatLng(90, 180)),
-                                                          0, "STRM");
+                                                          0, "SRTM");
 
-        var strmCpyC = new GCopyrightCollection();
-        strmCpyC.addCopyright(strmCpy);
+        var srtmCpyC = new GCopyrightCollection();
+        srtmCpyC.addCopyright(srtmCpy);
 
         var url = this.options.elevTileUrl;
         url.map(function(item, idx) {
             return item.replace(/\/$/, '');
         });
 
-        var strmTL = [new GTileLayer(strmCpyC, 0, 16)];
-        strmTL[0].getTileUrl = function(point, zoom){
+        var srtmTL = [new GTileLayer(srtmCpyC, 0, 16)];
+        srtmTL[0].getTileUrl = function(point, zoom){
                 var count = url.length;
                 var n = (point.x + point.y) % count;
-                return 'http://' + url[n] + '/vg_tilestrm.php?x=' + point.x + '&y=' + point.y + '&z=' + zoom;
+                return 'http://' + url[n] + '/vg_tilesrtm.php?x=' + point.x + '&y=' + point.y + '&z=' + zoom;
             }
-        var strmMap = new GMapType(strmTL, new GMercatorProjection(18), 'Elevation');
+        var srtmMap = new GMapType(srtmTL, new GMercatorProjection(18), 'Elevation');
 
-        this.map.addMapType(strmMap);
+        this.map.addMapType(srtmMap);
     },
     /*
     Property: _createModisMap (INTERNAL)

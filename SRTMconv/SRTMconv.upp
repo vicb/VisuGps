@@ -2,10 +2,10 @@ uses
 	CtrlLib;
 
 file
-	STRMconv.h,
+	SRTMconv.h,
 	README,
 	main.cpp,
-	STRMconv.lay;
+	SRTMconv.lay;
 
 mainconfig
 	"" = "GUI";

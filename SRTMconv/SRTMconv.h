@@ -1,17 +1,17 @@
-#ifndef _STRMconv_STRMconv_h
-#define _STRMconv_STRMconv_h
+#ifndef _SRTMconv_SRTMconv_h
+#define _SRTMconv_SRTMconv_h
 
 #include <CtrlLib/CtrlLib.h>
 
 using namespace Upp;
 
-#define LAYOUTFILE <STRMconv/STRMconv.lay>
+#define LAYOUTFILE <SRTMconv/SRTMconv.lay>
 #include <CtrlCore/lay.h>
 
-class STRMconv : public WithSTRMconvLayout<TopWindow> {
+class SRTMconv : public WithSRTMconvLayout<TopWindow> {
 public:
-	typedef STRMconv CLASSNAME;
-	STRMconv();
+	typedef SRTMconv CLASSNAME;
+	SRTMconv();
 	virtual void Serialize(Stream& s) {s % fs;}
 	
 private:
@@ -19,16 +19,15 @@ private:
 	Point llCorner;
 	Vector<short> raster;
 
-	static const int strmSize = 6000;
+	static const int srtmSize = 6000;
 	static const int previewSize = 600;
 	static const int elevFactor = 20;
 
 	void Convert(void);
 	void Open(void);	
 	void ComputeImg(void);	
-	void StoreStrm(void);
-	
+	void StoreSrtm(void);
+
 };
 
 #endif
-

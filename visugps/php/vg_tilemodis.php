@@ -1,7 +1,7 @@
 <?php
 /*
 Script: vg_tilesmodis.php
-        Create STRM tiles for google maps
+        Create MODIS tiles for google maps
 
 License: GNU General Public License
 

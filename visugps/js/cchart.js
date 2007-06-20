@@ -46,7 +46,6 @@ var CChart = Chart.extend({
 
     Arguments:
             div - Chart container
-            cur - Cursor container
             options - an object representing CChart options. See Options below.
 
     Options:
@@ -134,6 +133,7 @@ var CChart = Chart.extend({
             event - event
     */    
     _move: function(event) {
+        event.stop();
         var x = event.page.x;
         var dim = this.getCoordinates();
         var left = dim.left + this.chartDiv.getLeft();
@@ -145,16 +145,18 @@ var CChart = Chart.extend({
     },
     /*
     Property: _down (INTERNAL)
-            Fire the 'onMouseDown' event           
-    */    
+            Fire the 'onMouseDown' event
+    */
     _down: function(event) {
+        event.stop();
         this.fireEvent('onMouseDown', this.position);
     },
     /*
     Property: _wheel (INTERNAL)
-            Fire the 'onMouseWheel' event           
-    */    
+            Fire the 'onMouseWheel' event
+    */
     _wheel: function(event) {
+        event.stop();
         this.fireEvent('onMouseWheel', [this.position, event.wheel]);
     }
 });

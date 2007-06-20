@@ -392,13 +392,13 @@ var VisuGps = new Class({
 
         TitleControl.prototype.initialize = function(map) {
             this.div = new Element('div', {'styles' : {'color': '#000',
-                          	                           'border': '1px inset #555',
-                           	                           'padding': '2px',
-                           	                           'font':'10px Verdana, Arial, sans-serif',
-                           	                           'marginBottom':'3px',
-                           	                           'background':'#FFC',
+                                                       'border': '1px inset #555',
+                                                       'padding': '2px',
+                                                       'font':'10px Verdana, Arial, sans-serif',
+                                                       'marginBottom':'3px',
+                                                       'background':'#FFC',
                                                        'text-align':'right',
-                           	                           'opacity': '0.9'}
+                                                       'opacity': '0.9'}
                                   }).setHTML(this.title)
                                     .injectInside(map.getContainer());
             return this.div;
@@ -428,10 +428,10 @@ var VisuGps = new Class({
 
         InfoControl.prototype.initialize = function(map) {
             var div= new Element('div', {'styles' : {'border': '1px inset #555',
-                       	                             'padding': '2px',
-                                             	     'marginBottom':'1px',
-                                             	     'background':'#FFC',
-                                             	     'opacity':'0.9',
+                                                     'padding': '2px',
+                                                     'marginBottom':'1px',
+                                                     'background':'#FFC',
+                                                     'opacity':'0.9',
                                                      'text-align':'right'}
                                 }).setHTML('<p class="vgps-info"><strong>...iNfO</strong></p>' +
                                            '<p class="vgps-info" id="vgps-nfofield"></p>' +

@@ -348,7 +348,9 @@ var VisuGps = new Class({
                          Math.max(0, (this.track.elev[idx] - this.track.elevGnd[idx])) + 'm [hR]<br/>' +
                          this.track.vario[idx] + 'm/s [Vz]<br/>' +
                          this.track.speed[idx] + 'km/h [Vx]<br/>' +
-                         this.track.time.hour[idx] + ':' + this.track.time.min[idx] + ':' + this.track.time.sec[idx] + '[Th]');
+                         this._NbToStrW(this.track.time.hour[idx],2) + ':' +
+                         this._NbToStrW(this.track.time.min[idx], 2) + ':' +
+                         this._NbToStrW(this.track.time.sec[idx], 2) + '[Th]');
     },
     /*
     Property: _goNear (INTERNAL)
@@ -527,8 +529,7 @@ var VisuGps = new Class({
               return (now - ny) / (1000 * 3600 * 24) + 1;
           }
 
-          var dayNum = getDayNumber(day, month, year).toString();
-          while (dayNum.length < 3) dayNum = "0" + dayNum;
+          var dayNum = this._NbToStrW(getDayNumber(day, month, year), 3);
           var date = year.toString() + dayNum;
 
           // MODIS custom map
@@ -552,6 +553,20 @@ var VisuGps = new Class({
               }
           var modisMap = new GMapType(modisTL, new EuclideanProjection(18), "Weather");
           this.map.addMapType(modisMap);
+    },
+    /*
+    Property: _NbToStrW (INTERNAL)
+            Return the string representation of a number (left padded with 0 to w width)
+
+    Arguments:
+            nb - number
+            w - width (left padded with 0).
+
+    */
+    _NbToStrW : function(nb, w) {
+        var nbs = nb.toString();
+        while (nbs.length < w) nbs = '0' + nbs;
+        return nbs;
     }
 
 });

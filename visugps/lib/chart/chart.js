@@ -67,208 +67,222 @@ var CHART_STACKED =  4;
 | directly, the other ones are internal.                                      |
 \----------------------------------------------------------------------------*/
 
-var Chart = new Class( {
-        initialize: function (el) {
-            this._cont             = $(el);
-        	this._yMin             = null;
-        	this._yMax             = null;
-        	this._xGridDensity     = 0;
-        	this._yGridDensity     = 0;
-        	this._flags            = 0;
-        	this._series           = new Array();
-        	this._labelPrecision   = 0;
-        	this._horizontalLabels = new Array();
-        	this._barWidth         = 10;
-        	this._barDistance      = 2;
-        	this._bars             = 0;
-        	this._showLegend       = true;
-
+var Chart = new Class({
+        options : {
+            xGridDensity : 0,
+            yGridDensity : 0,
+            defaultFlags : 0,
+            labelPrecision : 0,
+            labelPos : {'x': 'out', 'y': 'in'},
+            horizontalLabels : [],
+            barWidth : 10,
+            barDistance : 2,
+            showLegend : true
+        },
+        initialize: function(el, options) {
+            this.setOptions(options);
+            this._cont = $(el);
+            this._bar = 0;
+            this._series = [];
+            this._yMin = 0;
+            this._yMax = 0;
             this._chartCoordinates = {};
+
+            /*
+             * Determine painter implementation to use based on what's available and
+             * supported. CanvasChartPainter is the prefered one, JsGraphicsChartPainter
+             * the fallback one as it works in pretty much any browser. The
+             * SVGChartPainter implementation one will only be used if set explicitly as
+             * it's not up to pair with the other ones.
+             */
+            if ((typeof CanvasChartPainterFactory != 'undefined') && (window.CanvasRenderingContext2D)) {
+                this._painterFactory = CanvasChartPainterFactory;
+            }
+            else if (typeof JsGraphicsChartPainterFactory != 'undefined') {
+                this._painterFactory = JsGraphicsChartPainterFactory;
+            }
+            else { this._painterFactory = null; }
+        },
+
+        setPainterFactory : function(f) {
+            this._painterFactory = f;
+        },
+
+        setVerticalRange : function(min, max) {
+            this._yMin = min;
+            this._yMax = max;
+        },
+
+        setLabelPrecision : function(precision) {
+            this.options.labelPrecision = precision;
+        },
+
+        setShowLegend : function(b) {
+            this.options.showLegend = b;
+        },
+
+        setGridDensity : function(horizontal, vertical) {
+            this.options.xGridDensity = horizontal;
+            this.options.yGridDensity = vertical;
+        },
+
+        setHorizontalLabels : function(labels) {
+            this.options.horizontalLabels = labels;
+        },
+
+        setDefaultType : function(flags) {
+            this.options.defaultFlags = flags;
+        },
+
+        setBarWidth : function(width) {
+            this.options.barWidth = width;
+        },
+
+        setBarDistance : function(distance) {
+            this.options.barDistance = distance;
+        },
+
+        add : function(label, color, values, flags) {
+            var offset;
+
+            flags = $pick(flags, this._flags);
+            if ((flags & CHART_BAR) == CHART_BAR) {
+                offset = this.options.barDistance + this._bars * (this.options.barWidth + this.options.barDistance);
+                this._bars++;
+            } else { 
+                offset = 0;
+            }
+
+            this._series.push(new ChartSeries(label, color, values, flags, offset));
+        },
+
+        draw : function() {
+            var painter, i, o, o2, len, xlen, ymin, ymax, series, bLabels;
+
+            if (!this._painterFactory ||
+                !this._series) {
+                return;
+            }
+
+            /* Initialize */
+            series = [];
+            xlen = 0;
+            ymin = $pick(this._yMin, this._series[0].values[0]);
+            ymax = $pick(this._yMax, this._series[0].values[0]);
+
+            /* Separate stacked series (as they need processing). */
+            for (i = 0; i < this._series.length; i++) {
+                o = this._series[i]
+                if ((o.flags & CHART_STACKED) == CHART_STACKED) { series.push(o); }
+            }
+
+            /* Calculate values for stacked series */
+            for (i = series.length - 2; i >= 0; i--) {
+                o  = series[i].values;
+                o2 = series[i+1].values;
+                len = (o2.length > o.length)?o2.length:o.length;
+                for (j = 0; j < len; j++) {
+                    if ((o[j]) && (!o2[j])) { continue; }
+                    if ((!o[j]) && (o2[j])) { o[j] = o2[j]; }
+                    else { o[j] = parseInt(o[j]) + parseFloat(o2[j]); }
+            }   }
+
+            /* Append non-stacked series to list */
+            for (i = 0; i < this._series.length; i++) {
+                o = this._series[i]
+                if ((o.flags & CHART_STACKED) != CHART_STACKED) { series.push(o); }
+            }
+
+            /* Determine maximum number of values, ymin and ymax */
+            ymin = ymax = series[0].values[0];
+            for (i = 0; i < series.length; i++) {
+                o = series[i]
+                xlen = Math.max(xlen, o.values.length);
+                for (j = 0; j < o.values.length; j++) {
+                    ymin = Math.min(ymin, o.values[j]);
+                    ymax = Math.max(ymax, o.values[j]);
+                }
+            }
+            if (ymin == ymax) {
+                ymin -= 1;
+                ymax += 1;
+            }
+
+            /*
+             * For bar only charts the number of charts is the same as the length of the
+             * longest series, for others combinations it's one less. Compensate for that
+             * for bar only charts.
+             */
+            if (this._series.length == this._bars) {
+                xlen++;
+                this.options.xGridDensity++;
+            }
+
+            /*
+             * Determine whatever or not to show the legend and axis labels
+             * Requires density and labels to be set.
+             */
+            bLabels = (this.options.xGridDensity &&
+                       this.options.yGridDensity &&
+                       (this.options.horizontalLabels.length >= this.options.xGridDensity));
+
+            /* Create painter object */
+            painter = this._painterFactory();
+            painter.create(this._cont);
+
+            /* Initialize painter object */
+            painter.init(xlen, ymin, ymax, this.options.xGridDensity, this.options.yGridDensity, bLabels);
+
+            /* Draw chart */
+            painter.drawBackground();
+
+            /*
+             * If labels and grid density where specified, draw legend and labels.
+             * It's drawn prior to the chart as the size of the legend and labels
+             * affects the size of the chart area.
+             */
+            if (this.options.showLegend) { painter.drawLegend(series); }
+            if (bLabels) {
+                painter.drawVerticalAxis(this.options.yGridDensity, 
+                                         this.options.labelPrecision, 
+                                         this.options.labelPos);
+                painter.drawHorizontalAxis(xlen, this.options.horizontalLabels, 
+                                           this.options.xGridDensity, 
+                                           this.options.labelPrecision,
+                                           this.options.labelPos);
+            }
         
-        	/*
-        	 * Determine painter implementation to use based on what's available and
-        	 * supported. CanvasChartPainter is the prefered one, JsGraphicsChartPainter
-        	 * the fallback one as it works in pretty much any browser. The
-        	 * SVGChartPainter implementation one will only be used if set explicitly as
-        	 * it's not up to pair with the other ones.
-        	 */
-        	if ((typeof CanvasChartPainterFactory != 'undefined') && (window.CanvasRenderingContext2D)) {
-        		this._painterFactory = CanvasChartPainterFactory;
-        	}
-        	else if (typeof JsGraphicsChartPainterFactory != 'undefined') {
-        		this._painterFactory = JsGraphicsChartPainterFactory;
-        	}
-        	else { this._painterFactory = null; }
+            /* Draw chart */
+            painter.drawChart();
+        
+            /* Draw series */
+            for (i = 0; i < series.length; i++) {
+                switch (series[i].flags & ~CHART_STACKED) {
+                    case CHART_LINE: painter.drawLine(series[i].color, series[i].values); break;
+                    case CHART_AREA: painter.drawArea(series[i].color, series[i].values); break;
+                    case CHART_BAR:  painter.drawBars(series[i].color, series[i].values,
+                                                      xlen - 1, series[i].offset, this.options.barWidth); break;
+                    default: ;
+                };
+            }
+        
+            /*
+             * Draw axis (after the series since the anti aliasing of the lines may
+             * otherwise be drawn on top of the axis)
+             */
+            painter.drawAxis();
+        
+            this._chartCoordinates = painter.getCoordinates();
+        
+        },
+
+        getCoordinates : function() {
+            return this._chartCoordinates;
         }
+
     });
 
-Chart.prototype.setPainterFactory = function(f) {
-	this._painterFactory = f;
-};
-
-
-Chart.prototype.setVerticalRange = function(min, max) {
-	this._yMin = min;
-	this._yMax = max;
-};
-
-
-Chart.prototype.setLabelPrecision = function(precision) {
-	this._labelPrecision = precision;
-};
-
-
-Chart.prototype.setShowLegend = function(b) {
-	this._showLegend = b;
-};
-
-
-Chart.prototype.setGridDensity = function(horizontal, vertical) {
-	this._xGridDensity = horizontal;
-	this._yGridDensity = vertical;
-};
-
-
-Chart.prototype.setHorizontalLabels = function(labels) {
-	this._horizontalLabels = labels;
-};
-
-
-Chart.prototype.setDefaultType = function(flags) {
-	this._flags = flags;
-};
-
-
-Chart.prototype.setBarWidth = function(width) {
-	this._barWidth = width;
-};
-
-
-Chart.prototype.setBarDistance = function(distance) {
-	this._barDistance = distance;
-};
-
-
-Chart.prototype.add = function(label, color, values, flags) {
-	var o, offset;
-
-	if (!flags) { flags = this._flags; }
-	if ((flags & CHART_BAR) == CHART_BAR) { offset = this._barDistance + this._bars * (this._barWidth + this._barDistance); this._bars++; }
-	else { offset = 0; }
-	o = new ChartSeries(label, color, values, flags, offset);
-
-	this._series.push(o);
-};
-
-
-Chart.prototype.draw = function() {
-	var painter, i, o, o2, len, xlen, ymin, ymax, series, type, self, bLabels;
-	
-	if (!this._painterFactory) { return; }
-
-	/* Initialize */
-	series = new Array();
-	stackedSeries = new Array();
-	xlen = 0;
-	ymin = this._yMin;
-	ymax = this._yMax;
-
-	/* Separate stacked series (as they need processing). */
-	for (i = 0; i < this._series.length; i++) {
-		o = this._series[i]
-		if ((o.flags & CHART_STACKED) == CHART_STACKED) { series.push(o); }
-	}
-
-	/* Calculate values for stacked series */
-	for (i = series.length - 2; i >= 0; i--) {
-		o  = series[i].values;
-		o2 = series[i+1].values;
-		len = (o2.length > o.length)?o2.length:o.length;
-		for (j = 0; j < len; j++) {
-			if ((o[j]) && (!o2[j])) { continue; }
-			if ((!o[j]) && (o2[j])) { o[j] = o2[j]; }
-			else { o[j] = parseInt(o[j]) + parseFloat(o2[j]); }
-	}	}
-
-	/* Append non-stacked series to list */
-	for (i = 0; i < this._series.length; i++) {
-		o = this._series[i]
-		if ((o.flags & CHART_STACKED) != CHART_STACKED) { series.push(o); }
-	}
-
-	/* Determine maximum number of values, ymin and ymax */
-	for (i = 0; i < series.length; i++) {
-		o = series[i]
-		if (o.values.length > xlen) { xlen = o.values.length; }
-		for (j = 0; j < o.values.length; j++) {
-			if ((o.values[j] < ymin) || (ymin == null))  { ymin = o.values[j]; }
-			if (o.values[j] > ymax) { ymax = o.values[j]; }
-	}	}
-
-	/*
-	 * For bar only charts the number of charts is the same as the length of the
-	 * longest series, for others combinations it's one less. Compensate for that
-	 * for bar only charts.
-	 */
-	if (this._series.length == this._bars) {
-		xlen++;
-		this._xGridDensity++;
-	}
-
-	/*
-	 * Determine whatever or not to show the legend and axis labels
-	 * Requires density and labels to be set.
-	 */
-	bLabels = ((this._xGridDensity) && (this._yGridDensity) && (this._horizontalLabels.length >= this._xGridDensity));
-
-	/* Create painter object */
-	painter = this._painterFactory();
-	painter.create(this._cont);
-
-	/* Initialize painter object */
-	painter.init(xlen, ymin, ymax, this._xGridDensity, this._yGridDensity, bLabels);
-
-	/* Draw chart */
-	painter.drawBackground();
-
-	/*
-	 * If labels and grid density where specified, draw legend and labels.
-	 * It's drawn prior to the chart as the size of the legend and labels
-	 * affects the size of the chart area.
-	 */
-	if (this._showLegend) { painter.drawLegend(series); }
-	if (bLabels) {
-		painter.drawVerticalAxis(this._yGridDensity, this._labelPrecision);
-		painter.drawHorizontalAxis(xlen, this._horizontalLabels, this._xGridDensity, this._labelPrecision);
-	}
-
-	/* Draw chart */
-	painter.drawChart();
-
-	/* Draw series */
-	for (i = 0; i < series.length; i++) {
-		type = series[i].flags & ~CHART_STACKED;
-		switch (type) {
-			case CHART_LINE: painter.drawLine(series[i].color, series[i].values); break;
-			case CHART_AREA: painter.drawArea(series[i].color, series[i].values); break;
-			case CHART_BAR:  painter.drawBars(series[i].color, series[i].values, xlen-1, series[i].offset, this._barWidth); break;
-			default: ;
-		};
-	}
-
-	/*
-	 * Draw axis (after the series since the anti aliasing of the lines may
-	 * otherwise be drawn on top of the axis)
-	 */
-	painter.drawAxis();
-
-    this._chartCoordinates = painter.getCoordinates();
-
-};
-
-Chart.prototype.getCoordinates = function() {
-    return this._chartCoordinates;
-}
+Chart.implement(new Options);
 
 /*----------------------------------------------------------------------------\
 |                                 ChartSeries                                 |
@@ -276,14 +290,15 @@ Chart.prototype.getCoordinates = function() {
 | Internal class for representing a series.                                   |
 \----------------------------------------------------------------------------*/
 
-function ChartSeries(label, color, values, flags, offset) {
-	this.label  = label;
-	this.color  = color;
-	this.values = values;
-	this.flags  = flags;
-	this.offset = offset;
-}
-
+var ChartSeries = new Class({
+    initialize : function(label, color, values, flags, offset) {
+        this.label  = label;
+        this.color  = color;
+        this.values = values;
+        this.flags  = flags;
+        this.offset = offset;
+    }
+});
 
 /*----------------------------------------------------------------------------\
 |                            AbstractChartPainter                             |
@@ -291,29 +306,24 @@ function ChartSeries(label, color, values, flags, offset) {
 | Abstract base class defining the painter API. Can not be used directly.     |
 \----------------------------------------------------------------------------*/
 
-function AbstractChartPainter() {
-
-};
-
-
-AbstractChartPainter.prototype.calc = function(w, h, xlen, ymin, ymax, xgd, ygd) {
-	this.range = ymax - ymin;
-	this.xstep = w / (xlen - 1);
-	this.xgrid = (xgd)?w / (xgd - 1):0;
-	this.ygrid = (ygd)?h / (ygd - 1):0;
-	this.ymin  = ymin;
-	this.ymax  = ymax;
-};
-
-
-AbstractChartPainter.prototype.create = function(el) {};
-AbstractChartPainter.prototype.init = function(xlen, ymin, ymax, xgd, ygd, bLabels) {};
-AbstractChartPainter.prototype.drawLegend = function(series) {};
-AbstractChartPainter.prototype.drawVerticalAxis = function(ygd, precision) {};
-AbstractChartPainter.prototype.drawHorizontalAxis = function(xlen, labels, xgd, precision) {};
-AbstractChartPainter.prototype.drawAxis = function() {};
-AbstractChartPainter.prototype.drawBackground = function() {};
-AbstractChartPainter.prototype.drawChart = function() {};
-AbstractChartPainter.prototype.drawArea = function(color, values) {};
-AbstractChartPainter.prototype.drawLine = function(color, values) {};
-AbstractChartPainter.prototype.drawBars = function(color, values, xlen, xoffset, width) {};
+var AbstractChartPainter = new Class ({
+    calc : function(w, h, xlen, ymin, ymax, xgd, ygd) {
+        this.range = ymax - ymin;
+        this.xstep = w / (xlen - 1);
+        this.xgrid = xgd?w / (xgd - 1):0;
+        this.ygrid = ygd?h / (ygd - 1):0;
+        this.ymin  = ymin;
+        this.ymax  = ymax;
+    },
+    create : function(el) {},
+    init : function(xlen, ymin, ymax, xgd, ygd, bLabels) {},
+    drawLegend : function(series) {},
+    drawVerticalAxis : function(ygd, precision, labelPos) {},
+    drawHorizontalAxis : function(xlen, labels, xgd, precision, labelPos) {},
+    drawAxis : function() {},
+    drawBackground : function() {},
+    drawChart : function() {},
+    drawArea : function(color, values) {},
+    drawLine : function(color, values) {},
+    drawBars : function(color, values, xlen, xoffset, width) {}
+});

@@ -161,4 +161,4 @@ var CChart = Chart.extend({
     }
 });
 
-CChart.implement(new Events, new Options);
+CChart.implement(new Events);

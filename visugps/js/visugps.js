@@ -211,6 +211,7 @@ var VisuGps = new Class({
         switch (id) {
             case 'btnvario':
                 this.chart.add('Vario', '#FF0000', this.track.vario, CHART_LINE);
+                this.chart.setLabelPrecision(1);
                 break;
             case 'btnspeed':
                 this.chart.add('Vitesse', '#FF0000', this.track.speed, CHART_LINE);
@@ -561,6 +562,9 @@ var VisuGps = new Class({
     Arguments:
             nb - number
             w - width (left padded with 0).
+
+    Return:
+            Number as string left padded with 0 to the requested width
 
     */
     _NbToStrW : function(nb, w) {

@@ -129,15 +129,15 @@ var VisuGps = new Class({
         // Clamp values
         this.track.speed = this.track.speed.map(function(item, index) {
             return (item > this.options.maxSpeed)?this.options.maxSpeed:(item < 0)?0:item;
-        }.bind(this));
+        }, this);
 
         this.track.vario = this.track.vario.map(function(item, index) {
             return (item > this.options.maxVario)?this.options.maxVario:(item < -this.options.maxVario)?-this.options.maxVario:item;
-        }.bind(this));
+        }, this);
 
         this.track.elev = this.track.elev.map(function(item, index) {
             return (item > this.options.maxElev)?this.options.maxElev:(item < 0)?0:item;
-        }.bind(this));
+        }, this);
 
         // Center the map on the track
         this.map.setCenter(bounds.getCenter(), this.map.getBoundsZoomLevel(bounds));
@@ -207,18 +207,17 @@ var VisuGps = new Class({
                                  onMouseWheel : this._showMarkerCenterZoom.bind(this)});
         this.chart.setGridDensity(this.track.nbChartLbl, 4);
         this.chart.setHorizontalLabels(this.track.time.label);
-        this.chart.setShowLegend(true);
         switch (id) {
             case 'btnvario':
-                this.chart.add('Vario', '#FF0000', this.track.vario, CHART_LINE);
+                this.chart.add('Vz', '#FF0000', this.track.vario, CHART_LINE);
                 this.chart.setLabelPrecision(1);
                 break;
             case 'btnspeed':
-                this.chart.add('Vitesse', '#FF0000', this.track.speed, CHART_LINE);
+                this.chart.add('Vx', '#FF0000', this.track.speed, CHART_LINE);
                 break;
             default:
-                this.chart.add('hVol', '#FF0000', this.track.elev, CHART_LINE);
-                this.chart.add('hSol', '#755545', this.track.elevGnd, CHART_AREA);
+                this.chart.add('hV', '#FF0000', this.track.elev, CHART_LINE);
+                this.chart.add('hS', '#755545', this.track.elevGnd, CHART_AREA);
         }
         this._drawGraph();
     },
@@ -279,8 +278,7 @@ var VisuGps = new Class({
         var point= {};
         shortTrack.push(this.points[0]);
 
-        for (var i = 0; i < this.points.length; i ++){
-            point = this.points[i];
+        this.points.each(function(point, idx) {
             if (scrollBuffer.contains(point) &&
                ((Math.abs(point.lat() - lastLat) > minStepLat) ||
                 (Math.abs(point.lng() - lastLng) > minStepLng))) {
@@ -288,7 +286,7 @@ var VisuGps = new Class({
                 lastLat = point.lat();
                 lastLng = point.lng();
             }
-        }
+        });
 
         return shortTrack;
     },
@@ -361,17 +359,17 @@ var VisuGps = new Class({
             marker: unused.
             point: Mouse click location (GPoint object)
     */
-    _goNear : function(marker, point) {
+    _goNear : function(marker, mouse) {
         var bestIdx = 0;
-        var bestDst = this.points[0].distanceFrom(point);
-        var i, dst;
-        for (i = 0; i < this.track.nbTrackPt; i++) {
-            dst = this.points[i].distanceFrom(point);
+        var bestDst = this.points[0].distanceFrom(mouse);
+        var dst;
+        this.points.each(function(point, idx) {
+            dst = point.distanceFrom(mouse);
             if (dst < bestDst) {
-                bestIdx = i;
+                bestIdx = idx;
                 bestDst = dst;
             }
-        }
+        });
         this.marker.setPoint(this.points[bestIdx]);
         var pos = (1000 * bestIdx / this.track.nbTrackPt).toInt();
         this.chart.setCursor(pos);
@@ -519,7 +517,7 @@ var VisuGps = new Class({
           }
 
           EuclideanProjection.prototype.getWrapWidth=function(zoom) {
-            return Math.pow(2, zoom) * 256;
+              return Math.pow(2, zoom) * 256;
           }
 
           function getDayNumber(day, month, year) {

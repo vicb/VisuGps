@@ -48,8 +48,8 @@ var CanvasChartPainter = new Class({
         el.empty();
 
         var dim = el.getCoordinates();
-        this.w = dim.width;
-        this.h = dim.height;
+        this.w = this.chartw = dim.width;
+        this.h = this.charth = dim.height;
 
         this.canvas = new Element('canvas', {'styles' : { 'width' : this.w,
                                                           'height' : this.h}
@@ -66,8 +66,6 @@ var CanvasChartPainter = new Class({
 
         this.chartx = 0;
         this.charty = 0;
-        this.chartw = this.w;
-        this.charth = this.h;
 
         this.xlen = xlen;
         this.ymin = ymin;
@@ -82,8 +80,9 @@ var CanvasChartPainter = new Class({
         var legend, list;
     
         legend = new Element('div', {'styles' : {'position' : 'absolute',
-                                                 'right': 0}
-                                    }).addClass('legend');
+                                                 'right': 0},
+                                     'class' : 'legend'
+                                    });
     
         list = new Element('ul').injectInside(legend.injectInside(this.el));
     

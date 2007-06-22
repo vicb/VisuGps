@@ -36,7 +36,10 @@ var VisuGps = new Class({
         chartDiv : 'chart',
         loadDiv : 'load',
         elevTileUrl : null,
-        weatherTileUrl : null
+        weatherTileUrl : null,
+        maxSpeed : 80,
+        maxVario : 10,
+        maxElev : 9999
     },
     /*
     Property: initialize
@@ -52,6 +55,9 @@ var VisuGps = new Class({
             loadDiv - an overlay displayed masking the map during initialization
             elevTileURL - list of base URLs for elevation tiles (null = no elevation map)
             weatherTileURL - list of base URLs for weather tiles (null = no weather map)
+            maxSpeed - maximum value for the speed (min = 0)
+            maxVario - maximum absolute value for the GR
+            maxElev - maximum value for the elevation (min = 0)
     */
     initialize : function(options) {
         this.setOptions(options);
@@ -118,6 +124,7 @@ var VisuGps = new Class({
         this.track = track;
 
         var bounds = new GLatLngBounds();
+        var opt = this.options; 
 
         var point = {};
         for (var i = 0; i < this.track.nbTrackPt; i++) {
@@ -128,16 +135,16 @@ var VisuGps = new Class({
 
         // Clamp values
         this.track.speed = this.track.speed.map(function(item, index) {
-            return (item > this.options.maxSpeed)?this.options.maxSpeed:(item < 0)?0:item;
-        }, this);
+            return item.limit(0, opt.maxSpeed);
+        });
 
         this.track.vario = this.track.vario.map(function(item, index) {
-            return (item > this.options.maxVario)?this.options.maxVario:(item < -this.options.maxVario)?-this.options.maxVario:item;
-        }, this);
+            return item.limit(-opt.maxVario, opt.maxVario);
+        });
 
         this.track.elev = this.track.elev.map(function(item, index) {
-            return (item > this.options.maxElev)?this.options.maxElev:(item < 0)?0:item;
-        }, this);
+            return item.limit(0, opt.maxElev);
+        });
 
         // Center the map on the track
         this.map.setCenter(bounds.getCenter(), this.map.getBoundsZoomLevel(bounds));
@@ -156,14 +163,14 @@ var VisuGps = new Class({
         var flightTitle = [this.track.date.day, this.track.date.month, this.track.date.year].join('/');
 
         if ((flightTitle !== '0/0/0') &&
-            ($type(this.options.weatherTileUrl) === 'array')) {
+            ($type(opt.weatherTileUrl) === 'array')) {
             this._createModisMap(this.track.date.day, this.track.date.month, this.track.date.year);
         }
 
         if (this.track.pilot) flightTitle += '<br/>' + this.track.pilot;
         this.titleCtrl.setText(flightTitle);
 
-        if ($type(this.options.elevTileUrl) === 'array') {
+        if ($type(opt.elevTileUrl) === 'array') {
             this._createSrtmMap();
         }
 
@@ -171,7 +178,7 @@ var VisuGps = new Class({
                                                            classSelect: 'vgps-btn-selected'});
 
         // Remove the top most overlay from the map
-        var load = $(this.options.loadDiv);
+        var load = $(opt.loadDiv);
 
         if (load) {
             load.remove();

@@ -62,10 +62,10 @@ var CChart = Chart.extend({
             this.cursorDiv = new Element('div', {'styles' : { 'position' : 'absolute',
                                                               'border-left' : 'dashed 1px #508',
                                                               'width' : 0,
-                                                              'z-index' : 200,
+                                                              'z-index' : 50,
                                                               'visibility' : 'hidden'}
                                                 }
-                                        ).injectInside(document.body)
+                                        ).injectInside($(div))
                                          .addEvents({'mousedown' : this._down.bindWithEvent(this),
                                                      'mousewheel' : this._wheel.bindWithEvent(this)});
         }
@@ -83,7 +83,7 @@ var CChart = Chart.extend({
         this.parent();
         if (this.options.cursor) {
             var dim = this.getCoordinates();
-            this.cursorDiv.setStyles({'top' : dim.top + this.chartDiv.getTop(),
+            this.cursorDiv.setStyles({'top' : dim.top,
                                       'height': dim.height});
         }
     },
@@ -148,7 +148,6 @@ var CChart = Chart.extend({
             Fire the 'onMouseDown' event
     */
     _down: function(event) {
-        event.stop();
         this.fireEvent('onMouseDown', this.position);
     },
     /*
@@ -156,7 +155,6 @@ var CChart = Chart.extend({
             Fire the 'onMouseWheel' event
     */
     _wheel: function(event) {
-        event.stop();
         this.fireEvent('onMouseWheel', [this.position, event.wheel]);
     }
 });

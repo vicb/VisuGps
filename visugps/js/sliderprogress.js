@@ -27,7 +27,7 @@ var SliderProgress = new Class({
         steps: 100,
         color: '#f00',
         border: 1,
-        opacity: 0.5
+        opacity: 0.6
     },
 
     initialize: function(el, options){
@@ -37,10 +37,7 @@ var SliderProgress = new Class({
         opt.border?this.element.setStyle('border-width', opt.border):opt.boder = 0;
         this.capture = false;
         this._mouseMoveWrapper = this._mouseMove.bindWithEvent(this);
-        this.dim = this.element.getCoordinates();
-        this.dim.width -= 2 * opt.border;
-        this.dim.height -= 2 * opt.border;
-        this.dim.top += opt.border;
+        this._updateDim();
         switch(opt.mode){
             case 'horizontal':
                 this.valStyle = 'width';
@@ -58,8 +55,7 @@ var SliderProgress = new Class({
 
         this.bar = new Element('div', {'styles' : {'height' : this.dim.height,
                                                    'width' : this.dim.width,
-                                                   'top' : this.dim.top,
-                                                   'position' : 'absolute',
+                                                   'float' : 'left',
                                                    'background' : opt.color,
                                                    'opacity' : opt.opacity}
                                       }).injectInside(this.element);
@@ -86,11 +82,11 @@ var SliderProgress = new Class({
     },
 
     _mouseDown: function(event){
-        event.stop();
         this._startCapture();
+        this._updateDim();
         this._update(event.page[this.valMod] - this.dim[this.valRef]);
     },
-    
+
     _mouseUp: function(event){
         if (!this.capture) {return;}
         this._endCapture();
@@ -102,29 +98,26 @@ var SliderProgress = new Class({
     },
 
     _mouseMove: function(event){
-        event.stop();
         var position = event.page[this.valMod] - this.dim[this.valRef];
         this._update(position);
         this._checkValue(this._toStep(position));
     },
 
-    _toStep: function(position){
-        return Math.round(position / this.dim[this.valStyle] * this.options.steps);
-    },
-    
     _checkValue: function(value) {
         if (this.value != value){
             this.value = value;
             this._change('onChange', value);
-            return true;
         }
-        return false;
+    },
+
+    _toStep: function(position){
+        return Math.round(position / this.dim[this.valStyle] * this.options.steps);
     },
 
     _toPosition: function(value){
         return this.dim[this.valStyle] * value / this.options.steps;
     },
-    
+
     _update : function(pos){
         this.bar.setStyle(this.valStyle, pos.limit(0, this.max));
     },
@@ -132,15 +125,21 @@ var SliderProgress = new Class({
     _change : function(event, value) {
         this.fireEvent(event, value.limit(0, this.options.steps))
     },
-    
+
     _startCapture : function() {
         this.element.addEvent('mousemove', this._mouseMoveWrapper);
         this.capture = true;
     },
-    
+
     _endCapture : function() {
         this.element.removeEvent('mousemove', this._mouseMoveWrapper);
         this.capture = false;
+    },
+
+    _updateDim : function() {
+        this.dim = this.element.getCoordinates();
+        this.dim.width -= 2 * this.options.border;
+        this.dim.height -= 2 * this.options.border;
     }
 
 });

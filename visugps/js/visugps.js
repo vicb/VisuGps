@@ -33,7 +33,7 @@ Class: VisuGps
 var VisuGps = new Class({
     options: {
         mapDiv : 'map',
-        chartDiv : 'chart',
+        chartDiv : 'vgps-chartcont',
         loadDiv : 'load',
         elevTileUrl : null,
         weatherTileUrl : null,
@@ -64,7 +64,7 @@ var VisuGps = new Class({
         this.map = {};
         this.track = {};
         this.points = [];
-        this.chart = {};
+        this.charts = {};
         this.marker = {};
         this.path = {};
         this.timer = null;
@@ -98,7 +98,7 @@ var VisuGps = new Class({
     */
     clean : function() {
         GUnload();
-        this.chart.clean();
+        this.charts.clean();
         window.removeEvents('resize');
     },
     /*
@@ -174,8 +174,7 @@ var VisuGps = new Class({
             this._createSrtmMap();
         }
 
-        new RadioBtn(['btnelev', 'btnvario', 'btnspeed'], {onSelect: this._setGraph.bind(this),
-                                                           classSelect: 'vgps-btn-selected'});
+        this._initGraph();
 
         // Remove the top most overlay from the map
         var load = $(opt.loadDiv);
@@ -198,34 +197,37 @@ var VisuGps = new Class({
         new Json.Remote('php/vg_proxy.php?track=' + url, {onComplete: this.setTrack.bind(this)}).send();
     },
     /*
-    Property: _setGraph (INTERNAL)
-            Set the data to be represented on the graph
-
-    Arguments:
-            index - unused
-            id - type of graph to display [btnvario, btnspeed, btnelev]
+    Property: _initGraph (INTERNAL)
+            Display series on the graph
     */
-    _setGraph : function(index, id) {
-        if (this.chart.clean) this.chart.clean();
-        delete this.chart;
-        this.chart = new CChart($(this.options.chartDiv),
-                                {onMouseMove : this._showMarker.bind(this),
-                                 onMouseDown : this._showMarkerCenter.bind(this),
-                                 onMouseWheel : this._showMarkerCenterZoom.bind(this)});
-        this.chart.setGridDensity(this.track.nbChartLbl, 4);
-        this.chart.setHorizontalLabels(this.track.time.label);
-        switch (id) {
-            case 'btnvario':
-                this.chart.add('Vz', '#FF0000', this.track.vario, CHART_LINE);
-                this.chart.setLabelPrecision(1);
-                break;
-            case 'btnspeed':
-                this.chart.add('Vx', '#FF0000', this.track.speed, CHART_LINE);
-                break;
-            default:
-                this.chart.add('hV', '#FF0000', this.track.elev, CHART_LINE);
-                this.chart.add('hS', '#755545', this.track.elevGnd, CHART_AREA);
-        }
+    _initGraph : function() {
+        this.charts = new Charts($('vgps-chartcont'),
+                                 {onMouseMove : this._showMarker.bind(this),
+                                  onMouseDown : this._showMarkerCenter.bind(this),
+                                  onMouseWheel : this._showMarkerCenterZoom.bind(this)});
+
+        var chart = this.charts.add('h', 0.9, '#f00');
+
+        chart.setGridDensity(this.track.nbChartLbl, 4);
+        chart.setHorizontalLabels(this.track.time.label);
+
+        chart.add('hV', '#f00', this.track.elev, CHART_LINE);
+        chart.add('hS', '#755545', this.track.elevGnd, CHART_AREA);
+
+        chart = this.charts.add('Vx', 0.2, '#0f0');
+
+        chart.setGridDensity(this.track.nbChartLbl, 4);
+        chart.setHorizontalLabels(this.track.time.label);
+
+        chart.add('Vx', '#0f0', this.track.speed, CHART_LINE);
+
+        chart = this.charts.add('Vz', 0.2, '#00f');
+
+        chart.setGridDensity(this.track.nbChartLbl, 4);
+        chart.setHorizontalLabels(this.track.time.label);
+
+        chart.add('Vz', '#00f', this.track.vario, CHART_LINE);
+
         this._drawGraph();
     },
     /*
@@ -235,7 +237,7 @@ var VisuGps = new Class({
             window is being resized.
     */
     _resize : function() {
-        this.chart.showCursor(false);
+        this.charts.showCursor(false);
         if (this.timer) $clear(this.timer);
         this.timer = this._drawGraph.delay(100, this);
     },
@@ -245,7 +247,7 @@ var VisuGps = new Class({
     */
     _drawGraph : function () {
         if (this.points.length < 5) return;
-        this.chart.draw();
+        this.charts.draw();
     },
     /*
     Property: _displayTrack (INTERNAL)
@@ -253,7 +255,7 @@ var VisuGps = new Class({
     */
     _displayTrack : function() {
         if (this.points.length < 5) return;
-        var path = new GPolyline(this._getReducedTrack(), "#ff0000", 1, 1);
+        var path = new GPolyline(this._getReducedTrack(), "#f00", 1, 1);
         this.map.removeOverlay(this.path);
         this.map.addOverlay(this.path = path);
     },
@@ -379,7 +381,7 @@ var VisuGps = new Class({
         });
         this.marker.setPoint(this.points[bestIdx]);
         var pos = (1000 * bestIdx / this.track.nbTrackPt).toInt();
-        this.chart.setCursor(pos);
+        this.charts.setCursor(pos);
         this._showInfo(pos);
     },
     /*
@@ -434,18 +436,18 @@ var VisuGps = new Class({
 
         InfoControl.prototype = new GControl();
 
+        InfoControl.prototype.selectable = function(){return false;}
         InfoControl.prototype.initialize = function(map) {
-            var div= new Element('div', {'styles' : {'border': '1px inset #555',
-                                                     'padding': '2px',
-                                                     'marginBottom':'1px',
-                                                     'background':'#FFC',
-                                                     'opacity':'0.9',
-                                                     'text-align':'right'}
+            var div = new Element('div', {'styles' : {'border': '1px inset #555',
+                                                      'padding': '2px',
+                                                      'margin':'1px',
+                                                      'background':'#FFC',
+                                                      'opacity':'0.9',
+                                                      'text-align':'right',
+                                                      'font' : '10px Verdana, Arial, sans-serif'}
                                 }).setHTML('<p class="vgps-info"><strong>...iNfO</strong></p>' +
                                            '<p class="vgps-info" id="vgps-nfofield"></p>' +
-                                           '<div><p class="vgps-btn" id="btnelev">h</p>' +
-                                           '<p class="vgps-btn" id="btnvario">Vz</p>' +
-                                           '<p class="vgps-btn" id="btnspeed">Vx</p></div>')
+                                           '</div>')
                                   .injectInside(map.getContainer());
 
             return div;

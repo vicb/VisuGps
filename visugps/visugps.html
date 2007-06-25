@@ -7,9 +7,9 @@
     <style type="text/css">
     v\:* { behavior:url(#default#VML);}
     html, body {width: 100%; height: 100%}
-    body {margin-top: 0px; margin-right: 0px; margin-left: 0px; margin-bottom: 0px}
+    body {margin: 0px;}
     #map {width: 100%; height: 80%}
-    #chart {width: 100%; height: 20%; z-index:100; margin:auto;}
+
     #load {width: 100%; height: 100%; top:0px; left:0px; position:absolute; z-index:3000;
            background: AliceBlue url("img/loading.gif") no-repeat center center;}
 
@@ -17,12 +17,12 @@
 
     <link rel="stylesheet" type="text/css" href="css/visugps.css" />    
     <link rel="stylesheet" type="text/css" href="lib/chart/canvaschart.css" />
-    <script type="text/javascript" src="lib/mootools/mootools.v1.1.js"></script>
-    <script type="text/javascript" src="js/radio.js"></script>
+    <script type="text/javascript" src="lib/mootools/mootools.v1.11.js"></script>
+    <script type="text/javascript" src="js/sliderprogress.js"></script>
     <script type="text/javascript" src="lib/chart/excanvas.js"></script>
     <script type="text/javascript" src="lib/chart/chart.js"></script>
     <script type="text/javascript" src="lib/chart/canvaschartpainter.js"></script>
-    <script type="text/javascript" src="js/cchart.js"></script>
+    <script type="text/javascript" src="js/charts.js"></script>
     <script type="text/javascript" src="js/visugps.js"></script>
 
     <script>
@@ -34,7 +34,7 @@
                            " type='text/javascript'></" + "script>");
         }
 
-        function initMap() {
+        window.addEvent('domready', function() {
             kMap = new VisuGps({elevTileUrl: ['ts0.victorb.fr',
                                               'ts1.victorb.fr',
                                               'ts2.victorb.fr',
@@ -51,7 +51,7 @@
             } else {
                 kMap.downloadTrack(location.href.replace(/[\w\.]*$/, 'test.igc'));
             }
-        }
+        });
 
         function closeMap() {
             kMap.clean();
@@ -59,11 +59,10 @@
     </script>
 
   </head>
-  <body onload="initMap()" onunload="closeMap()">
+  <body onunload="closeMap()">
     <div id="map"></div>
-    <div id="chart" class="chart"></div>
-    <div id="cursor"></div>
+    <div id="vgps-chartcont">
+    </div>
     <div id="load"></div>
-
   </body>
 </html>

@@ -366,13 +366,13 @@ var VisuGps = new Class({
         var bestIdx = 0;
         var bestDst = this.points[0].distanceFrom(mouse);
         var dst;
-        this.points.each(function(point, idx) {
-            dst = point.distanceFrom(mouse);
+        for (var i = this.points.length - 1; i >= 0; i--) {
+            dst = this.points[i].distanceFrom(mouse);
             if (dst < bestDst) {
-                bestIdx = idx;
+                bestIdx = i;
                 bestDst = dst;
             }
-        });
+        }
         this.marker.setPoint(this.points[bestIdx]);
         var pos = (1000 * bestIdx / this.track.nbTrackPt).toInt();
         this.charts.setCursor(pos);

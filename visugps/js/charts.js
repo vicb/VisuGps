@@ -192,8 +192,7 @@ var Charts = new Class({
     */
     clean: function() {
         this.showCursor(false);
-        this.chartDiv.removeEvents();
-        if (this.cursorDiv) this.cursorDiv.removeEvents();
+        this.chartDiv.empty();
     },
     /*
     Property: _move (INTERNAL)

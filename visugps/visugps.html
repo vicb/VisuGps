@@ -34,7 +34,12 @@
                            " type='text/javascript'></" + "script>");
         }
 
+        var kMap = null;
+
+        window.addEvent('unload', cleanMap);
+
         window.addEvent('domready', function() {
+
             kMap = new VisuGps({elevTileUrl: ['ts0.victorb.fr',
                                               'ts1.victorb.fr',
                                               'ts2.victorb.fr',
@@ -53,13 +58,15 @@
             }
         });
 
-        function closeMap() {
+        function cleanMap() {
             kMap.clean();
+            kMap = null;
         }
+
     </script>
 
   </head>
-  <body onunload="closeMap()">
+  <body>
     <div id="map"></div>
     <div id="vgps-chartcont">
     </div>

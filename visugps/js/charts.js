@@ -78,12 +78,10 @@ var Charts = new Class({
 
         this.sliders = new Element('ul', {'styles': {'position' : 'absolute',
                                                      'top' : 0,
-                                                     'right' : 5,
-                                                     'width': '10ex',
-                                                     'margin-top' : 2,
+                                                     'right' : 0,
+                                                     'width': '13ex',                                                     
                                                      'background':'#FFC',
-                                                     'border': '1px solid #333',
-                                                     'padding': 2},
+                                                     'border': '1px solid #333'},
                                           'events': {'mousemove' : stopEvent,
                                                      'mousedown' : stopEvent,
                                                      'mousewheel' : stopEvent}

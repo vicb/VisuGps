@@ -227,12 +227,18 @@ var CanvasChartPainter = new Class({
         if (this.xgrid) {
             for (i = this.xgrid; i < this.chartw; i += this.xgrid) {
                 this.ctx.fillRect(this.chartx + i, this.charty, 1, this.charth-1);
-        }   }
+            }
+        }
         if (this.ygrid) {
             for (i = this.charth - this.ygrid; i > 0; i -= this.ygrid) {
                 this.ctx.fillRect(this.chartx + 1, this.charty + i, this.chartw, 1);
-                }
             }
+            if ((this.ymin * this.ymax) < 0) {
+                this.ctx.fillStyle = '#FFA07A';
+                var y0 = this.ymax * this.charth / (this.ymax - this.ymin);
+                this.ctx.fillRect(this.chartx + 1, this.charty + y0, this.chartw, 1);
+            }
+        }
     },
 
     drawArea : function(color, values) {

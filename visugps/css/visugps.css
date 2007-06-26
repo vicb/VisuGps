@@ -41,18 +41,21 @@
  height: 2ex;
  width: 6ex;
  border: 0px solid #555;
- margin: 1px;
+ margin: 2px;
+ margin-right: 3px;
  float: right;
- text-align:left;
 }
 
 .vgps-legend {
  float: right;
  font-weight: bold;
  cursor: move;
+ width: 3ex;
+ margin-right: 1ex;
 }
 
 ul, li {
+ text-align:left;
  font:10px Verdana, Arial, sans-serif;
  list-style:none;
  padding:0;

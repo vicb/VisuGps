@@ -70,7 +70,7 @@ var VisuGps = new Class({
         this.timer = null;
         this.infoCtrl = {};
         this.titleCtrl = {};
-        this.nfo;
+        this.nfo = null;
 
         if (GBrowserIsCompatible()) {
             var map = $(this.options.mapDiv);
@@ -98,7 +98,7 @@ var VisuGps = new Class({
     */
     clean : function() {
         GUnload();
-        this.charts.clean();
+        if (this.charts) this.charts.clean();
         window.removeEvents('resize');
     },
     /*
@@ -207,25 +207,20 @@ var VisuGps = new Class({
                                   onMouseWheel : this._showMarkerCenterZoom.bind(this)});
 
         var chart = this.charts.add('h', 0.9, '#f00');
-
         chart.setGridDensity(this.track.nbChartLbl, 4);
         chart.setHorizontalLabels(this.track.time.label);
-
         chart.add('hV', '#f00', this.track.elev, CHART_LINE);
         chart.add('hS', '#755545', this.track.elevGnd, CHART_AREA);
 
         chart = this.charts.add('Vx', 0.2, '#0f0');
-
         chart.setGridDensity(this.track.nbChartLbl, 4);
         chart.setHorizontalLabels(this.track.time.label);
-
         chart.add('Vx', '#0f0', this.track.speed, CHART_LINE);
 
         chart = this.charts.add('Vz', 0.2, '#00f');
-
+        chart.setLabelPrecision(1);
         chart.setGridDensity(this.track.nbChartLbl, 4);
         chart.setHorizontalLabels(this.track.time.label);
-
         chart.add('Vz', '#00f', this.track.vario, CHART_LINE);
 
         this._drawGraph();

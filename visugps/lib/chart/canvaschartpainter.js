@@ -86,10 +86,10 @@ var CanvasChartPainter = new Class({
     
         list = new Element('ul').injectInside(legend.injectInside(this.el));
     
-        series.each(function(item, idx) {
+        series.each(function(serie) {
             new Element('span', {'styles' : {'color' : 'black'}})
-                .appendText(item.label)
-                .injectInside(new Element('li', {'styles': {'color' : item.color}})
+                .appendText(serie.label)
+                .injectInside(new Element('li', {'styles': {'color' : serie.color}})
                                   .injectInside(list));
         });
     
@@ -152,7 +152,7 @@ var CanvasChartPainter = new Class({
         /* Position labels on the axis */
         var n = this.range / this.charth;
         var yoffset = this.ymin / n;
-        items.each(function(item, idx) {
+        items.each(function(item) {
             label = item[1];
             pos = item[0];
             if (pos == this.ymin) { 

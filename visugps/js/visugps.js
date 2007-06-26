@@ -134,17 +134,15 @@ var VisuGps = new Class({
         }
 
         // Clamp values
-        this.track.speed = this.track.speed.map(function(item, index) {
-            return item.limit(0, opt.maxSpeed);
-        });
-
-        this.track.vario = this.track.vario.map(function(item, index) {
-            return item.limit(-opt.maxVario, opt.maxVario);
-        });
-
-        this.track.elev = this.track.elev.map(function(item, index) {
-            return item.limit(0, opt.maxElev);
-        });
+        var maxSpeed = opt.maxSpeed;
+        var maxVario = opt.maxVario;
+        var minVario = -maxVario;
+        var maxElev = opt.maxElev;
+        for (i = this.track.nbChartPt - 1; i >= 0; i--) {
+            this.track.speed[i] = this.track.speed[i].limit(0, maxSpeed);
+            this.track.vario[i] = this.track.vario[i].limit(minVario, maxVario);
+            this.track.elev[i] = this.track.elev[i].limit(0, maxElev);
+        }
 
         // Center the map on the track
         this.map.setCenter(bounds.getCenter(), this.map.getBoundsZoomLevel(bounds));
@@ -280,17 +278,18 @@ var VisuGps = new Class({
         var lastLng = this.points[0].lng();
         var shortTrack = [];
         var point= {};
-        shortTrack.push(this.points[0]);
+        shortTrack.push(this.points[this.points.length - 1]);
 
-        this.points.each(function(point, idx) {
+        for (var i = this.points.length - 1; i >= 0; i--) {
+            point = this.points[i];
             if (scrollBuffer.contains(point) &&
                ((Math.abs(point.lat() - lastLat) > minStepLat) ||
                 (Math.abs(point.lng() - lastLng) > minStepLng))) {
-                shortTrack.push(point);
+                shortTrack.unshift(point);
                 lastLat = point.lat();
                 lastLng = point.lng();
             }
-        });
+        }
 
         return shortTrack;
     },

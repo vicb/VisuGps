@@ -161,8 +161,8 @@ var Chart = new Class({
         var opt = this.options;
 
         /* Separate stacked series (as they need processing). */
-        this._series.each(function(item, idx) {
-            if (item.flags & CHART_STACKED) {series.push(item);}
+        this._series.each(function(serie) {
+            if (serie.flags & CHART_STACKED) series.push(serie);
         });
 
         /* Calculate values for stacked series */
@@ -177,18 +177,19 @@ var Chart = new Class({
         }   }
 
         /* Append non-stacked series to list */
-        this._series.each(function(item, idx) {
-            if (!(item.flags & CHART_STACKED)) { series.push(item); }
+        this._series.each(function(serie) {
+            if (!(serie.flags & CHART_STACKED)) series.push(serie);
         });
 
         /* Determine maximum number of values, ymin and ymax */
         ymin = ymax = series[0].values[0];
-        series.each(function(item, idx) {
-            xlen = Math.max(xlen, item.values.length);
-            item.values.each(function(item, idx) {
-                ymin = Math.min(ymin, item);
-                ymax = Math.max(ymax, item);
-            })
+        series.each(function(serie) {
+            xlen = Math.max(xlen, serie.values.length);
+            for (i = serie.values.length - 1; i >= 0; i--) {
+                o = serie.values[i];
+                ymin = Math.min(ymin, o);
+                ymax = Math.max(ymax, o);
+            }
         });
         if (ymin == ymax) {
             ymin -= 1;
@@ -238,17 +239,17 @@ var Chart = new Class({
         painter.drawGrid();
 
         /* Draw series */
-        series.each(function(item, idx) {
-            switch (item.flags & ~CHART_STACKED) {
+        series.each(function(serie) {
+            switch (serie.flags & ~CHART_STACKED) {
                 case CHART_LINE:
-                    painter.drawLine(item.color, item.values);
+                    painter.drawLine(serie.color, serie.values);
                     break;
                 case CHART_AREA:
-                    painter.drawArea(item.color, item.values);
+                    painter.drawArea(serie.color, serie.values);
                     break;
                 case CHART_BAR:
-                    painter.drawBars(item.color, item.values,
-                                     xlen - 1, item.offset,
+                    painter.drawBars(serie.color, serie.values,
+                                     xlen - 1, serie.offset,
                                      opt.barWidth);
                     break;
                 default: ;

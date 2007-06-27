@@ -109,7 +109,7 @@ var CanvasChartPainter = new Class({
     
         /* Calculate step size and rounding precision */
         var multiplier = Math.pow(10, precision);
-        var step       = this.range / (ygd - 1);
+        var step = this.range / (ygd - 1);
     
         /* Create container */
         var axis = new Element('div', {'styles' : {'position' : 'absolute',
@@ -124,7 +124,7 @@ var CanvasChartPainter = new Class({
         var items = [];
         for (n = 0, i = this.ymax; (i > this.ymin) && (n < ygd - 1); i -= step, n++) {
             item = new Element('span')
-                       .appendText(parseInt(i * multiplier) / multiplier)
+                       .setText(parseInt(i * multiplier) / multiplier)
                        .injectInside(axis);
             items.push([i, item]);
             w = Math.max(w, item.offsetWidth);
@@ -132,23 +132,23 @@ var CanvasChartPainter = new Class({
     
         /* Draw last label and point (lower left corner of chart) */
         item = new Element('span')
-                   .appendText(this.ymin)
+                   .setText(this.ymin)
                    .injectInside(axis);
         items.push([this.ymin, item]);
         w = Math.max(w, item.offsetWidth);
     
-        /* Set width of container to width of widest label */
-        axis.setStyle('width' ,w);
-    
         /* Recalculate chart width and position based on labels and legend */
         var lblWidth = yLblIn?5:w + 5;
-        var lblHeight = xLblIn?Math.max(item.offsetHeight / 2,5):item.offsetHeight + 5;
+        var lblHeight = xLblIn?Math.max(item.offsetHeight / 2, 5):item.offsetHeight + 5;
         this.chartx = lblWidth;
         this.charty = item.offsetHeight / 2;
         this.charth = this.h - (lblHeight + this.charty);
         this.chartw = this.w - ((this.legend?this.legend.offsetWidth:0) + 5 + lblWidth);
         this.calc(this.chartw, this.charth, this.xlen, this.ymin, this.ymax, this.xgd, this.ygd);
-    
+
+        /* Set width of container to width of widest label */
+        axis.setStyle('width', w + 10);
+
         /* Position labels on the axis */
         var n = this.range / this.charth;
         var yoffset = this.ymin / n;
@@ -165,11 +165,7 @@ var CanvasChartPainter = new Class({
             label.setStyles({'position' : 'absolute',
                              'top' : ty,
                              'background' : 'white'});
-            if (yLblIn) {
-                label.setStyle('left', 0);
-            } else {
-                label.setStyle('right', 0);
-            }
+            label.setStyle(yLblIn?'left':'right', 0);
         }, this);
     },
 
@@ -194,7 +190,7 @@ var CanvasChartPainter = new Class({
         this.ctx.fillStyle = 'black';
         for (i = 0; i < xgd; i++) {
             item = new Element('span')
-                       .appendText(labels[i])
+                       .setText(labels[i])
                        .injectInside(axis);
             x = this.chartx + (n * i);
             tx = x - (item.offsetWidth / 2);

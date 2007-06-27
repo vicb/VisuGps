@@ -73,8 +73,6 @@ var Chart = new Class({
         this._cont = $(el);
         this._bar = 0;
         this._series = [];
-        this._yMin = 0;
-        this._yMax = 0;
         this._chartCoordinates = {};
     },
     /*
@@ -156,8 +154,8 @@ var Chart = new Class({
         /* Initialize */
         var series = [];
         var xlen = 0;
-        var ymin = $pick(this._yMin, this._series[0].values[0]);
-        var ymax = $pick(this._yMax, this._series[0].values[0]);
+        var ymin = this._series[0].values[0];
+        var ymax = this._series[0].values[0];
         var opt = this.options;
 
         /* Separate stacked series (as they need processing). */
@@ -182,7 +180,6 @@ var Chart = new Class({
         });
 
         /* Determine maximum number of values, ymin and ymax */
-        ymin = ymax = series[0].values[0];
         series.each(function(serie) {
             xlen = Math.max(xlen, serie.values.length);
             for (i = serie.values.length - 1; i >= 0; i--) {

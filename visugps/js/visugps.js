@@ -90,7 +90,6 @@ var VisuGps = new Class({
             this.map.addControl(this.infoCtrl);
             this._createTitleControl('VisuGps');
             this.map.addControl(this.titleCtrl);
-            new GKeyboardHandler(this.map);
 
             this.nfo = $('vgps-nfofield');
             $('vgps-anim').addEvent('click', this._toggleAnim.bind(this));

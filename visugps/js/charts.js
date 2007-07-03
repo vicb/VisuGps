@@ -35,6 +35,7 @@ Class: Charts
 var Charts = new Class({
     options: {
         cursor : true,
+        keySupport : true,
         onMouseMove: Class.empty,
         onMouseDown: Class.empty,
         onMouseWheel: Class.empty
@@ -49,6 +50,7 @@ var Charts = new Class({
 
     Options:
             cursor - true to show the cursor
+            keySupport - true to enable key (left/right) support
             onMouseMove - event fired on mouse move
             onMouseDown - event fired on left click
             onMouseWheel - event fire on mouse wheel change
@@ -58,6 +60,9 @@ var Charts = new Class({
         this.chartDiv = $(div);
         this.charts = [];
         this.sortable = null;
+        this.curPos = 0;
+        this.position = 0;
+        
         if (this.options.cursor) {
             this.cursorDiv = new Element('div', {'styles' : { 'position' : 'absolute',
                                                               'border-left' : 'dashed 1px #508',
@@ -69,10 +74,12 @@ var Charts = new Class({
                                          .addEvents({'mousedown' : this._down.bindWithEvent(this),
                                                      'mousewheel' : this._wheel.bindWithEvent(this)});
         }
-        this.position = 0;
+        
         $(div).addEvents({'mousemove' : this._move.bindWithEvent(this),
                           'mousedown' : this._down.bindWithEvent(this),
                           'mousewheel' : this._wheel.bindWithEvent(this)});
+
+        if (this.options.keySupport) document.addEvent('keydown', this._move.bindWithEvent(this));
 
         function stopEvent(event) {(new Event(event)).stop()};
 
@@ -143,7 +150,7 @@ var Charts = new Class({
                                       'styles' : {'opacity' : opacity},
                                       'id' : 'div-' + id})
                              .injectTop(this.chartDiv);
-
+                             
         var chart = new Chart(div, $pick(options, {}));
 
         this.charts.push(chart);
@@ -167,6 +174,7 @@ var Charts = new Class({
     setCursor: function(pos) {
         if (this.options.cursor && this.charts.length) {
             var dim = this.charts[0].getCoordinates();
+            this.position = pos = pos.limit(0, 1000);
             var left = dim.left + this.chartDiv.getLeft();
             var x = (pos * dim.width / 1000) + left;
             this.cursorDiv.setStyle('left', x);
@@ -204,14 +212,24 @@ var Charts = new Class({
     _move: function(event) {
         if (this.charts.length) {
             event.stop();
-            var x = event.page.x;
-            var dim = this.charts[0].getCoordinates();
-            var left = dim.left + this.chartDiv.getLeft();
-            x = x < left?left:x;
-            x = x > (left + dim.width)?left + dim.width:x;
-            this.position = (1000 * (x - left) / dim.width).toInt();
-            this.setCursor(this.position);
-            this.fireEvent('onMouseMove', this.position);
+            var pos = this.position;
+            if (event.type.contains('key')) {
+                var offset = 0;
+                if (event.key === 'left') offset = -1;
+                if (event.key === 'right') offset = 1;
+                offset = event.shift?10 * offset:offset;
+                pos += offset;
+            } else {
+                var x = event.page.x;
+                var dim = this.charts[0].getCoordinates();
+                var left = dim.left + this.chartDiv.getLeft();
+                x = x < left?left:x;
+                x = x > (left + dim.width)?left + dim.width:x;
+                pos = (1000 * (x - left) / dim.width).toInt();
+            }
+            pos = pos.limit(0, 1000);
+            this.setCursor(pos);
+            this.fireEvent('onMouseMove', pos);
         }
     },
     /*

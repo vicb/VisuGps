@@ -92,10 +92,6 @@ var VisuGps = new Class({
             this.map.addControl(this.titleCtrl);
 
             this.nfo = $('vgps-nfofield');
-            $('vgps-anim').addEvent('click', this._toggleAnim.bind(this));
-            new SliderProgress('vgps-play', {'color': '#FF850C',
-                                             'onChange' : this._setAnimDelay.bind(this)}).set(50);
-
         }
     },
     /*
@@ -132,7 +128,10 @@ var VisuGps = new Class({
         var load = $(opt.loadDiv);
         
         if ($defined(track.error)) {
-            if (load) load.setHTML(track.error);
+            if (load) {
+                load.setHTML(track.error);
+                new Fx.Styles(load, {transition: Fx.Transitions.linear}).start({'opacity': 0.9, 'background-color': '#ff2222'});
+            }
             return;
         }
 
@@ -188,7 +187,7 @@ var VisuGps = new Class({
 
         // Remove the top most overlay from the map
         if (load) {
-            load.remove();
+            load.effect('opacity', {onComplete: function(){load.remove();}}).start(1, 0);
         }
     },
     /*
@@ -487,6 +486,7 @@ var VisuGps = new Class({
     */
     _createInfoControl : function() {
         function InfoControl() {}
+        var me = this;
 
         InfoControl.prototype = new GControl();
 
@@ -505,9 +505,13 @@ var VisuGps = new Class({
                                            '</div>')
                                   .injectInside(map.getContainer());
 
-            $('vgps-play').addEvent('click', function(event) {
-                                                 event = new Event(event);
-                                                 event.stop();});
+            // Add the animation control
+            $('vgps-play').addEvent('click', function(event) {(new Event(event)).stop();});
+
+            $('vgps-anim').addEvent('click', me._toggleAnim.bind(me));
+            new SliderProgress('vgps-play', {'color': '#FF850C',
+                                             'onChange' : me._setAnimDelay.bind(me)}).set(50);
+
 
             return div;
         }

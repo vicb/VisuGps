@@ -183,6 +183,12 @@ var VisuGps = new Class({
             this._createSrtmMap();
         }
 
+        // Increase info window size to fit the anim control
+        var h = $('vgps-anim').getParent().getCoordinates().height +
+                $('vgps-anim').getCoordinates().height;
+
+        $('vgps-anim').getParent().setStyle('height', h);
+
         this._initGraph();
 
         // Remove the top most overlay from the map

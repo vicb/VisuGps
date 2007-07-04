@@ -10,8 +10,10 @@
 }
 
 #vgps-anim {
- position: relative;
+ position: absolute;
  margin: 2px 0px;
+ bottom: 2px;
+ right: 2px;
  height: 2ex;
  width: 10ex;
  background-image: url("../img/play.gif");

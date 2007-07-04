@@ -128,9 +128,15 @@ var VisuGps = new Class({
     */
     setTrack : function(track) {
         this.track = track;
+        var opt = this.options;
+        var load = $(opt.loadDiv);
+        
+        if ($defined(track.error)) {
+            if (load) load.setHTML(track.error);
+            return;
+        }
 
         var bounds = new GLatLngBounds();
-        var opt = this.options; 
 
         var point = {};
         for (var i = 0; i < this.track.nbTrackPt; i++) {
@@ -181,8 +187,6 @@ var VisuGps = new Class({
         this._initGraph();
 
         // Remove the top most overlay from the map
-        var load = $(opt.loadDiv);
-
         if (load) {
             load.remove();
         }

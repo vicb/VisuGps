@@ -211,15 +211,16 @@ var Charts = new Class({
     */
     _move: function(event) {
         if (this.charts.length) {
-            event.stop();
             var pos = this.position;
             if (event.type.contains('key')) {
                 var offset = 0;
                 if (event.key === 'left') offset = -1;
                 if (event.key === 'right') offset = 1;
+                if (offset != 0) event.stop();
                 offset = event.shift?10 * offset:offset;
                 pos += offset;
             } else {
+                event.stop();
                 var x = event.page.x;
                 var dim = this.charts[0].getCoordinates();
                 var left = dim.left + this.chartDiv.getLeft();

@@ -72,46 +72,51 @@ Copyright (c) 2007 Victor Berchet, <http://www.victorb.fr>
             if ($nbPts < 5) {
                 $nbPts = ParseNmea($file, $track);
             }
-    
             if ($nbPts < 5) {
-                return array('error' => 'Unsupported format');
+                $nbPts = ParseOzi($file, $track);
             }
-    
-            // Generate the time in second
-            for ($i = 0; $i < count($track['time']['hour']); $i++) {
-                $track['timeSec'][$i] = $track['time']['hour'][$i] * 3600 + 
-                                        $track['time']['min'][$i] * 60 +
-                                        $track['time']['sec'][$i];                                           
+
+            if ($nbPts < 5) {
+                $jsTrack['error'] = 'Unsupported track format!';
+            } else {
+                // Generate the time in second
+                for ($i = 0; $i < count($track['time']['hour']); $i++) {
+                    $track['timeSec'][$i] = $track['time']['hour'][$i] * 3600 +
+                                            $track['time']['min'][$i] * 60 +
+                                            $track['time']['sec'][$i];
+                }
+
+                // Generate CHART_NBLBL labels
+                for ($i = 0, $idx = 0, $step = ($nbPts - 1) / (CHART_NBLBL - 1); $i < CHART_NBLBL; $i++, $idx += $step) {
+                    $jsTrack['time']['label'][$i] = $track['time']['hour'][$idx] . "h" . $track['time']['min'][$idx];
+                }
+
+                // Change the number of points to CHART_NBPTS
+                for ($i = 0, $idx = 0, $step = ($nbPts - 1) / (CHART_NBPTS - 1); $i < CHART_NBPTS; $i++, $idx += $step) {
+                    $jsTrack['elev'][$i] = $track['elev'][$idx];
+                    $jsTrack['time']['hour'][$i] = $track['time']['hour'][$idx];
+                    $jsTrack['time']['min'][$i] = $track['time']['min'][$idx];
+                    $jsTrack['time']['sec'][$i] = $track['time']['sec'][$idx];
+                }
+
+                $jsTrack['lat'] = $track['lat'];
+                $jsTrack['lon'] = $track['lon'];
+
+                $jsTrack['elevGnd'] = GetElevGnd($track, CHART_NBPTS);
+                $jsTrack['speed'] = GetSpeed($track, CHART_NBPTS);
+                $jsTrack['vario'] = GetVario($track, CHART_NBPTS);
+
+                $jsTrack['nbTrackPt'] = $track['nbPt'];
+                $jsTrack['nbChartPt'] = CHART_NBPTS;
+                $jsTrack['nbChartLbl'] = CHART_NBLBL;
+                $jsTrack['date'] = $track['date'];
+                $jsTrack['pilot'] = $track['pilot'];
             }
-            
-            // Generate CHART_NBLBL labels
-            for ($i = 0, $idx = 0, $step = ($nbPts - 1) / (CHART_NBLBL - 1); $i < CHART_NBLBL; $i++, $idx += $step) {
-                $jsTrack['time']['label'][$i] = $track['time']['hour'][$idx] . "h" . $track['time']['min'][$idx];
-            }
-    
-            // Change the number of points to CHART_NBPTS
-            for ($i = 0, $idx = 0, $step = ($nbPts - 1) / (CHART_NBPTS - 1); $i < CHART_NBPTS; $i++, $idx += $step) {
-                $jsTrack['elev'][$i] = $track['elev'][$idx];
-                $jsTrack['time']['hour'][$i] = $track['time']['hour'][$idx];
-                $jsTrack['time']['min'][$i] = $track['time']['min'][$idx];
-                $jsTrack['time']['sec'][$i] = $track['time']['sec'][$idx];                                
-            }
-            
-            $jsTrack['lat'] = $track['lat'];
-            $jsTrack['lon'] = $track['lon'];
-    
-            $jsTrack['elevGnd'] = GetElevGnd($track, CHART_NBPTS);
-            $jsTrack['speed'] = GetSpeed($track, CHART_NBPTS);
-            $jsTrack['vario'] = GetVario($track, CHART_NBPTS);
-    
-            $jsTrack['nbTrackPt'] = $track['nbPt'];
-            $jsTrack['nbChartPt'] = CHART_NBPTS;
-            $jsTrack['nbChartLbl'] = CHART_NBLBL;
-            $jsTrack['date'] = $track['date'];
-            $jsTrack['pilot'] = $track['pilot'];
 
             $data = @json_encode($jsTrack);
-            $cache->set($data, $url);
+            if (!isset($jsTrack['error'])) {
+                $cache->set($data, $url);
+            }
 
             return $data;
         }    

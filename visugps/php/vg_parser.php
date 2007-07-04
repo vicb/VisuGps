@@ -73,6 +73,52 @@ Credits:
         return $nbPts;
     }
 
+    function ParseOzi($trackFile, &$trackData)
+    {
+        // Regexp fields
+        define('OZI_lat', 1);
+        define('OZI_lon', 2);
+        define('OZI_elev', 3);
+        define('OZI_date', 4);
+
+        if (!preg_match('/OziExplorer/i', $trackFile, $m)) {
+            return 0;
+        }
+
+        preg_match_all('/^\s+([-\d\.]+)[,\s]+([-\d\.]+)[,\s]+[01][,\s]+([-\d\.]+)[,\s]+([\d\.]+).*$/im',
+                       $trackFile, $m);
+
+        $nbPts = $trackData['nbPt'] = count($m[0]);
+
+        if ($nbPts > 5) {
+            // Extract latitude, longitude, altitudes and time in second
+            for ($i = 0; $i < $nbPts; $i++) {
+                $trackData['lat'][$i] = floatval($m[OZI_lat][$i]);
+                $trackData['lon'][$i] = floatval($m[OZI_lon][$i]);
+                $trackData['elev'][$i] = max(intval($m[OZI_elev][$i] * 0.3048), 0);
+
+                $time = floatval($m[OZI_date][$i]) - intval($m[OZI_date][$i]);
+                $time = $time * 24;
+                $hour = intval($time);
+                $time = ($time - $hour) * 60;
+                $min = intval($time);
+                $time = ($time - $min) * 60;
+                $sec = intval($time);
+                $trackData['time']['hour'][$i] = $hour;
+                $trackData['time']['min'][$i] = $min;
+                $trackData['time']['sec'][$i] = $sec;
+            }
+        $date = date_create();
+        date_date_set($date, 1980, 1, 1);
+        date_modify($date, '+' . (intval($m[OZI_date][0]) - 29221) . ' days');
+        $trackData['date']['day'] = intval(date_format($date, 'j'));
+        $trackData['date']['month'] = intval(date_format($date, 'n'));
+        $trackData['date']['year'] = intval(date_format($date, 'Y'));
+
+        }
+        return $nbPts;
+    }
+
     function ParseTrk($trackFile, &$trackData)
     {
         // Regexp fields

@@ -25,12 +25,25 @@ Copyright (c) 2007 Victor Berchet, <http://www.victorb.fr>
 
 */
  
+/*
+Class: Log
+        Simple logging class
+*/
 class Log {
     const maxSize = 1000000;
 
     private $handle = NULL;
     private $on;
 
+    /*
+    Method: __construct
+            Class constructor
+    
+    Arguments:
+            name - name of the log file
+            on - true to enable logging (default to false)
+    
+    */
     public function __construct($name = "log", $on = false) {
         $this->on = $on;
         if ($this->on) {
@@ -44,6 +57,13 @@ class Log {
         }
     }
 
+    /*
+    Method: msg
+            Log a message
+
+    Arguments:
+            msg - message
+    */
     public function msg($msg) {
         if ($this->on && $this->handle && flock($this->handle, LOCK_EX)) {
             fputs($this->handle, $msg . "\n");
@@ -51,6 +71,10 @@ class Log {
         }
     }
 
+    /*
+    Method: __destruct
+            Class destructor
+    */
     public function __destruct() {
         if ($this->on) fclose($this->handle);
     }

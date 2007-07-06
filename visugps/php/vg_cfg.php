@@ -24,8 +24,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 Copyright (c) 2007 Victor Berchet, <http://www.victorb.fr>
 */
 
+    // Development version (cache off, easier debugging)
+    define('VISUGPS_DEV', false);
+
     // Google maps tile size (pixels)
     define('G_TILE_SIZE', 256);
+    
+    // PHP folder to PJT folder
+    define('PJT_FOLDER_FROM_PHP', '../');
     
     // SRTM tile size (pixels)
     define('SRTM_TILE_SIZE_PX', 6000);
@@ -34,9 +40,14 @@ Copyright (c) 2007 Victor Berchet, <http://www.victorb.fr>
     // Path to SRTM files
     define('SRTM_PATH', '../../../data/srtm/');
 
-    // CHACHE base folder
+    // CACHE settings
     define('CACHE_BASE_FOLDER', '../cache/');
 
+    if (VISUGPS_DEV) {
+        define('CACHE_ENABLED', false);
+    } else {
+        define('CACHE_ENABLED', true);
+    }
 
     // SRTM tiles cache folder
     define('CACHE_FOLDER_SRTM', 'cache_srtm/');

@@ -90,8 +90,8 @@ class Cache {
             true if the data is found in cache, false otherwise                                  
     */
     public function get(&$data, $id) {
-        if (isset($_GET["nocache"])) {
-            $this->log->msg("Cache disabled [nocache option]");
+        if (!CACHE_ENABLED) {
+            $this->log->msg("GET: Cache disabled");
             return false;
         }
 
@@ -145,6 +145,10 @@ class Cache {
             id - uid of the data                                
     */
     public function set($data, $id) {
+        if (!CACHE_ENABLED) {
+            $this->log->msg("SET: Cache disabled");
+            return;
+        }
 
         $this->log->msg("Cache set id = $id");
 

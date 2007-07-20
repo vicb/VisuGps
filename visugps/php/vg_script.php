@@ -78,6 +78,8 @@ if (VISUGPS_DEV) {
         $script = $script . file_get_contents(PJT_FOLDER_FROM_PHP . $file) . "\n";
     }
 } else {
+    // Create the cache folder when it does not exist
+    if (!is_dir(CACHE_BASE_FOLDER)) mkdir(CACHE_BASE_FOLDER, 0700, true);
     // Check if the cached version is older than any of the source files
     $cacheTime = getFileTime(SCRIPT_FILE);
     $outdated = false;

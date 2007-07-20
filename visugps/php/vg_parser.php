@@ -54,17 +54,17 @@ function ParseIgc($trackFile, &$trackData)
     define('IGC_elevP', 10);
     define('IGC_elevG', 11);
 
-    if (preg_match('/^HFDTE(\d{2})(\d{2})(\d{2})/mi', $trackFile, $m)) {
+    if (preg_match('/HFDTE(\d{2})(\d{2})(\d{2})/mi', $trackFile, $m)) {
         $trackData['date']['day'] = intval($m[1]);
         $trackData['date']['month'] = intval($m[2]);
         $trackData['date']['year'] = intval($m[3]) + (($m[3] > 60)?1900:2000);
     }
 
-    if (preg_match('/^HFPLTPILOT:([\w ]+)/mi', $trackFile, $m)) {
+    if (preg_match('/HFPLTPILOT:([\w ]+)/mi', $trackFile, $m)) {
         $trackData['pilot'] = trim($m[1]);
     }
 
-    preg_match_all('/^B(\d{2})(\d{2})(\d{2})(\d{2})(\d{5})(\w)(\d{3})(\d{5})(\w).(\d{5})(\d{5})/im',
+    preg_match_all('/B(\d{2})(\d{2})(\d{2})(\d{2})(\d{5})(\w)(\d{3})(\d{5})(\w).(\d{5})(\d{5})/im',
                    $trackFile, $m);
 
     $nbPts = $trackData['nbPt'] = count($m[0]);

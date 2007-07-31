@@ -60,8 +60,8 @@ function ParseIgc($trackFile, &$trackData)
         $trackData['date']['year'] = intval($m[3]) + (($m[3] > 60)?1900:2000);
     }
 
-    if (preg_match('/HFPLTPILOT:([\w ]+)/mi', $trackFile, $m)) {
-        $trackData['pilot'] = trim($m[1]);
+    if (preg_match('/HFPLTPILOT:([\x20-\x7e\x80-\xfe]+)/mi', $trackFile, $m)) {
+        $trackData['pilot'] = htmlentities(trim($m[1]));
     }
 
     preg_match_all('/B(\d{2})(\d{2})(\d{2})(\d{2})(\d{5})(\w)(\d{3})(\d{5})(\w).(\d{5})(\d{5})/im',

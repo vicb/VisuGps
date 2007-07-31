@@ -73,7 +73,13 @@ var VisuGps = new Class({
         this.nfo = null;
         this.animTimer = null;
         this.animPos = 0;
-        this.animDelay = {'min':1, 'max':120, 'val': 60}
+        this.animDelay = {'min':1, 'max':120, 'val': 60};
+        this.mapTitle = '';
+
+        this.distSrc = {};
+        this.distState = 0;
+        this.distLine = {};
+        this.distEvt = null;
 
         if (GBrowserIsCompatible()) {
             var map = $(this.options.mapDiv);
@@ -167,17 +173,18 @@ var VisuGps = new Class({
         // Add event handlers
         GEvent.addListener(this.map, 'moveend', this._displayTrack.bind(this));
         GEvent.addListener(this.map, 'click', this._goNear.bind(this));
+        GEvent.addListener(this.map, 'singlerightclick', this._rightclick.bind(this));
         window.addEvent('resize', this._resize.bind(this));
 
-        var flightTitle = [this.track.date.day, this.track.date.month, this.track.date.year].join('/');
+        this.mapTitle = [this.track.date.day, this.track.date.month, this.track.date.year].join('/');
 
-        if ((flightTitle !== '0/0/0') &&
+        if ((this.mapTitle !== '0/0/0') &&
             ($type(opt.weatherTileUrl) === 'array')) {
             this._createModisMap(this.track.date.day, this.track.date.month, this.track.date.year);
         }
 
-        if (this.track.pilot) flightTitle += '<br/>' + this.track.pilot;
-        this.titleCtrl.setText(flightTitle);
+        if (this.track.pilot) this.mapTitle += '<br/>' + this.track.pilot;
+        this.titleCtrl.setText(this.mapTitle);
 
         if ($type(opt.elevTileUrl) === 'array') {
             this._createSrtmMap();
@@ -226,6 +233,59 @@ var VisuGps = new Class({
             var playGif = $('vgps-anim').getStyle('background-image').replace(/pause/, 'play');
             $('vgps-anim').setStyle('background-image', playGif);
         }
+    },
+    /*
+    Property: _rightclick (INTERNAL)
+            Handle right click to measure distance on the map
+            
+    Arguments:
+            points: coordinate (px) of the clicked point.
+            
+    Right clicks:
+        1: Set starting point - start displaying distance from it
+        2: Set ending point - display start - end distance
+        3: Return to normal state (no more distance measurment)
+    */
+    _rightclick : function(point) {
+        this.distState++;
+        switch (this.distState) {
+            case 1:
+                this.distSrc = this.map.fromContainerPixelToLatLng(point);
+                this.distLine = null;
+                this.distEvt = GEvent.addListener(this.map, 'mousemove', this._mousemove.bind(this));
+                break;
+            case 2:
+                GEvent.removeListener(this.distEvt);
+                break;
+            case 3:
+                if (this.distLine) this.map.removeOverlay(this.distLine);
+                this.titleCtrl.setText(this.mapTitle);
+            default:
+                this.distState = 0;
+        }
+    },
+    /*
+    Property: _mousemove (INTERNAL)
+            Draw the distance line and display the distance when required
+
+    Arguments:
+            points: coordinate (lat, lng) of the point.
+    */
+    _mousemove : function(point) {
+        if (this.distLine) {
+            this.map.removeOverlay(this.distLine);
+            this.distLine = null;
+        }
+        this.distLine = new GPolyline([this.distSrc, point], '#ff0', 4, 0.6);
+        this.map.addOverlay(this.distLine);
+        var dist = this.distSrc.distanceFrom(point);
+        if (dist < 1000) {
+            dist = (Math.round(dist * 100) / 100) + ' m';
+        } else {
+            dist = (Math.round(dist / 10) / 100) + ' km';
+        }
+
+        this.titleCtrl.setText(dist);
     },
     /*
     Property: _setAnimDelay (INTERNAL)

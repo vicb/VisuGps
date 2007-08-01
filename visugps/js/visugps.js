@@ -37,6 +37,7 @@ var VisuGps = new Class({
         loadDiv : 'load',
         elevTileUrl : null,
         weatherTileUrl : null,
+        measure : true,
         maxSpeed : 80,
         maxVario : 10,
         maxElev : 9999
@@ -172,8 +173,10 @@ var VisuGps = new Class({
 
         // Add event handlers
         GEvent.addListener(this.map, 'moveend', this._displayTrack.bind(this));
-        GEvent.addListener(this.map, 'click', this._goNear.bind(this));
-        GEvent.addListener(this.map, 'singlerightclick', this._rightclick.bind(this));
+        GEvent.addListener(this.map, 'click', this._leftClick.bind(this));
+        if (opt.measure) {
+            GEvent.addListener(this.map, 'singlerightclick', this._rightClick.bind(this));
+        }
         window.addEvent('resize', this._resize.bind(this));
 
         this.mapTitle = [this.track.date.day, this.track.date.month, this.track.date.year].join('/');
@@ -246,13 +249,15 @@ var VisuGps = new Class({
         2: Set ending point - display start - end distance
         3: Return to normal state (no more distance measurment)
     */
-    _rightclick : function(point) {
+    _rightClick : function(point) {
         this.distState++;
         switch (this.distState) {
             case 1:
-                this.distSrc = this.map.fromContainerPixelToLatLng(point);
+                var ptll = this.map.fromContainerPixelToLatLng(point);
+                this.distSrc = [ptll];
                 this.distLine = null;
-                this.distEvt = GEvent.addListener(this.map, 'mousemove', this._mousemove.bind(this));
+                this.distEvt = GEvent.addListener(this.map, 'mousemove', this._mouseMove.bind(this));
+                this._mouseMove(ptll);
                 break;
             case 2:
                 GEvent.removeListener(this.distEvt);
@@ -271,14 +276,14 @@ var VisuGps = new Class({
     Arguments:
             points: coordinate (lat, lng) of the point.
     */
-    _mousemove : function(point) {
+    _mouseMove : function(point) {
         if (this.distLine) {
             this.map.removeOverlay(this.distLine);
             this.distLine = null;
         }
-        this.distLine = new GPolyline([this.distSrc, point], '#ff0', 4, 0.6);
+        this.distLine = new GPolyline(this.distSrc.concat([point]), '#ff0', 4, 0.6);
         this.map.addOverlay(this.distLine);
-        var dist = this.distSrc.distanceFrom(point);
+        var dist = this.distLine.getLength();
         if (dist < 1000) {
             dist = (Math.round(dist * 100) / 100) + ' m';
         } else {
@@ -286,6 +291,38 @@ var VisuGps = new Class({
         }
 
         this.titleCtrl.setText(dist);
+    },
+    /*
+    Property: _leftClick (INTERNAL)
+            - Move the marker to the track point closest to the mouse click or
+            - Add an intermediate point while measuring distance
+
+    Arguments:
+            marker: unused.
+            point: Mouse click location (lat/lng)
+    */
+    _leftClick : function(marker, point) {
+        switch (this.distState) {
+            case 1:
+                this.distSrc.push(point);
+                this._mouseMove(point);
+                break;
+            default:
+                var bestIdx = 0;
+                var bestDst = this.points[0].distanceFrom(point);
+                var dst;
+                for (var i = this.points.length - 1; i >= 0; i--) {
+                    dst = this.points[i].distanceFrom(point);
+                    if (dst < bestDst) {
+                        bestIdx = i;
+                        bestDst = dst;
+                    }
+                }
+                this.marker.setPoint(this.points[bestIdx]);
+                var pos = (1000 * bestIdx / this.track.nbTrackPt).toInt();
+                this.charts.setCursor(pos);
+                this._showInfo(pos);
+        }
     },
     /*
     Property: _setAnimDelay (INTERNAL)
@@ -478,30 +515,6 @@ var VisuGps = new Class({
                          this._NbToStrW(this.track.time.hour[idx],2) + ':' +
                          this._NbToStrW(this.track.time.min[idx], 2) + ':' +
                          this._NbToStrW(this.track.time.sec[idx], 2) + '[Th]');
-    },
-    /*
-    Property: _goNear (INTERNAL)
-            Move the marker to the track point closest to the mouse click
-
-    Arguments:
-            marker: unused.
-            point: Mouse click location (GPoint object)
-    */
-    _goNear : function(marker, mouse) {
-        var bestIdx = 0;
-        var bestDst = this.points[0].distanceFrom(mouse);
-        var dst;
-        for (var i = this.points.length - 1; i >= 0; i--) {
-            dst = this.points[i].distanceFrom(mouse);
-            if (dst < bestDst) {
-                bestIdx = i;
-                bestDst = dst;
-            }
-        }
-        this.marker.setPoint(this.points[bestIdx]);
-        var pos = (1000 * bestIdx / this.track.nbTrackPt).toInt();
-        this.charts.setCursor(pos);
-        this._showInfo(pos);
     },
     /*
     Property: _createTitleControl (INTERNAL)

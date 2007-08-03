@@ -223,18 +223,60 @@ var VisuGps = new Class({
     Property: toggleAnim (INTERNAL)
             Toggle (start/stop) the animation
     */
-    _toggleAnim : function() {
-        if (this.animTimer === null) {
+    _toggleAnim : function(e) {
+        if (e.rightClick) {
             this.animPos = 0;
-            this.animTimer = this._animate.periodical(this.animDelay.val, this);
-            this.charts.showCursor(true);
-            var pauseGif = $('vgps-anim').getStyle('background-image').replace(/play/, 'pause');
-            $('vgps-anim').setStyle('background-image', pauseGif);
-        } else {
             $clear(this.animTimer);
             this.animTimer = null;
             var playGif = $('vgps-anim').getStyle('background-image').replace(/pause/, 'play');
             $('vgps-anim').setStyle('background-image', playGif);
+            this._animate();
+        } else {
+            if (this.animTimer === null) {
+                this.animTimer = this._animate.periodical(this.animDelay.val, this);
+                this.charts.showCursor(true);
+                var pauseGif = $('vgps-anim').getStyle('background-image').replace(/play/, 'pause');
+                $('vgps-anim').setStyle('background-image', pauseGif);
+            } else {
+                $clear(this.animTimer);
+                this.animTimer = null;
+                var playGif = $('vgps-anim').getStyle('background-image').replace(/pause/, 'play');
+                $('vgps-anim').setStyle('background-image', playGif);
+            }
+        }
+    },
+    /*
+    Property: _setAnimDelay (INTERNAL)
+            Set animation speed
+
+    Arguments:
+            val: 0 = min ... 100 = max
+    */
+    _setAnimDelay : function(val) {
+        this.animDelay.val = this.animDelay.min +
+                             (100 - val) / 100 * (this.animDelay.max - this.animDelay.min);
+        if (this.animTimer !== null) {
+            $clear(this.animTimer);
+            this.animTimer = this._animate.periodical(this.animDelay.val, this);
+        }
+    },
+    /*
+    Property: _animate (INTERNAL)
+            Animation the marker
+    */
+    _animate : function() {
+        if (this.animPos >= 1000) {
+            this.animPos = 0;
+            $clear(this.animTimer);
+            this.animTimer = null;
+            var playGif = $('vgps-anim').getStyle('background-image').replace(/pause/, 'play');
+            $('vgps-anim').setStyle('background-image', playGif);
+        } else {
+            this._showMarker(this.animPos);
+            this.charts.setCursor(this.animPos++);
+            if (!this.map.getBounds().contains(this.marker.getPoint())) {
+                this.map.setCenter(this.marker.getPoint());
+            }
         }
     },
     /*
@@ -322,38 +364,6 @@ var VisuGps = new Class({
                 var pos = (1000 * bestIdx / this.track.nbTrackPt).toInt();
                 this.charts.setCursor(pos);
                 this._showInfo(pos);
-        }
-    },
-    /*
-    Property: _setAnimDelay (INTERNAL)
-            Set animation speed
-            
-    Arguments:
-            val: 0 = min ... 100 = max
-    */
-    _setAnimDelay : function(val) {
-        this.animDelay.val = this.animDelay.min +
-                             (100 - val) / 100 * (this.animDelay.max - this.animDelay.min);
-        if (this.animTimer !== null) {
-            $clear(this.animTimer);
-            this.animTimer = this._animate.periodical(this.animDelay.val, this);
-        }
-    },
-    /*
-    Property: _animate (INTERNAL)
-            Animation the marker
-    */
-    _animate : function() {
-        this._showMarker(this.animPos);
-        this.charts.setCursor(this.animPos++);
-        if (!this.map.getBounds().contains(this.marker.getPoint())) {
-            this.map.setCenter(this.marker.getPoint());
-        }
-        if (this.animPos >= 1000) {
-            $clear(this.animTimer);
-            this.animTimer = null;
-            var playGif = $('vgps-anim').getStyle('background-image').replace(/pause/, 'play');
-            $('vgps-anim').setStyle('background-image', playGif);
         }
     },
     /*
@@ -585,9 +595,8 @@ var VisuGps = new Class({
                                   .injectInside(map.getContainer());
 
             // Add the animation control
-            $('vgps-play').addEvent('click', function(event) {(new Event(event)).stop();});
-
-            $('vgps-anim').addEvent('click', me._toggleAnim.bind(me));
+            $('vgps-play').addEvent('mousedown', function(event) {(new Event(event)).stop();});
+            $('vgps-anim').addEvent('mousedown', me._toggleAnim.bindWithEvent(me));
             new SliderProgress('vgps-play', {'color': '#FF850C',
                                              'onChange' : me._setAnimDelay.bind(me)}).set(50);
 

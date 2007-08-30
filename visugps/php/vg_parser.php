@@ -316,4 +316,20 @@ function ParseGpx($trackFile, &$trackData)
     
     return $i;
 }
+
+/*
+Function: IsKml
+        Detect KML file format
+
+Arguments:
+        trackFile - input track file
+
+Returns:
+        true if the file is a valid KML file
+*/
+function IsKml($trackFile)
+{
+    return (preg_match('/xmlns *= *"http:\/\/earth\.google\.com\/kml\/[\d\.]+/im', $trackFile) > 0);
+}
+
 ?>

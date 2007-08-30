@@ -106,7 +106,11 @@ function MakeTrack($url)
         }
 
         if ($nbPts < 5) {
-            $jsTrack['error'] = 'Unsupported track format!';
+            if (IsKml($file)) {
+                $jsTrack['kmlUrl'] = $url;
+            } else {
+                $jsTrack['error'] = 'Unsupported track format!';
+            }
         } else {
             // Generate the time in second
             for ($i = 0; $i < count($track['time']['hour']); $i++) {
@@ -143,7 +147,8 @@ function MakeTrack($url)
         }
 
         $data = @json_encode($jsTrack);
-        if (!isset($jsTrack['error'])) {
+        if (!isset($jsTrack['error']) &&
+            !isset($jsTrack['kmlUrl'])) {
             $cache->set($data, $url);
         }
 

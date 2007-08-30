@@ -65,7 +65,7 @@ var VisuGps = new Class({
         this.map = {};
         this.track = {};
         this.points = [];
-        this.charts = {};
+        this.charts = null;
         this.marker = {};
         this.path = {};
         this.timer = null;
@@ -75,7 +75,7 @@ var VisuGps = new Class({
         this.animTimer = null;
         this.animPos = 0;
         this.animDelay = {'min':1, 'max':120, 'val': 60};
-        this.mapTitle = '';
+        this.mapTitle = 'VisuGps';
 
         this.distSrc = {};
         this.distState = 0;
@@ -93,12 +93,8 @@ var VisuGps = new Class({
             this.map.addControl(new GLargeMapControl());
             this.map.addControl(new GScaleControl());
             this.map.enableScrollWheelZoom();
-            this._createInfoControl();
-            this.map.addControl(this.infoCtrl);
             this._createTitleControl('VisuGps');
             this.map.addControl(this.titleCtrl);
-
-            this.nfo = $('vgps-nfofield');
         }
     },
     /*
@@ -142,69 +138,99 @@ var VisuGps = new Class({
             return;
         }
 
-        var bounds = new GLatLngBounds();
+        if ($defined(track.kmlUrl)) {
+            // Display KML files (no graph available)
+            var me = this;
 
-        var point = {};
-        for (var i = 0; i < this.track.nbTrackPt; i++) {
-            point = new GLatLng(this.track.lat[i], this.track.lon[i]);
-            this.points.push(point);
-            bounds.extend(point);
+            var kml = new GGeoXml(track.kmlUrl,
+                                  function() {
+                                          if (kml.loadedCorrectly()) {
+                                              kml.gotoDefaultViewport(me.map);
+                                              me.map.addOverlay(kml);
+                                              // Remove the top most overlay from the map
+                                              if (load) {
+                                                  load.effect('opacity', {onComplete: function(){load.remove();}}).start(1, 0);
+                                              }
+                                              // Print a warning for limited support
+                                              $(me.options.chartDiv).setHTML('<p style="text-align:center;margin:20px;font:10px Verdana, Arial, sans-serif;">' +
+                                                                             '<b>No graph available for KML files</b>' +
+                                                                             '</p>');
+                                          }
+                                  }
+                                 );
+        } else {
+            // Full track information available
+            this._createInfoControl();
+            this.map.addControl(this.infoCtrl);
+            this.nfo = $('vgps-nfofield');
+
+            var bounds = new GLatLngBounds();
+
+            var point = {};
+            for (var i = 0; i < this.track.nbTrackPt; i++) {
+                point = new GLatLng(this.track.lat[i], this.track.lon[i]);
+                this.points.push(point);
+                bounds.extend(point);
+            }
+
+            // Clamp values
+            var maxSpeed = opt.maxSpeed;
+            var maxVario = opt.maxVario;
+            var minVario = -maxVario;
+            var maxElev = opt.maxElev;
+            for (i = this.track.nbChartPt - 1; i >= 0; i--) {
+                this.track.speed[i] = this.track.speed[i].limit(0, maxSpeed);
+                this.track.vario[i] = this.track.vario[i].limit(minVario, maxVario);
+                this.track.elev[i] = this.track.elev[i].limit(0, maxElev);
+            }
+
+            // Center the map on the track
+            this.map.setCenter(bounds.getCenter(), this.map.getBoundsZoomLevel(bounds));
+            this._displayTrack();
+
+            // Put the marker on the take-off place
+            this.marker = new GMarker(this.points[0], {clickable:false});
+            this._showMarker(0);
+            this.map.addOverlay(this.marker);
+
+            // Add event handlers
+            GEvent.addListener(this.map, 'moveend', this._displayTrack.bind(this));
+            window.addEvent('resize', this._resize.bind(this));
+
+            this.mapTitle = [this.track.date.day, this.track.date.month, this.track.date.year].join('/');
+
+            if ((this.mapTitle !== '0/0/0') &&
+                ($type(opt.weatherTileUrl) === 'array')) {
+                this._createModisMap(this.track.date.day, this.track.date.month, this.track.date.year);
+            }
+
+            if (this.track.pilot) this.mapTitle += '<br/>' + this.track.pilot;
+            this.titleCtrl.setText(this.mapTitle);
+
+            if ($type(opt.elevTileUrl) === 'array') {
+                this._createSrtmMap();
+            }
+
+            // Increase info window size to fit the anim control
+            var h = $('vgps-anim').getParent().getCoordinates().height +
+                    $('vgps-anim').getCoordinates().height;
+
+            $('vgps-anim').getParent().setStyle('height', h);
+
+            this._initGraph();
+
+            // Remove the top most overlay from the map
+            if (load) {
+                load.effect('opacity', {onComplete: function(){load.remove();}}).start(1, 0);
+            }
         }
 
-        // Clamp values
-        var maxSpeed = opt.maxSpeed;
-        var maxVario = opt.maxVario;
-        var minVario = -maxVario;
-        var maxElev = opt.maxElev;
-        for (i = this.track.nbChartPt - 1; i >= 0; i--) {
-            this.track.speed[i] = this.track.speed[i].limit(0, maxSpeed);
-            this.track.vario[i] = this.track.vario[i].limit(minVario, maxVario);
-            this.track.elev[i] = this.track.elev[i].limit(0, maxElev);
-        }
-
-        // Center the map on the track
-        this.map.setCenter(bounds.getCenter(), this.map.getBoundsZoomLevel(bounds));
-        this._displayTrack();
-
-        // Put the marker on the take-off place
-        this.marker = new GMarker(this.points[0], {clickable:false});
-        this._showMarker(0);
-        this.map.addOverlay(this.marker);
-
-        // Add event handlers
-        GEvent.addListener(this.map, 'moveend', this._displayTrack.bind(this));
+        // Add common event handlers
         GEvent.addListener(this.map, 'click', this._leftClick.bind(this));
         if (opt.measure) {
             GEvent.addListener(this.map, 'singlerightclick', this._rightClick.bind(this));
         }
-        window.addEvent('resize', this._resize.bind(this));
-
-        this.mapTitle = [this.track.date.day, this.track.date.month, this.track.date.year].join('/');
-
-        if ((this.mapTitle !== '0/0/0') &&
-            ($type(opt.weatherTileUrl) === 'array')) {
-            this._createModisMap(this.track.date.day, this.track.date.month, this.track.date.year);
-        }
-
-        if (this.track.pilot) this.mapTitle += '<br/>' + this.track.pilot;
-        this.titleCtrl.setText(this.mapTitle);
-
-        if ($type(opt.elevTileUrl) === 'array') {
-            this._createSrtmMap();
-        }
-
-        // Increase info window size to fit the anim control
-        var h = $('vgps-anim').getParent().getCoordinates().height +
-                $('vgps-anim').getCoordinates().height;
-
-        $('vgps-anim').getParent().setStyle('height', h);
-
-        this._initGraph();
-
-        // Remove the top most overlay from the map
-        if (load) {
-            load.effect('opacity', {onComplete: function(){load.remove();}}).start(1, 0);
-        }
+        
     },
     /*
     Property: downloadTrack
@@ -350,20 +376,22 @@ var VisuGps = new Class({
                 this._mouseMove(point);
                 break;
             default:
-                var bestIdx = 0;
-                var bestDst = this.points[0].distanceFrom(point);
-                var dst;
-                for (var i = this.points.length - 1; i >= 0; i--) {
-                    dst = this.points[i].distanceFrom(point);
-                    if (dst < bestDst) {
-                        bestIdx = i;
-                        bestDst = dst;
+                if (this.points.length) {
+                    var bestIdx = 0;
+                    var bestDst = this.points[0].distanceFrom(point);
+                    var dst;
+                    for (var i = this.points.length - 1; i >= 0; i--) {
+                        dst = this.points[i].distanceFrom(point);
+                        if (dst < bestDst) {
+                            bestIdx = i;
+                            bestDst = dst;
+                        }
                     }
+                    this.marker.setPoint(this.points[bestIdx]);
+                    var pos = (1000 * bestIdx / this.track.nbTrackPt).toInt();
+                    this.charts.setCursor(pos);
+                    this._showInfo(pos);
                 }
-                this.marker.setPoint(this.points[bestIdx]);
-                var pos = (1000 * bestIdx / this.track.nbTrackPt).toInt();
-                this.charts.setCursor(pos);
-                this._showInfo(pos);
         }
     },
     /*
@@ -371,7 +399,7 @@ var VisuGps = new Class({
             Display series on the graph
     */
     _initGraph : function() {
-        this.charts = new Charts($('vgps-chartcont'),
+        this.charts = new Charts($(this.options.chartDiv),
                                  {onMouseMove : this._showMarker.bind(this),
                                   onMouseDown : this._showMarkerCenter.bind(this),
                                   onMouseWheel : this._showMarkerCenterZoom.bind(this)});

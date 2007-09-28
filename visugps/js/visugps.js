@@ -67,7 +67,7 @@ var VisuGps = new Class({
         this.points = [];
         this.charts = null;
         this.marker = {};
-        this.path = {};
+        this.path = null;
         this.timer = null;
         this.infoCtrl = {};
         this.titleCtrl = {};
@@ -80,19 +80,19 @@ var VisuGps = new Class({
         this.distSrc = {};
         this.distState = 0;
         this.distLine = {};
-        this.distEvt = null;
 
         if (GBrowserIsCompatible()) {
             var map = $(this.options.mapDiv);
             if (!map) return;
 
             // Create the map, add standard controls and keyboard handler
-            this.map = new GMap2(map);
-            this.map.setCenter(new GLatLng(46.73986, 2.17529), 5, G_HYBRID_MAP);
-            this.map.addControl(new GMapTypeControl());
-            this.map.addControl(new GLargeMapControl());
-            this.map.addControl(new GScaleControl());
+            this.map = new google.maps.Map2(map);
+            this.map.setCenter(new google.maps.LatLng(46.73986, 2.17529), 5, G_HYBRID_MAP);
+            this.map.addControl(new google.maps.MapTypeControl());
+            this.map.addControl(new google.maps.LargeMapControl());
+            this.map.addControl(new google.maps.ScaleControl());
             this.map.enableScrollWheelZoom();
+            this.map.disableDoubleClickZoom();
             this._createTitleControl('VisuGps');
             this.map.addControl(this.titleCtrl);
         }
@@ -102,7 +102,7 @@ var VisuGps = new Class({
             Class destructor. Help release the memory.
     */
     clean : function() {
-        GUnload();
+        google.maps.Unload();
         if (this.charts) this.charts.clean();
         window.removeEvents('resize');
     },
@@ -142,33 +142,32 @@ var VisuGps = new Class({
             // Display KML files (no graph available)
             var me = this;
 
-            var kml = new GGeoXml(track.kmlUrl,
-                                  function() {
-                                          if (kml.loadedCorrectly()) {
-                                              kml.gotoDefaultViewport(me.map);
-                                              me.map.addOverlay(kml);
-                                              // Remove the top most overlay from the map
-                                              if (load) {
-                                                  load.effect('opacity', {onComplete: function(){load.remove();}}).start(1, 0);
-                                              }
-                                              // Print a warning for limited support
-                                              $(me.options.chartDiv).setHTML('<p style="text-align:center;margin:20px;font:10px Verdana, Arial, sans-serif;">' +
-                                                                             '<b>No graph available for KML files</b>' +
-                                                                             '</p>');
-                                          }
-                                  }
-                                 );
+            var kml = new google.maps.GeoXml(track.kmlUrl,
+                                             function() {
+                                                 if (kml.loadedCorrectly()) {
+                                                     kml.gotoDefaultViewport(me.map);
+                                                     me.map.addOverlay(kml);
+                                                     // Remove the top most overlay from the map
+                                                     if (load) {
+                                                         load.effect('opacity', {onComplete: function(){load.remove();}}).start(1, 0);
+                                                     }
+                                                     // Print a warning for limited support
+                                                     $(me.options.chartDiv).setHTML('<p style="text-align:center;margin:20px;font:10px Verdana, Arial, sans-serif;">' +
+                                                                                    '<b>No graph available for KML files</b>' +
+                                                                                    '</p>');
+                                                 }
+                                             });
         } else {
             // Full track information available
             this._createInfoControl();
             this.map.addControl(this.infoCtrl);
             this.nfo = $('vgps-nfofield');
 
-            var bounds = new GLatLngBounds();
+            var bounds = new google.maps.LatLngBounds();
 
             var point = {};
             for (var i = 0; i < this.track.nbTrackPt; i++) {
-                point = new GLatLng(this.track.lat[i], this.track.lon[i]);
+                point = new google.maps.LatLng(this.track.lat[i], this.track.lon[i]);
                 this.points.push(point);
                 bounds.extend(point);
             }
@@ -189,12 +188,12 @@ var VisuGps = new Class({
             this._displayTrack();
 
             // Put the marker on the take-off place
-            this.marker = new GMarker(this.points[0], {clickable:false});
+            this.marker = new google.maps.Marker(this.points[0], {clickable:false});
             this._showMarker(0);
             this.map.addOverlay(this.marker);
 
             // Add event handlers
-            GEvent.addListener(this.map, 'moveend', this._displayTrack.bind(this));
+            google.maps.Event.addListener(this.map, 'moveend', this._displayTrack.bind(this));
             window.addEvent('resize', this._resize.bind(this));
 
             this.mapTitle = [this.track.date.day, this.track.date.month, this.track.date.year].join('/');
@@ -226,9 +225,9 @@ var VisuGps = new Class({
         }
 
         // Add common event handlers
-        GEvent.addListener(this.map, 'click', this._leftClick.bind(this));
+        google.maps.Event.addListener(this.map, 'click', this._leftClick.bind(this));
         if (opt.measure) {
-            GEvent.addListener(this.map, 'singlerightclick', this._rightClick.bind(this));
+            google.maps.Event.addListener(this.map, 'singlerightclick', this._rightClick.bind(this));
         }
         
     },
@@ -321,16 +320,20 @@ var VisuGps = new Class({
         this.distState++;
         switch (this.distState) {
             case 1:
+                // 1st click: start measurment
                 var ptll = this.map.fromContainerPixelToLatLng(point);
                 this.distSrc = [ptll];
                 this.distLine = null;
-                this.distEvt = GEvent.addListener(this.map, 'mousemove', this._mouseMove.bind(this));
+                google.maps.Event.addListener(this.map, 'mousemove', this._mouseMove.bind(this));
                 this._mouseMove(ptll);
                 break;
             case 2:
-                GEvent.removeListener(this.distEvt);
+                // 2nd click: stop measurment
+                google.maps.Event.clearInstanceListeners(this.distLine);
+                google.maps.Event.clearListeners(this.map, 'mousemove');
                 break;
             case 3:
+                // 3rd click: remove the distance line
                 if (this.distLine) this.map.removeOverlay(this.distLine);
                 this.titleCtrl.setText(this.mapTitle);
             default:
@@ -346,10 +349,12 @@ var VisuGps = new Class({
     */
     _mouseMove : function(point) {
         if (this.distLine) {
+            google.maps.Event.clearListeners(this.distLine, 'click');
             this.map.removeOverlay(this.distLine);
             this.distLine = null;
         }
-        this.distLine = new GPolyline(this.distSrc.concat([point]), '#ff0', 4, 0.6);
+        this.distLine = new google.maps.Polyline(this.distSrc.concat([point]), '#ff0', 4, 0.6);
+        google.maps.Event.addListener(this.distLine, 'click', this._forwardClick.bind(this));
         this.map.addOverlay(this.distLine);
         var dist = this.distLine.getLength();
         if (dist < 1000) {
@@ -370,6 +375,7 @@ var VisuGps = new Class({
             point: Mouse click location (lat/lng)
     */
     _leftClick : function(marker, point) {
+        if (point == null) return;
         switch (this.distState) {
             case 1:
                 this.distSrc.push(point);
@@ -393,6 +399,16 @@ var VisuGps = new Class({
                     this._showInfo(pos);
                 }
         }
+    },
+    /*
+    Property: _forwardClick (INTERNAL)
+            Forward polyline clicks to the left click manager
+
+    Arguments:
+            point: Mouse click location (lat/lng)
+    */
+    _forwardClick : function (point) {
+        this._leftClick(null, point);
     },
     /*
     Property: _initGraph (INTERNAL)
@@ -448,9 +464,14 @@ var VisuGps = new Class({
     */
     _displayTrack : function() {
         if (this.points.length < 5) return;
-        var path = new GPolyline(this._getReducedTrack(), "#f00", 1, 1);
-        this.map.removeOverlay(this.path);
+        var path = new google.maps.Polyline(this._getReducedTrack(), "#f00", 1, 1);
+        // Remove the click listener from existing track
+        if (this.path) {
+            google.maps.Event.clearListeners(this.path, 'click');
+            this.map.removeOverlay(this.path);
+        }
         this.map.addOverlay(this.path = path);
+        google.maps.Event.addListener(this.path, 'click', this._forwardClick.bind(this));
     },
     /*
     Property: _getReducedTrack (INTERNAL)
@@ -466,9 +487,9 @@ var VisuGps = new Class({
         var deltaLng = Ne.lng() - Sw.lng();
 
         // Keep only points that are in the view area and close neighbourhood
-        var bufSw = new GLatLng(Sw.lat() - deltaLat, Sw.lng() - deltaLng);
-        var bufNe = new GLatLng(Ne.lat() + deltaLat, Ne.lng() + deltaLng);
-        var scrollBuffer = new GLatLngBounds(bufSw, bufNe);
+        var bufSw = new google.maps.LatLng(Sw.lat() - deltaLat, Sw.lng() - deltaLng);
+        var bufNe = new google.maps.LatLng(Ne.lat() + deltaLat, Ne.lng() + deltaLng);
+        var scrollBuffer = new google.maps.LatLngBounds(bufSw, bufNe);
 
         // Flush points that are too close from each other
         var minStepLat = 3 * deltaLat / this.map.getSize().width;
@@ -568,7 +589,7 @@ var VisuGps = new Class({
             this.div = null;
             this.title = title;
         }
-        TitleControl.prototype = new GControl();
+        TitleControl.prototype = new google.maps.Control();
 
         TitleControl.prototype.initialize = function(map) {
             this.div = new Element('div', {'styles' : {'color': '#000',
@@ -585,7 +606,7 @@ var VisuGps = new Class({
         }
 
         TitleControl.prototype.getDefaultPosition = function() {
-            return new GControlPosition(G_ANCHOR_TOP_RIGHT, new GSize(7, 30));
+            return new google.maps.ControlPosition(G_ANCHOR_TOP_RIGHT, new GSize(7, 30));
         }
 
         TitleControl.prototype.setText = function(title) {
@@ -605,7 +626,7 @@ var VisuGps = new Class({
         function InfoControl() {}
         var me = this;
 
-        InfoControl.prototype = new GControl();
+        InfoControl.prototype = new google.maps.Control();
 
         InfoControl.prototype.selectable = function(){return false;}
         InfoControl.prototype.initialize = function(map) {
@@ -633,7 +654,7 @@ var VisuGps = new Class({
         }
 
         InfoControl.prototype.getDefaultPosition = function() {
-            return new GControlPosition(G_ANCHOR_BOTTOM_RIGHT, new GSize(2, 12));
+            return new google.maps.ControlPosition(G_ANCHOR_BOTTOM_RIGHT, new GSize(2, 12));
         }
 
         this.infoCtrl = new InfoControl();
@@ -644,11 +665,11 @@ var VisuGps = new Class({
     */
     _createSrtmMap : function() {
         // SRTM custom map
-        var srtmCpy = new GCopyright(1, new GLatLngBounds(new GLatLng(-90, -180),
-                                                          new GLatLng(90, 180)),
-                                                          0, "SRTM");
+        var srtmCpy = new google.maps.Copyright(1, new google.maps.LatLngBounds(new google.maps.LatLng(-90, -180),
+                                                                                new google.maps.LatLng(90, 180)),
+                                                                                0, "SRTM");
 
-        var srtmCpyC = new GCopyrightCollection();
+        var srtmCpyC = new google.maps.CopyrightCollection();
         srtmCpyC.addCopyright(srtmCpy);
 
         var url = this.options.elevTileUrl;
@@ -656,13 +677,13 @@ var VisuGps = new Class({
             return item.replace(/\/$/, '');
         });
 
-        var srtmTL = [new GTileLayer(srtmCpyC, 0, 16)];
+        var srtmTL = [new google.maps.TileLayer(srtmCpyC, 0, 16)];
         srtmTL[0].getTileUrl = function(point, zoom){
                 var count = url.length;
                 var n = (point.x + point.y) % count;
                 return 'http://' + url[n] + '/vg_tilesrtm.php?x=' + point.x + '&y=' + point.y + '&z=' + zoom;
             }
-        var srtmMap = new GMapType(srtmTL, new GMercatorProjection(18), 'Elevation');
+        var srtmMap = new google.maps.MapType(srtmTL, new google.maps.MercatorProjection(18), 'Elevation');
 
         this.map.addMapType(srtmMap);
     },
@@ -678,7 +699,7 @@ var VisuGps = new Class({
           // Modis pictures use a flat projection
           function EuclideanProjection(){}
 
-          EuclideanProjection.prototype=new GProjection();
+          EuclideanProjection.prototype=new google.maps.Projection();
 
           EuclideanProjection.prototype.fromLatLngToPixel=function(point, zoom){
             var size = Math.pow(2, zoom) * 256;
@@ -720,11 +741,11 @@ var VisuGps = new Class({
           var date = year.toString() + dayNum;
 
           // MODIS custom map
-          var modisCpy = new GCopyright(1, new GLatLngBounds(new GLatLng(-90, -180),
-                                                             new GLatLng(90, 180)),
-                                                             0, "MODIS");
+          var modisCpy = new google.maps.Copyright(1, new google.maps.LatLngBounds(new google.maps.LatLng(-90, -180),
+                                                                                   new google.maps.LatLng(90, 180)),
+                                                                                   0, "MODIS");
 
-          var modisCpyC = new GCopyrightCollection();
+          var modisCpyC = new google.maps.CopyrightCollection();
           modisCpyC.addCopyright(modisCpy);
 
           var url = this.options.weatherTileUrl;
@@ -732,13 +753,13 @@ var VisuGps = new Class({
               return item.replace(/\/$/, '');
           });
 
-          var modisTL = [new GTileLayer(modisCpyC, 0, 9)];
+          var modisTL = [new google.maps.TileLayer(modisCpyC, 0, 9)];
           modisTL[0].getTileUrl = function(point, zoom){
                 var count = url.length;
                 var n = (point.x + point.y) % count;
                 return 'http://' + url[n] + '/vg_tilemodis.php?x=' + point.x + '&y=' + point.y + '&z=' + zoom + '&date=' + date;
               }
-          var modisMap = new GMapType(modisTL, new EuclideanProjection(18), "Weather");
+          var modisMap = new google.maps.MapType(modisTL, new EuclideanProjection(18), "Weather");
           this.map.addMapType(modisMap);
     },
     /*

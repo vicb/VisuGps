@@ -66,7 +66,7 @@ class Log {
     */
     public function msg($msg) {
         if ($this->on && $this->handle && flock($this->handle, LOCK_EX)) {
-            fputs($this->handle, $msg . "\n");
+            fputs($this->handle, date("[d/m/Y H:i:s] - ") . $msg . "\n");
             flock($this->handle, LOCK_UN);
         }
     }

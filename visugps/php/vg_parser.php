@@ -226,7 +226,7 @@ function ParseNmea($trackFile, &$trackData)
         $trackData['date']['year'] = intval($m[3]) + (($m[3] > 60)?1900:2000);
     }
 
-    preg_match_all('/^\$GPGGA,(\d{2})(\d{2})(\d{2}),([\d\.]+),(\w),([\d\.]+),(\w),\d+,\d+,[\d\.]+,(\d+)/im',
+    preg_match_all('/^\$GPGGA,(\d{2})(\d{2})(\d{2})[\d\.]*,([\d\.]+),(\w),([\d\.]+),(\w),\d+,\d+,[\d\.]+,([\d\.]+)/im',
                    $trackFile, $m);
 
     $nbPts = $trackData['nbPt'] = count($m[0]);

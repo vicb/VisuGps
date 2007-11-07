@@ -38,6 +38,7 @@ var VisuGps = new Class({
         elevTileUrl : null,
         weatherTileUrl : null,
         measure : true,
+        measureCfd : true,
         maxSpeed : 80,
         maxVario : 10,
         maxElev : 9999
@@ -56,6 +57,8 @@ var VisuGps = new Class({
             loadDiv - an overlay displayed masking the map during initialization
             elevTileURL - list of base URLs for elevation tiles (null = no elevation map)
             weatherTileURL - list of base URLs for weather tiles (null = no weather map)
+            measure - true to allow distance measurment
+            measureCfd - true to display CFD scoring in measurment mode
             maxSpeed - maximum value for the speed (min = 0)
             maxVario - maximum absolute value for the GR
             maxElev - maximum value for the elevation (min = 0)
@@ -77,7 +80,7 @@ var VisuGps = new Class({
         this.animDelay = {'min':1, 'max':120, 'val': 60};
         this.mapTitle = 'VisuGps';
 
-        this.distSrc = {};
+        this.distPts = {};
         this.distState = 0;
         this.distLine = {};
 
@@ -322,7 +325,7 @@ var VisuGps = new Class({
             case 1:
                 // 1st click: start measurment
                 var ptll = this.map.fromContainerPixelToLatLng(point);
-                this.distSrc = [ptll];
+                this.distPts = [ptll];
                 this.distLine = null;
                 google.maps.Event.addListener(this.map, 'mousemove', this._mouseMove.bind(this));
                 this._mouseMove(ptll);
@@ -347,20 +350,66 @@ var VisuGps = new Class({
             points: coordinate (lat, lng) of the point.
     */
     _mouseMove : function(point) {
+        var dPts = this.distPts.concat([point]);
         if (this.distLine) {
             this.map.removeOverlay(this.distLine);
             this.distLine = null;
         }
-        this.distLine = new google.maps.Polyline(this.distSrc.concat([point]), '#ff0', 4, 0.6, {'clickable' : false});
+        this.distLine = new google.maps.Polyline(dPts, '#ff0', 4, 0.6, {'clickable' : false});
         this.map.addOverlay(this.distLine);
         var dist = this.distLine.getLength();
+        var legend;
         if (dist < 1000) {
-            dist = (Math.round(dist * 100) / 100) + ' m';
+            legend = (Math.round(dist * 100) / 100) + ' m';
         } else {
-            dist = (Math.round(dist / 10) / 100) + ' km';
+            legend = (Math.round(dist / 10) / 100) + ' km';
         }
 
-        this.titleCtrl.setText(dist);
+        if (this.options.measureCfd) {
+          var type = null;
+          var coef = 1.2;
+          switch (dPts.length) {
+            case 2:
+                type = 'DL';
+                coef = 1;
+                break;
+            case 3:
+                if (dPts[0].distanceFrom(dPts[2]) < 3000) {
+                    type = 'AR'
+                } else {
+                    type = 'DL1';
+                    coef = 1;
+                }
+                break;
+            case 4:
+                if (dPts[0].distanceFrom(dPts[3]) < 3000) {
+                    var fai = true;
+                    for (var idx = 0; idx < 3; idx ++) {
+                        if (dPts[idx].distanceFrom(dPts[idx + 1]) < 0.28 * dist) {
+                            fai = false;
+                            break;
+                        }
+                    }
+                    type = fai?'FAI':'TR';
+                    coef = fai?1.4:1.2;
+                } else {
+                    type = 'DL2';
+                    coef = 1;
+                }
+                break;
+            case 5:
+                if (dPts[0].distanceFrom(dPts[4]) < 3000) {
+                    type = 'QD';
+                }
+                break;
+            default:
+          }
+          if (type !== null) {
+              legend += '<br/>' + type + ' ' + (Math.round(coef * dist / 10) / 100) + ' pts';
+          }
+        }
+
+        this.titleCtrl.setText(legend);
     },
     /*
     Property: _leftClick (INTERNAL)
@@ -372,11 +421,11 @@ var VisuGps = new Class({
             point: Mouse click location (lat/lng)
     */
     _leftClick : function(marker, point) {
-        if (point == null) return;
+        if (point === null) return;
         switch (this.distState) {
             case 1:
                 // Add an intermediate point (in measurment mode)
-                this.distSrc.push(point);
+                this.distPts.push(point);
                 this._mouseMove(point);
                 break;
             default:

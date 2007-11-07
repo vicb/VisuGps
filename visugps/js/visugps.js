@@ -329,7 +329,6 @@ var VisuGps = new Class({
                 break;
             case 2:
                 // 2nd click: stop measurment
-                google.maps.Event.clearInstanceListeners(this.distLine);
                 google.maps.Event.clearListeners(this.map, 'mousemove');
                 break;
             case 3:
@@ -349,12 +348,10 @@ var VisuGps = new Class({
     */
     _mouseMove : function(point) {
         if (this.distLine) {
-            google.maps.Event.clearListeners(this.distLine, 'click');
             this.map.removeOverlay(this.distLine);
             this.distLine = null;
         }
-        this.distLine = new google.maps.Polyline(this.distSrc.concat([point]), '#ff0', 4, 0.6);
-        google.maps.Event.addListener(this.distLine, 'click', this._forwardClick.bind(this));
+        this.distLine = new google.maps.Polyline(this.distSrc.concat([point]), '#ff0', 4, 0.6, {'clickable' : false});
         this.map.addOverlay(this.distLine);
         var dist = this.distLine.getLength();
         if (dist < 1000) {
@@ -378,10 +375,12 @@ var VisuGps = new Class({
         if (point == null) return;
         switch (this.distState) {
             case 1:
+                // Add an intermediate point (in measurment mode)
                 this.distSrc.push(point);
                 this._mouseMove(point);
                 break;
             default:
+                // Center on the closest point (not in measurment mode)
                 if (this.points.length) {
                     var bestIdx = 0;
                     var bestDst = this.points[0].distanceFrom(point);
@@ -399,16 +398,6 @@ var VisuGps = new Class({
                     this._showInfo(pos);
                 }
         }
-    },
-    /*
-    Property: _forwardClick (INTERNAL)
-            Forward polyline clicks to the left click manager
-
-    Arguments:
-            point: Mouse click location (lat/lng)
-    */
-    _forwardClick : function (point) {
-        this._leftClick(null, point);
     },
     /*
     Property: _initGraph (INTERNAL)
@@ -464,14 +453,12 @@ var VisuGps = new Class({
     */
     _displayTrack : function() {
         if (this.points.length < 5) return;
-        var path = new google.maps.Polyline(this._getReducedTrack(), "#f00", 1, 1);
+        var path = new google.maps.Polyline(this._getReducedTrack(), "#f00", 1, 1, {'clickable' : false});
         // Remove the click listener from existing track
         if (this.path) {
-            google.maps.Event.clearListeners(this.path, 'click');
             this.map.removeOverlay(this.path);
         }
         this.map.addOverlay(this.path = path);
-        google.maps.Event.addListener(this.path, 'click', this._forwardClick.bind(this));
     },
     /*
     Property: _getReducedTrack (INTERNAL)

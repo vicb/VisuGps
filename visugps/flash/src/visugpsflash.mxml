@@ -1,0 +1,36 @@
+﻿<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" 
+				xmlns:chart="fr.victorb.chart.*"
+    layout="absolute" width="100%" height="100%">
+		
+<mx:Script>
+    <![CDATA[
+
+	import flash.events.Event;
+	import fr.victorb.visugps.VisuGps;
+	import com.google.maps.Map;
+	import com.hexagonstar.util.debug.Debug;
+	 
+	private var map:VisuGps;
+	
+	public function onPanelInit(event:Event):void {
+		Debug.clear();
+		Debug.trace("xml init");
+		map = new VisuGps("ABQIAAAAJPvmQMZVrrV3inIwT2t4RBQf-JSUIEMNUNF63gcoYgskNGvaZRQmUvzGcFUdj4nlylxP8SK4sRKYsg");
+		map.init(panel);
+	}
+	  
+    ]]>
+		</mx:Script>
+		
+	<mx:Panel id="panel" title="VisuGps Flash by Victor Berchet [www.victorb.fr]" 
+			  width="100%" height="100%" 
+			  headerColors="[0x00cc00, 0x005500]"
+			  headerHeight="15"
+			  borderColor="0x005500"
+			  borderThicknessLeft="5"
+			  borderThicknessRight="5"
+			  initialize="onPanelInit(event)">			  
+	</mx:Panel>		
+		
+
+</mx:Application>

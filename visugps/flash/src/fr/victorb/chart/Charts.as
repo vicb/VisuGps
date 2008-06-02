@@ -2,6 +2,7 @@
 {
 	import com.hexagonstar.util.debug.Debug;
 	import flash.events.Event;
+	import fr.victorb.component.MyThumb;
 	import mx.controls.HSlider;
 	import mx.controls.sliderClasses.Slider;
 	import mx.core.UIComponent;
@@ -34,6 +35,8 @@
 			slider.minimum = 0;
 			slider.maximum = 100;
 			slider.liveDragging = true;
+			slider.sliderThumbClass =  MyThumb;
+			slider.setStyle("fillColors", [ 0xFFFFFF, chart.getColor()]);
 			slider.dataTipFormatFunction = formatTip(sliders.length);
 			Debug.trace("+addchart 2");
 			slider.addEventListener("change", onSliderChange);		

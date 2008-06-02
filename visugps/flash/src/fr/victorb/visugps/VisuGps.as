@@ -218,7 +218,7 @@
 			chart.setHorizontalLabels(track.labels());
 			charts.addChart(chart);
 			
-			charts.setChartsAlpha([100, 20, 20]);
+			charts.setChartsAlpha([100, 10, 10]);
 		}
 
 	}

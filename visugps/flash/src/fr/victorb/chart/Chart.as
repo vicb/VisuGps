@@ -27,10 +27,10 @@
 		private var leftPadding:int = 2;
 		private var rightPadding:int = 2;
 
-		private var xMin:int;
-		private var xMax:int;
-		private var yMin:int;
-		private var yMax:int;
+		private var _xMin:int;
+		private var _xMax:int;
+		private var _yMin:int;
+		private var _yMax:int;
 		private var xStep:Number;
 		private var yStep:Number;
 		
@@ -81,16 +81,16 @@
 			txt.autoSize = TextFieldAutoSize.LEFT;
 			txt.setTextFormat(new TextFormat("Verdana", yLabelStyle.size));
 			
-			xMin = leftPadding + 8 + txt.width;
-			xMax = width - rightPadding;
-			Debug.trace("xMax: " + xMax);
+			_xMin = leftPadding + 8 + txt.width;
+			_xMax = width - rightPadding;
+			Debug.trace("_xMax: " + _xMax);
 			
 			txt.setTextFormat(new TextFormat("Verdana", xLabelStyle.size));
 			
-			yMin = topPadding;
-			yMax = height - bottomPadding - txt.height - 6;
+			_yMin = topPadding;
+			_yMax = height - bottomPadding - txt.height - 6;
 			
-			yStep = (yMax - yMin) / (max - min);
+			yStep = (_yMax - _yMin) / (max - min);
 			drawGrid();
 			drawVerticalAxis();
 			drawHorizontalAxis();
@@ -99,7 +99,7 @@
 			var i:int;
 					
 			for (s = 0; s < series.length; s++) {				
-				xStep = (xMax - xMin) / series[s].length();				
+				xStep = (_xMax - _xMin) / series[s].length();				
 				if (series[s].type == ChartType.CHART_LINE) {
 					drawLine(series[s]);
 				} else if (series[s].type == ChartType.CHART_AREA) {
@@ -119,21 +119,21 @@
 
 		private function drawLine(serie:Serie):void {
 			graphics.lineStyle(1, serie.color);
-			graphics.moveTo(xMin, yMax - (serie.getValue(0) - min) * yStep);
+			graphics.moveTo(_xMin, _yMax - (serie.getValue(0) - min) * yStep);
 			for (var i:int = 1; i < serie.length(); i++) {
-				graphics.lineTo(xMin + i * xStep, yMax - (serie.getValue(i) - min) * yStep);
+				graphics.lineTo(_xMin + i * xStep, _yMax - (serie.getValue(i) - min) * yStep);
 			}			
 		}
 		
 		private function drawArea(serie:Serie):void {
 			graphics.lineStyle(1, serie.color);
-			graphics.moveTo(xMin, yMax - 1);
+			graphics.moveTo(_xMin, _yMax - 1);
 			graphics.beginFill(serie.color, 1);					
-			graphics.lineTo(xMin, yMax - (serie.getValue(0) - min) * yStep);
+			graphics.lineTo(_xMin, _yMax - (serie.getValue(0) - min) * yStep);
 			for (var i:int = 1; i < serie.length(); i++) {
-				graphics.lineTo(xMin + i * xStep, yMax - (serie.getValue(i) - min) * yStep);
+				graphics.lineTo(_xMin + i * xStep, _yMax - (serie.getValue(i) - min) * yStep);
 			}
-			graphics.lineTo(xMax, yMax - 1);					
+			graphics.lineTo(_xMax, _yMax - 1);					
 			graphics.endFill();						
 		}		
 		
@@ -143,18 +143,18 @@
 			var y:int;
 			
 			for (var i:int = 0; i < yDensity; i++) {
-				y = yMin + (max - min) * yStep * i / (yDensity - 1);
-				graphics.moveTo(xMin, y);
-				graphics.lineTo(xMax, y);
+				y = _yMin + (max - min) * yStep * i / (yDensity - 1);
+				graphics.moveTo(_xMin, y);
+				graphics.lineTo(_xMax, y);
 				
 			}
 			
 			var x:int;
 			
 			for (i = 0; i < xLabels.length; i++) {
-				x = xMin + (xMax - xMin) * i / (xLabels.length - 1);
-				graphics.moveTo(x, yMin);
-				graphics.lineTo(x, yMax);				
+				x = _xMin + (_xMax - _xMin) * i / (xLabels.length - 1);
+				graphics.moveTo(x, _yMin);
+				graphics.lineTo(x, _yMax);				
 				
 			}
 			
@@ -164,17 +164,17 @@
 		private function drawVerticalAxis():void {
 			graphics.lineStyle(1);
 			
-			graphics.moveTo(xMin, yMin);
-			graphics.lineTo(xMin, yMax);
+			graphics.moveTo(_xMin, _yMin);
+			graphics.lineTo(_xMin, _yMax);
 			
 			var y:int;
 			var yLabel:Number = max;
 			
 			for (var i:int = 0; i < yDensity; i++) {
-				y = yMin + (max - min) * yStep * i / (yDensity - 1);
+				y = _yMin + (max - min) * yStep * i / (yDensity - 1);
 				
-				graphics.moveTo(xMin, y);
-				graphics.lineTo(xMin - 5, y);
+				graphics.moveTo(_xMin, y);
+				graphics.lineTo(_xMin - 5, y);
 				
 				var txt:TextField = new TextField();
 				txt.text = Math.round(yLabel).toString();
@@ -183,7 +183,7 @@
 				txt.cacheAsBitmap = true;
 				txt.setTextFormat(new TextFormat("Verdana", yLabelStyle.size, yLabelStyle.color));
 				txt.autoSize = TextFormatAlign.RIGHT;
-				txt.x = xMin - 8 - txt.width;
+				txt.x = _xMin - 8 - txt.width;
 				txt.y = y - txt.height / 2;
 				
 				addChild(txt);
@@ -197,15 +197,15 @@
 		private function drawHorizontalAxis():void {
 			graphics.lineStyle(1);
 			
-			graphics.moveTo(xMin, yMax);
-			graphics.lineTo(xMax, yMax);
+			graphics.moveTo(_xMin, _yMax);
+			graphics.lineTo(_xMax, _yMax);
 			
 			var x:int;
 			
 			for (var i:int = 0; i < xLabels.length; i++) {
-				x = xMin + (xMax - xMin) * i / (xLabels.length - 1);
-				graphics.moveTo(x, yMax);
-				graphics.lineTo(x, yMax + 5);
+				x = _xMin + (_xMax - _xMin) * i / (xLabels.length - 1);
+				graphics.moveTo(x, _yMax);
+				graphics.lineTo(x, _yMax + 5);
 				
 				var txt:TextField = new TextField();
 				txt.text = xLabels[i].toString();
@@ -213,9 +213,9 @@
 				txt.setTextFormat(new TextFormat("Verdana", xLabelStyle.size, xLabelStyle.color));
 				txt.autoSize = TextFormatAlign.RIGHT;
 				txt.x = x - txt.width / 2;
-				txt.x = Math.max(xMin, txt.x);
-				txt.x = Math.min(xMax - txt.width, txt.x);
-				txt.y = yMax + 6;
+				txt.x = Math.max(_xMin, txt.x);
+				txt.x = Math.min(_xMax - txt.width, txt.x);
+				txt.y = _yMax + 6;
 				
 				addChild(txt);
 				

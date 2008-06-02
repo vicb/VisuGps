@@ -52,6 +52,11 @@
 		public function get yLabelStyle():LabelStyle { return _yLabelStyle; }
 		public function set yLabelStyle(value:LabelStyle):void { _yLabelStyle = value; }
 		
+		public function get xMin():int { return _xMin; }
+		public function get xMax():int { return _xMax; }
+		public function get yMin():int { return _yMin; }
+		public function get yMax():int { return _yMax; }
+		
 		public function addSerie(serie:Serie):void {
 			series.push(serie);
 		}

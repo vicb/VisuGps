@@ -1,7 +1,9 @@
 ﻿package fr.victorb.chart 
 {
 	import com.hexagonstar.util.debug.Debug;
+	import flash.display.Sprite;
 	import flash.events.Event;
+	import flash.events.MouseEvent;
 	import fr.victorb.component.MyThumb;
 	import mx.controls.HSlider;
 	import mx.controls.sliderClasses.Slider;
@@ -15,20 +17,22 @@
 	{
 		private var charts:Array = new Array();
 		private var sliders:Array = new Array();
+		private var cursor:Sprite;
+		private var cursorCallback:Function = null;
 			
-		public function Charts() 
+		public function Charts(cursorCallback:Function) 
 		{
 			super();
+			this.cursorCallback = cursorCallback;
 			addEventListener("resize", doChartsLayout);
+			addEventListener("mouseMove", onMouseMove);
 		}
 		
 		public function addChart(chart:Chart):void {
-			Debug.trace("+addchart");
 			charts.push(chart);
 			addChild(chart);
 			chart.x = 0;
 			chart.y = 20;
-			Debug.trace("+addchart 1");
 			var slider:HSlider = new HSlider();
 			slider.y = 10;
 			slider.x = 0;
@@ -38,21 +42,25 @@
 			slider.sliderThumbClass =  MyThumb;
 			slider.setStyle("fillColors", [ 0xFFFFFF, chart.getColor()]);
 			slider.dataTipFormatFunction = formatTip(sliders.length);
-			Debug.trace("+addchart 2");
 			slider.addEventListener("change", onSliderChange);		
 			sliders.push(slider);
-			Debug.trace("+addchart 3");
 			addChild(slider);
-			Debug.trace("-addchart 4");
-			
 		}
 			
-		private function doChartsLayout(event:Event):void {
-			Debug.trace("+chartsLayout");
+		private function onMouseMove(event:MouseEvent):void {
+			if (cursor &&
+				event.stageX >= charts[0].xMin &&
+				event.stageX <= charts[0].xMax) {
+					cursor.x = event.stageX;
+					cursor.y = 0;
+					cursorCallback(cursor.x - charts[0].xMin) * 1000 / (charts[0].xMax - charts[0].xMin);
+				}
 			
+			
+		}
+		private function doChartsLayout(event:Event):void {	
 			if (charts.length == 0) return
 			
-			Debug.trace("++chartsLayout");
 			var sliderWidth:int = width / charts.length;
 			
 			for (var i:int = 0; i < charts.length; i++) {
@@ -62,6 +70,14 @@
 				sliders[i].width = sliderWidth;
 				charts[i].draw();
 			}
+			
+			if (cursor) removeChild(cursor);
+			
+			cursor = new Sprite();
+			cursor.graphics.lineStyle(2, 0xffcc00);			
+			cursor.graphics.moveTo(0, charts[0].yMin + 20);
+			cursor.graphics.lineTo(0, charts[0].yMax + 20);			
+			addChild(cursor);
 			
 			Debug.trace("-chartsLayout");	
 			

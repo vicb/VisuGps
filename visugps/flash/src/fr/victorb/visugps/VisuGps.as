@@ -8,6 +8,7 @@
 	import com.google.maps.controls.ZoomControl;
 	import com.google.maps.LatLngBounds;
 	import com.google.maps.MapMouseEvent;
+	import com.google.maps.overlays.Marker;
 	import com.google.maps.overlays.Polyline;
 	import com.google.maps.overlays.PolylineOptions;
 	import com.google.maps.LatLng;
@@ -46,6 +47,10 @@
 		private var measurePoints:Array = new Array();
 		private var measureLine:Polyline = null;
 		
+		private var pilotMarker:Marker;
+		
+		private var track:Track;
+		
 		public function VisuGps(key:String)
 		{
 			map = new Map();
@@ -76,14 +81,19 @@
 			//map.addEventListener("click", onLeftClick);
 			layout.addChild(mapHolder);
 			
-			charts = new Charts();
+			charts = new Charts(setPilotPosition);
 			charts.percentHeight = 25;
 			charts.percentWidth = 100;
 			charts.x = 0;
 			charts.y = 0;
 			layout.addChild(charts);
-
+			
 			Debug.trace("-init");
+		}
+		
+		public function setPilotPosition(value:int):void {
+			var index:int = value * track.getLength() / 1000;
+			pilotMarker.setLatLng(new LatLng(track.getLat(index), track.getLon(index)));				
 		}
 		//////////////////////////////////		
 		private function doMapLayout(event:Event):void {
@@ -110,8 +120,6 @@
 			measureLine = new Polyline(measurePoints, options);			
 			
 			map.addOverlay(measureLine);
-			
-			
 			
 		}
 		
@@ -173,19 +181,24 @@
 			myControl.text("a\nb\ncdefghij");
 			map.addControl(myControl);
 			
+			track = new Track;
 			
-			new Track().load("http://www.victorb.fr/visugps/php/vg_proxy.php?track=http://www.victorb.fr/track/2005-05-25.igc", 
-					         onTrackReady)		
+			track.load("http://www.victorb.fr/visugps/php/vg_proxy.php?track=http://www.victorb.fr/track/2005-05-25.igc", 
+					    onTrackReady)		
 		}		
 		
 		private function onTrackReady(track:Track):void {
 			Debug.trace("++track ready");
 			
+			pilotMarker = new Marker(new LatLng(track.getLat(0), track.getLon(0)));
+			map.addOverlay(pilotMarker);
+			
+			Debug.trace("++track ready 1");
+			
 			var points:Array = new Array;
 			var point:LatLng;
 			var bounds:LatLngBounds = new LatLngBounds();
-			
-			
+						
 			for (var i:int = 0; i < track.getLength(); i++) {
 				point = new LatLng(track.getLat(i), track.getLon(i));
 				points.push(point);
@@ -219,6 +232,8 @@
 			charts.addChart(chart);
 			
 			charts.setChartsAlpha([100, 10, 10]);
+			
+			
 		}
 
 	}

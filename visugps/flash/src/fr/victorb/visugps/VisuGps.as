@@ -27,7 +27,8 @@
 	import fr.victorb.chart.ChartType;
 	import fr.victorb.chart.Serie;
 	import fr.victorb.visugps.TextControl;
-	import fr.victorb.visugps.Track;
+	import fr.victorb.visugps.Track; 
+	import fr.victorb.chart.ChartEvent;
 	import mx.containers.HBox;
 	import mx.containers.Panel;
 	import mx.containers.VBox;
@@ -81,11 +82,16 @@
 			//map.addEventListener("click", onLeftClick);
 			layout.addChild(mapHolder);
 			
-			charts = new Charts(setPilotPosition);
+			charts = new Charts();
 			charts.percentHeight = 25;
 			charts.percentWidth = 100;
 			charts.x = 0;
 			charts.y = 0;
+			charts.addEventListener(ChartEvent.MOVE, onChartMove);
+			charts.addEventListener(ChartEvent.WHEEL_DOWN, onChartWheelDown);
+			charts.addEventListener(ChartEvent.WHEEL_UP, onChartWheelUp);
+			charts.addEventListener(ChartEvent.CLICK, onChartClick);
+
 			layout.addChild(charts);
 			
 			Debug.trace("-init");
@@ -95,7 +101,27 @@
 			var index:int = value * track.getLength() / 1000;
 			pilotMarker.setLatLng(new LatLng(track.getLat(index), track.getLon(index)));				
 		}
-		//////////////////////////////////		
+		//////////////////////////////////	
+		private function onChartMove(event:ChartEvent):void {
+			setPilotPosition(event.value);
+		}
+		
+		private function onChartWheelUp(event:ChartEvent):void {
+			onChartClick(event);
+			map.zoomIn();
+		}
+
+		private function onChartWheelDown(event:ChartEvent):void {
+			onChartClick(event);
+			map.zoomOut();
+		}
+		
+		private function onChartClick(event:ChartEvent):void {
+			var index:int = event.value * track.getLength() / 1000;
+			map.setCenter(new LatLng(track.getLat(index), track.getLon(index)));
+		}
+		
+		
 		private function doMapLayout(event:Event):void {
 			Debug.trace("resize map");
 			map.setSize(new Point(mapHolder.width, mapHolder.height));

@@ -17,15 +17,15 @@
 	{
 		private var charts:Array = new Array();
 		private var sliders:Array = new Array();
-		private var cursor:Sprite;
-		private var cursorCallback:Function = null;
+		private var cursor:Sprite;		
 			
-		public function Charts(cursorCallback:Function) 
+		public function Charts() 
 		{
 			super();
-			this.cursorCallback = cursorCallback;
 			addEventListener("resize", doChartsLayout);
 			addEventListener("mouseMove", onMouseMove);
+			addEventListener("mouseWheel", onMouseWheel);
+			addEventListener("click", onMouseClick);
 		}
 		
 		public function addChart(chart:Chart):void {
@@ -46,6 +46,14 @@
 			sliders.push(slider);
 			addChild(slider);
 		}
+		
+		private function onMouseClick(event:MouseEvent):void {
+			if (cursor) {
+				var chartEvent:ChartEvent = new ChartEvent(ChartEvent.CLICK,
+														   (cursor.x - charts[0].xMin) * 1000 / (charts[0].xMax - charts[0].xMin));
+				dispatchEvent(chartEvent);					
+			}
+		}
 			
 		private function onMouseMove(event:MouseEvent):void {
 			if (cursor &&
@@ -53,11 +61,27 @@
 				event.stageX <= charts[0].xMax) {
 					cursor.x = event.stageX;
 					cursor.y = 0;
-					cursorCallback(cursor.x - charts[0].xMin) * 1000 / (charts[0].xMax - charts[0].xMin);
+					var chartEvent:ChartEvent = new ChartEvent(ChartEvent.MOVE,
+															   (cursor.x - charts[0].xMin) * 1000 / (charts[0].xMax - charts[0].xMin));
+					dispatchEvent(chartEvent);					
 				}
-			
-			
 		}
+
+		private function onMouseWheel(event:MouseEvent):void {
+			if (cursor) {
+				var chartEvent:ChartEvent;
+				if (event.delta < 0) {
+					chartEvent= new ChartEvent(ChartEvent.WHEEL_DOWN,
+											   (cursor.x - charts[0].xMin) * 1000 / (charts[0].xMax - charts[0].xMin));
+				} else {
+					chartEvent = new ChartEvent(ChartEvent.WHEEL_UP,
+												(cursor.x - charts[0].xMin) * 1000 / (charts[0].xMax - charts[0].xMin));			   
+				}
+			dispatchEvent(chartEvent);							
+			}
+		}		
+		
+		
 		private function doChartsLayout(event:Event):void {	
 			if (charts.length == 0) return
 			

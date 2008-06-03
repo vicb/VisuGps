@@ -156,10 +156,10 @@
 		 * @return time at the specified point
 		 */
 		public function getTime(i:int) : String {
-			if (track.time.hour is String &&
-			    track.time.min is String &&
-				track.time.sec is String) {
-					return track.time.hour + ":" + track.time.min + ":" + track.time.sec;
+			if (track.time.hour[i] is Number &&
+			    track.time.min[i] is Number &&
+				track.time.sec[i] is Number) {
+					return track.time.hour[i] + ":" + track.time.min[i] + ":" + track.time.sec[i];
 				} else {
 					return null;
 				}

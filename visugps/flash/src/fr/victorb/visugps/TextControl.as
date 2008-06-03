@@ -43,13 +43,12 @@ import com.google.maps.interfaces.IMap;
 			label.text = text;
 			label.selectable = false;
 			label.autoSize = TextFieldAutoSize.LEFT;
-
+			var format:TextFormat = new TextFormat("Verdana", 10);
+			format.leftMargin = 3;
+			format.rightMargin = 3;
+			label.setTextFormat(format);
+			
 			if (size) {
-				var format:TextFormat = new TextFormat("Verdana", 10);
-				format.leftMargin = 3;
-				format.rightMargin = 3;
-				label.setTextFormat(format);
-					
 				background.graphics.beginFill(0xFFFFCC, 0.8);
 				background.graphics.lineStyle(1, 0x000000);
 				background.graphics.drawRoundRect(0, 0, label.width, label.height, 8, 8);

@@ -52,6 +52,8 @@
 		
 		private var track:Track;
 		
+		private var infoControl:TextControl;
+		
 		public function VisuGps(key:String)
 		{
 			map = new Map();
@@ -62,7 +64,6 @@
 
 		public function setSize(size:Point):void {
 			map.setSize(size);
-			//chart.draw();
 		}
 		
 		public function init(panel:Panel):void {
@@ -99,7 +100,15 @@
 		
 		public function setPilotPosition(value:int):void {
 			var index:int = value * track.getLength() / 1000;
-			pilotMarker.setLatLng(new LatLng(track.getLat(index), track.getLon(index)));				
+			pilotMarker.setLatLng(new LatLng(track.getLat(index), track.getLon(index)));
+			index = value * track.getChartLength() / 1000;			
+			infoControl.text("..:iNfO\n" +
+			                 "[hV]" + track.getElevation(index) + "m\n" + 
+						     "[hS]" + track.getGroundElevation(index) + "m\n" +
+		    				 "[hR]" + Math.max(0, track.getElevation(index) - track.getGroundElevation(index)) + "m\n" +
+			    			 "[Vz]" + track.getVario(index) + "m/s\n" +
+						     "[Vx]" + track.getSpeed(index) + "km/h\n" +
+						     "[Th]" + track.getTime(index), false);			
 		}
 		//////////////////////////////////	
 		private function onChartMove(event:ChartEvent):void {
@@ -203,9 +212,15 @@
 						  5,
 						  MapType.PHYSICAL_MAP_TYPE);
 			
-			var myControl:TextControl = new TextControl(new ControlPosition(ControlPosition.ANCHOR_BOTTOM_RIGHT, 7, 7));
-			myControl.text("a\nb\ncdefghij");
-			map.addControl(myControl);
+			infoControl = new TextControl(new ControlPosition(ControlPosition.ANCHOR_BOTTOM_RIGHT, 7, 10));
+			infoControl.text("..:iNfO\n" +
+			                 "[hV]9999m\n" + 
+						     "[hV]9999m\n" +
+		    				 "[hV]9999m\n" +
+			    			 "[Vz]99m/s\n" +
+						     "[Vx]999km/h\n" +
+						     "[Th]99:99:99");
+			map.addControl(infoControl);
 			
 			track = new Track;
 			
@@ -216,8 +231,9 @@
 		private function onTrackReady(track:Track):void {
 			Debug.trace("++track ready");
 			
-			pilotMarker = new Marker(new LatLng(track.getLat(0), track.getLon(0)));
+			pilotMarker = new Marker(new LatLng(0, 0));			
 			map.addOverlay(pilotMarker);
+			setPilotPosition(0);
 			
 			Debug.trace("++track ready 1");
 			
@@ -249,7 +265,7 @@
 			chart.setHorizontalLabels(track.labels());
 			charts.addChart(chart);	
 			chart = new Chart();
-			chart.addSerie(new Serie("Vx", track.speed(), new ChartType(ChartType.CHART_LINE), 0x00ff00));
+			chart.addSerie(new Serie("Vx", track.speed(), new ChartType(ChartType.CHART_LINE), 0x008800));
 			chart.setHorizontalLabels(track.labels());
 			charts.addChart(chart);
 			chart = new Chart();

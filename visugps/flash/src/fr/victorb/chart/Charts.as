@@ -23,9 +23,9 @@
 		{
 			super();
 			addEventListener("resize", doChartsLayout);
-			addEventListener("mouseMove", onMouseMove);
-			addEventListener("mouseWheel", onMouseWheel);
-			addEventListener("click", onMouseClick);
+			addEventListener("mouseMove", onMouseMove, true);
+			addEventListener("mouseWheel", onMouseWheel, true);
+			addEventListener("click", onMouseClick, true);
 		}
 		
 		public function addChart(chart:Chart):void {

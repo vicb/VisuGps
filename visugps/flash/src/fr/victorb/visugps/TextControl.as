@@ -40,7 +40,7 @@ import com.google.maps.interfaces.IMap;
 		}
 	  
 		public function text(text:String, size:Boolean = true):void {
-			label.text = text;
+			label.htmlText = text;
 			label.selectable = false;
 			label.autoSize = TextFieldAutoSize.LEFT;
 			var format:TextFormat = new TextFormat("Verdana", 10);

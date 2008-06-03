@@ -84,13 +84,13 @@
 			var txt:TextField = new TextField();
 			txt.text = "9999";
 			txt.autoSize = TextFieldAutoSize.LEFT;
-			txt.setTextFormat(new TextFormat("Verdana", yLabelStyle.size));
+			txt.setTextFormat(new TextFormat("Verdanaemb", yLabelStyle.size));
 			
 			_xMin = leftPadding + 8 + txt.width;
 			_xMax = width - rightPadding;
 			Debug.trace("_xMax: " + _xMax);
 			
-			txt.setTextFormat(new TextFormat("Verdana", xLabelStyle.size));
+			txt.setTextFormat(new TextFormat("Verdanaemb", xLabelStyle.size));
 			
 			_yMin = topPadding;
 			_yMax = height - bottomPadding - txt.height - 6;
@@ -186,7 +186,8 @@
 				
 				txt.selectable = false;
 				txt.cacheAsBitmap = true;
-				txt.setTextFormat(new TextFormat("Verdana", yLabelStyle.size, yLabelStyle.color));
+				txt.setTextFormat(new TextFormat("Verdanaemb", yLabelStyle.size, yLabelStyle.color));
+				txt.embedFonts = true;
 				txt.autoSize = TextFormatAlign.RIGHT;
 				txt.x = _xMin - 8 - txt.width;
 				txt.y = y - txt.height / 2;
@@ -215,7 +216,8 @@
 				var txt:TextField = new TextField();
 				txt.text = xLabels[i].toString();
 				txt.selectable = false;
-				txt.setTextFormat(new TextFormat("Verdana", xLabelStyle.size, xLabelStyle.color));
+				txt.setTextFormat(new TextFormat("Verdanaemb", xLabelStyle.size, xLabelStyle.color));
+				txt.embedFonts = true;				
 				txt.autoSize = TextFormatAlign.RIGHT;
 				txt.x = x - txt.width / 2;
 				txt.x = Math.max(_xMin, txt.x);

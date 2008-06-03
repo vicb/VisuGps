@@ -37,6 +37,10 @@
 	
 	public class VisuGps 
 	{
+		
+		[Embed(systemFont='Verdana', fontName="Verdanaemb", mimeType="application/x-font-truetype")]
+		private static const FONT_VERDANA:String;
+		
 		private var map:Map;		
 		
 		private var layout:VBox;
@@ -102,7 +106,7 @@
 			var index:int = value * track.getLength() / 1000;
 			pilotMarker.setLatLng(new LatLng(track.getLat(index), track.getLon(index)));
 			index = value * track.getChartLength() / 1000;			
-			infoControl.text("..:iNfO\n" +
+			infoControl.text("<b>..:iNfO</b>\n" +
 			                 "[hV]" + track.getElevation(index) + "m\n" + 
 						     "[hS]" + track.getGroundElevation(index) + "m\n" +
 		    				 "[hR]" + Math.max(0, track.getElevation(index) - track.getGroundElevation(index)) + "m\n" +
@@ -196,9 +200,6 @@
 				default:
 					measureState = MeasureState.MEAS_OFF;
 			}
-			
-			
-			
 		}
 			
 		private function onMapReady(event:Event):void {
@@ -213,7 +214,7 @@
 						  MapType.PHYSICAL_MAP_TYPE);
 			
 			infoControl = new TextControl(new ControlPosition(ControlPosition.ANCHOR_BOTTOM_RIGHT, 7, 10));
-			infoControl.text("..:iNfO\n" +
+			infoControl.text("<b>..:iNfO</b>\n" +
 			                 "[hV]9999m\n" + 
 						     "[hV]9999m\n" +
 		    				 "[hV]9999m\n" +
@@ -227,6 +228,23 @@
 			track.load("http://www.victorb.fr/visugps/php/vg_proxy.php?track=http://www.victorb.fr/track/2005-05-25.igc", 
 					    onTrackReady)		
 		}		
+		
+		private function onTrackClick(event:MapMouseEvent):void {
+			Debug("track click");
+			var latlng:LatLng = event.latLng;
+			var lat:Number = latlng.lat();
+			var lng:Number = latlng.lng();
+			
+			for (var i:int = 0; i < track.getLength(); i++) {
+				if (track.getLat(i) == lat &&
+					track.getLon(i) == lng) {
+						setPilotPosition(1000 * i / track.getLength());
+						break;
+					}
+			}
+			
+			
+		}
 		
 		private function onTrackReady(track:Track):void {
 			Debug.trace("++track ready");
@@ -257,7 +275,8 @@
 				});
 			var line:Polyline = new Polyline(points, options);
 			
-			map.addOverlay(line);						
+			map.addOverlay(line);	
+			line.addEventListener(MapMouseEvent.CLICK, onTrackClick);
 					
 			var chart:Chart = new Chart();
 			chart.addSerie(new Serie("Elevation", track.elevation(), new ChartType(ChartType.CHART_LINE), 0xff0000));
@@ -274,8 +293,6 @@
 			charts.addChart(chart);
 			
 			charts.setChartsAlpha([100, 10, 10]);
-			
-			
 		}
 
 	}

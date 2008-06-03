@@ -4,7 +4,7 @@
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
-	import fr.victorb.component.MyThumb;
+	import fr.victorb.component.BigThumb;
 	import mx.controls.HSlider;
 	import mx.controls.sliderClasses.Slider;
 	import mx.core.UIComponent;
@@ -39,7 +39,7 @@
 			slider.minimum = 0;
 			slider.maximum = 100;
 			slider.liveDragging = true;
-			slider.sliderThumbClass =  MyThumb;
+			slider.sliderThumbClass =  BigThumb;
 			slider.setStyle("fillColors", [ 0xFFFFFF, chart.getColor()]);
 			slider.dataTipFormatFunction = formatTip(sliders.length);
 			slider.addEventListener(Event.CHANGE, onSliderChange);		

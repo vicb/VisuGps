@@ -9,6 +9,7 @@
 	import com.google.maps.LatLngBounds;
 	import com.google.maps.MapMouseEvent;
 	import com.google.maps.overlays.Marker;
+	import com.google.maps.overlays.MarkerOptions;
 	import com.google.maps.overlays.Polyline;
 	import com.google.maps.overlays.PolylineOptions;
 	import com.google.maps.LatLng;
@@ -275,7 +276,19 @@
 		private function onTrackReady(track:Track):void {
 			Debug.trace("++track ready");
 			
-			pilotMarker = new Marker(new LatLng(0, 0));			
+			var markerOptions:MarkerOptions = new MarkerOptions( {
+				strokeStyle: {
+					color: 0x000000
+				  },
+				  fillStyle: {
+					color: 0x111188,
+					alpha: 0.8
+				  },
+				  radius: 7,
+				  hasShadow: true
+				});   				
+
+			pilotMarker = new Marker(new LatLng(0, 0), markerOptions);			
 			map.addOverlay(pilotMarker);
 			setPilotPosition(0);
 			
@@ -290,6 +303,7 @@
 				trackPoints.push(point);
 				bounds.extend(point);
 			}
+			
 			var options:PolylineOptions;
 			
 			map.setCenter(bounds.getCenter(), map.getBoundsZoomLevel(bounds));

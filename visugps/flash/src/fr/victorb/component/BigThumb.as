@@ -7,10 +7,10 @@
 	* ...
 	* @author DefaultUser (Tools -> Custom Arguments...)
 	*/
-	public class MyThumb extends SliderThumb
+	public class BigThumb extends SliderThumb
 	{
 		
-		public function MyThumb() 
+		public function BigThumb() 
 		{
 			super();
             this.width=15;

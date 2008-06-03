@@ -18,25 +18,27 @@
     <script type="text/javascript" src="./lib/swfobject/swfobject.js"></script>
 
     <script type="text/javascript">
-    swfobject.embedSWF("./flash/bin/vgpsflash.swf", "map", "300", "120", "9.0.0");
+
     </script>
 
 
 
     <script>
          var trackName = decodeURIComponent(location.search) || 'noparam';
+         var proxy = "http://victorb.fr/visugps/php/vg_proxy.php?";
 
           if (m = /^\?track=(.*)$/i.exec(trackName)) {
-              trackName = m[1];
+              trackName = proxy + "track=" + m[1];
           } else {
-              trackName = location.href.replace(/[\w\.]*$/, 'test.igc');
+              trackName = proxy + "track=" + location.href.replace(/[\w\.]*$/, 'test.igc');
           }
-        });
 
-        function cleanMap() {
-            kMap.clean();
-            kMap = null;
-        }
+        swfobject.embedSWF("./flash/bin/vgpsflash.swf",
+                           "map", 
+                           "300", "200", 
+                           "9.0.0", 
+                           "expressInstall.swf",
+                           {trackUrl:trackName});
 
     </script>
 

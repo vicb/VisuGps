@@ -18,6 +18,8 @@
 	import com.google.maps.styles.StrokeStyle;
 	import com.hexagonstar.util.debug.Debug;
 	import flash.display.DisplayObject;
+	import flash.display.LoaderInfo;
+	import flash.display.MovieClip;
 	import flash.display.Sprite;
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
@@ -224,9 +226,17 @@
 			map.addControl(infoControl);
 			
 			track = new Track;
+			Debug.trace("+url");
 			
-			track.load("http://www.victorb.fr/visugps/php/vg_proxy.php?track=http://www.victorb.fr/track/2005-05-25.igc", 
-					    onTrackReady)		
+			var params:Object = map.root.loaderInfo.parameters;
+					
+			if ("trackUrl" in params) {
+				track.load(params.trackUrl, onTrackReady)
+			} else {
+				track.load("http://www.victorb.fr/visugps/php/vg_proxy.php?track=http://www.victorb.fr/track/2005-05-25.igc", 
+							onTrackReady)												
+			}
+			Debug.trace("-url");
 		}		
 		
 		private function onTrackClick(event:MapMouseEvent):void {
@@ -280,7 +290,7 @@
 					
 			var chart:Chart = new Chart();
 			chart.addSerie(new Serie("Elevation", track.elevation(), new ChartType(ChartType.CHART_LINE), 0xff0000));
-			chart.addSerie(new Serie("Ground elevation", track.groundElevation(), new ChartType(ChartType.CHART_AREA), 0x755545));
+			chart.addSerie(new Serie("Ground elevation", track.groundElevation(), new ChartType(ChartType.CHART_AREA), 0x957565));
 			chart.setHorizontalLabels(track.labels());
 			charts.addChart(chart);	
 			chart = new Chart();

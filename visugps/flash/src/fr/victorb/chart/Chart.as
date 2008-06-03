@@ -182,8 +182,7 @@
 				graphics.lineTo(_xMin - 5, y);
 				
 				var txt:TextField = new TextField();
-				txt.text = Math.round(yLabel).toString();
-				
+				txt.text = ((yLabel < 99)?Math.round(yLabel * 10) / 10:Math.round(yLabel)).toString();				
 				txt.selectable = false;
 				txt.cacheAsBitmap = true;
 				txt.setTextFormat(new TextFormat("Verdanaemb", yLabelStyle.size, yLabelStyle.color));

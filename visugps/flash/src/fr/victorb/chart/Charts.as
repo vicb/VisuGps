@@ -22,10 +22,10 @@
 		public function Charts() 
 		{
 			super();
-			addEventListener("resize", doChartsLayout);
-			addEventListener("mouseMove", onMouseMove, true);
-			addEventListener("mouseWheel", onMouseWheel, true);
-			addEventListener("click", onMouseClick, true);
+			addEventListener(Event.RESIZE, doChartsLayout);
+			addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove, true);
+			addEventListener(MouseEvent.MOUSE_WHEEL, onMouseWheel, true);
+			addEventListener(MouseEvent.CLICK, onMouseClick, true);
 		}
 		
 		public function addChart(chart:Chart):void {
@@ -42,7 +42,7 @@
 			slider.sliderThumbClass =  MyThumb;
 			slider.setStyle("fillColors", [ 0xFFFFFF, chart.getColor()]);
 			slider.dataTipFormatFunction = formatTip(sliders.length);
-			slider.addEventListener("change", onSliderChange);		
+			slider.addEventListener(Event.CHANGE, onSliderChange);		
 			sliders.push(slider);
 			addChild(slider);
 		}

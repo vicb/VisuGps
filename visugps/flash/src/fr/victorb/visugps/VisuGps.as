@@ -57,6 +57,7 @@
 		private var pilotMarker:Marker;
 		
 		private var track:Track;
+		private var trackPoints:Array;
 		
 		private var infoControl:TextControl;
 		
@@ -84,9 +85,9 @@
 			mapHolder.addChild(map);
 			mapHolder.percentHeight = 75;
 			mapHolder.percentWidth = 100;
-			mapHolder.addEventListener("resize", doMapLayout);
+			mapHolder.addEventListener(Event.RESIZE, doMapLayout);
 			//map.addEventListener(, onRightClick);
-			//map.addEventListener("click", onLeftClick);
+			map.addEventListener(MapMouseEvent.CLICK, onLeftClick);
 			layout.addChild(mapHolder);
 			
 			charts = new Charts();
@@ -104,8 +105,9 @@
 			Debug.trace("-init");
 		}
 		
-		public function setPilotPosition(value:int):void {
+		public function setPilotPosition(value:int):void {			
 			var index:int = value * track.getLength() / 1000;
+			Debug.trace("spp [" + value + "," + index + "]");
 			pilotMarker.setLatLng(new LatLng(track.getLat(index), track.getLon(index)));
 			index = value * track.getChartLength() / 1000;			
 			infoControl.text("<b>..:iNfO</b>\n" +
@@ -138,7 +140,6 @@
 		
 		
 		private function doMapLayout(event:Event):void {
-			Debug.trace("resize map");
 			map.setSize(new Point(mapHolder.width, mapHolder.height));
 			
 		}
@@ -172,6 +173,19 @@
 			//}
 			if (measureState == MeasureState.MEAS_START) {
 				measurePoints.push(event.latLng);
+			} else {
+				var bestDistance:Number = trackPoints[0].distanceFrom(event.latLng);
+				var bestIndex:int = 0;
+				for (var i:int = 0; i < trackPoints.length; i++) {
+					if (trackPoints[i].distanceFrom(event.latLng) < bestDistance) {
+						bestDistance = trackPoints[i].distanceFrom(event.latLng);
+						bestIndex = i;
+					}
+				}
+				Debug.trace("click : " + bestIndex);
+				
+				setPilotPosition(1000 * bestIndex / (trackPoints.length - 1));
+				charts.setCursorPosition(1000 * bestIndex / (trackPoints.length - 1));
 			}
 		}		
 
@@ -240,10 +254,12 @@
 		}		
 		
 		private function onTrackClick(event:MapMouseEvent):void {
-			Debug("track click");
+			
 			var latlng:LatLng = event.latLng;
 			var lat:Number = latlng.lat();
 			var lng:Number = latlng.lng();
+			
+			Debug.trace("track click : " +lat + " - " + lng);
 			
 			for (var i:int = 0; i < track.getLength(); i++) {
 				if (track.getLat(i) == lat &&
@@ -265,13 +281,13 @@
 			
 			Debug.trace("++track ready 1");
 			
-			var points:Array = new Array;
-			var point:LatLng;
+			trackPoints = new Array();
+			var point:LatLng;			
 			var bounds:LatLngBounds = new LatLngBounds();
 						
 			for (var i:int = 0; i < track.getLength(); i++) {
 				point = new LatLng(track.getLat(i), track.getLon(i));
-				points.push(point);
+				trackPoints.push(point);
 				bounds.extend(point);
 			}
 			var options:PolylineOptions;
@@ -283,10 +299,9 @@
 					color: 0xFF0000,
 					thickness: 1})
 				});
-			var line:Polyline = new Polyline(points, options);
+			var line:Polyline = new Polyline(trackPoints, options);
 			
 			map.addOverlay(line);	
-			line.addEventListener(MapMouseEvent.CLICK, onTrackClick);
 					
 			var chart:Chart = new Chart();
 			chart.addSerie(new Serie("Elevation", track.elevation(), new ChartType(ChartType.CHART_LINE), 0xff0000));

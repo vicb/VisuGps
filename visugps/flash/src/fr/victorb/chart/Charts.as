@@ -47,6 +47,20 @@
 			addChild(slider);
 		}
 		
+		public function setChartsAlpha(values:Array):void {
+			for (var i:int = 0; i < values.length; i++) {
+				charts[i].setAlpha(values[i] / 100);
+				sliders[i].setThumbValueAt(0, values[i]);
+			}		
+			doChartsLayout(null);
+		}
+		
+		public function setCursorPosition(value:int):void {
+			if (cursor) {
+				cursor.x = charts[0].xMin + (charts[0].xMax - charts[0].xMin) * value / 1000;			
+			}
+		}
+		
 		private function onMouseClick(event:MouseEvent):void {
 			if (cursor) {
 				var chartEvent:ChartEvent = new ChartEvent(ChartEvent.CLICK,
@@ -114,13 +128,7 @@
 				   }
 		}
 		
-		public function setChartsAlpha(values:Array):void {
-			for (var i:int = 0; i < values.length; i++) {
-				charts[i].setAlpha(values[i] / 100);
-				sliders[i].setThumbValueAt(0, values[i]);
-			}		
-			doChartsLayout(null);
-		}
+
 		
 		private function onSliderChange(event:Event):void {
 			var slider:Object = event.target;

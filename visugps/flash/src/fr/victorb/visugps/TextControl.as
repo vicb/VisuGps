@@ -21,39 +21,40 @@ import com.google.maps.controls.ControlPosition;
 import com.google.maps.controls.ControlBase;
 import com.google.maps.interfaces.IMap;
 
-	public class TextControl extends ControlBase {
-	  
-		private var label:TextField = new TextField();
-		private var background:Shape = new Shape();
-		
-		/**
-		* Constructor of custom control.
-		* @constructor.
-		* @param controlColour  Colour transform applied to control's black buttons.
-		*/
-		public function TextControl(position: ControlPosition) {
-			// Control will be placed at the top left corner of the map,
-			// 10 pixels from the edges.
-			super(position);
-			addChild(background);
-			addChild(label);
-		}
-	  
-		public function text(text:String, size:Boolean = true):void {
-			label.htmlText = text;
-			label.selectable = false;
-			label.autoSize = TextFieldAutoSize.LEFT;
-			var format:TextFormat = new TextFormat("Verdana", 10);
-			format.leftMargin = 3;
-			format.rightMargin = 3;
-			label.setTextFormat(format);
-			
-			if (size) {
-				background.graphics.beginFill(0xFFFFCC, 0.8);
-				background.graphics.lineStyle(1, 0x000000);
-				background.graphics.drawRoundRect(0, 0, label.width, label.height, 8, 8);
-			}
-		}
-		
-	}
+    public class TextControl extends ControlBase {
+      
+        private var label:TextField = new TextField();
+        private var background:Shape = new Shape();
+        
+        /**
+        * Constructor of custom control.
+        * @constructor.
+        * @param controlColour  Colour transform applied to control's black buttons.
+        */
+        public function TextControl(position: ControlPosition) {
+            // Control will be placed at the top left corner of the map,
+            // 10 pixels from the edges.
+            super(position);
+            addChild(background);
+            addChild(label);
+        }
+      
+        public function text(text:String, size:Boolean = true):void {
+            label.htmlText = text;
+            label.selectable = false;
+            label.autoSize = TextFieldAutoSize.LEFT;
+            var format:TextFormat = new TextFormat("Verdana", 10);
+            format.leftMargin = 3;
+            format.rightMargin = 3;
+            label.setTextFormat(format);
+            
+            if (size) {
+                background.graphics.clear();
+                background.graphics.beginFill(0xFFFFCC, 0.8);
+                background.graphics.lineStyle(1, 0x000000);
+                background.graphics.drawRoundRect(0, 0, label.width, label.height, 8, 8);
+            }
+        }
+        
+    }
 }

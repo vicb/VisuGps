@@ -12,8 +12,7 @@
 
 	private var map:VisuGps;
 	
-	public function onPanelInit(event:Event):void {
-		
+	public function onPanelInit(event:Event):void {		
 		Debug.clear();
 		Debug.trace("xml init");
 		map = new VisuGps("ABQIAAAAJPvmQMZVrrV3inIwT2t4RBQf-JSUIEMNUNF63gcoYgskNGvaZRQmUvzGcFUdj4nlylxP8SK4sRKYsg");
@@ -30,7 +29,8 @@
 			  borderColor="0x005500"
 			  borderThicknessLeft="5"
 			  borderThicknessRight="5"
-			  initialize="onPanelInit(event)">			  
+			  initialize="onPanelInit(event)"
+			  layout="absolute">			  
 	</mx:Panel>		
 		
 

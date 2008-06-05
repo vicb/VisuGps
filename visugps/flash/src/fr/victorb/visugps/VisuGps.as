@@ -86,7 +86,6 @@
         }
         
         public function init(panel:Panel):void {
-            Debug.trace( "+init");
             layout = new VBox();
             layout.x = layout.y = 0;
             layout.percentHeight = 100;
@@ -99,7 +98,7 @@
             mapHolder.percentHeight = 75;
             mapHolder.percentWidth = 100;
             mapHolder.addEventListener(Event.RESIZE, doMapLayout);
-            //map.addEventListener(, onRightClick);
+            map.addEventListener(MapMouseEvent.DOUBLE_CLICK, onRightClick);
             map.addEventListener(MapMouseEvent.CLICK, onLeftClick);
             layout.addChild(mapHolder);
             
@@ -119,13 +118,10 @@
             
             
             this.panel = panel;
-                    
-            Debug.trace("-init");
         }
         
         public function setPilotPosition(value:int):void {            
             var index:int = value * track.getLength() / 1000;
-            Debug.trace("spp [" + value + "," + index + "]");
             pilotMarker.setLatLng(new LatLng(track.getLat(index), track.getLon(index)));
             index = value * track.getChartLength() / 1000;            
             infoControl.text("<b>..:iNfO</b>\n" +
@@ -158,8 +154,6 @@
         
         
         private function doMapLayout(event:Event):void {
-            Debug.trace("mapLayout");
-            Debug.trace(panel.width);
             map.setSize(new Point(mapHolder.width, mapHolder.height));
             
         }
@@ -193,6 +187,7 @@
             //}
             if (measureState == MeasureState.MEAS_START) {
                 measurePoints.push(event.latLng);
+                onMouseMove(event);
             } else {
                 var bestDistance:Number = trackPoints[0].distanceFrom(event.latLng);
                 var bestIndex:int = 0;
@@ -202,7 +197,6 @@
                         bestIndex = i;
                     }
                 }
-                Debug.trace("click : " + bestIndex);
                 
                 setPilotPosition(1000 * bestIndex / (trackPoints.length - 1));
                 charts.setCursorPosition(1000 * bestIndex / (trackPoints.length - 1));
@@ -270,12 +264,9 @@
             } else {
                 track.load("http://www.victorb.fr/visugps/php/vg_proxy.php?track=http://www.victorb.fr/track/2005-05-25.igc")                                                
             }
-            Debug.trace("-url");
         }        
                
-        private function onTrackReady(event:TrackEvent):void {
-            Debug.trace("++track ready");
-            
+        private function onTrackReady(event:TrackEvent):void {           
             panel.removeChild(loadingMask);
                         
             var markerOptions:MarkerOptions = new MarkerOptions( {
@@ -339,21 +330,6 @@
             charts.setChartsAlpha([1, 0.1, 0.1]);
         }
 
-        private function onTrackClick(event:MapMouseEvent):void {
-            
-            var latlng:LatLng = event.latLng;
-            var lat:Number = latlng.lat();
-            var lng:Number = latlng.lng();
-            
-            Debug.trace("track click : " +lat + " - " + lng);
-            
-            for (var i:int = 0; i < track.getLength(); i++) {
-                if (track.getLat(i) == lat &&
-                    track.getLon(i) == lng) {
-                        setPilotPosition(1000 * i / track.getLength());
-                        break;
-                }
-            }
-        }           
+      
     }
 }

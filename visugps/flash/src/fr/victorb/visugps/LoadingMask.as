@@ -33,14 +33,15 @@
             progress.height = PROGRESS_HEIGHT;
             progress.setStyle("trackHeight", PROGRESS_HEIGHT);
             progress.setStyle("fontSize", PROGRESS_HEIGHT / 2);
+            progress.setStyle("barColor", 0xffaa00);
             progress.label = "Loading...";
-            progress.labelPlacement = ProgressBarLabelPlacement.BOTTOM;
+            progress.labelPlacement = ProgressBarLabelPlacement.CENTER;
             addChild(progress);            
         }
         
         private function onResize(event:Event):void {
-            graphics.lineStyle(1, 0x0000ff);
-            graphics.beginFill(0xaaaaff, 1);
+            graphics.lineStyle(1, 0xaaaaff);
+            graphics.beginFill(0xccccff, 1);
             graphics.drawRoundRect(0, 0, 
                                    width,
                                    height, 

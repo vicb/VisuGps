@@ -1,14 +1,20 @@
 ﻿package fr.victorb.chart 
 {
     import com.hexagonstar.util.debug.Debug;
+    import flash.display.Bitmap;
+    import flash.display.BitmapData;
     import flash.display.Sprite;
     import flash.events.Event;
     import flash.events.MouseEvent;
+    import flash.events.TimerEvent;
     import flash.geom.Point;
+    import flash.utils.Timer;
+    import fr.victorb.assets.AssetManager;
     import fr.victorb.component.BigThumb;
     import mx.controls.HSlider;
     import mx.controls.sliderClasses.Slider;
     import mx.core.UIComponent;
+    import mx.events.SliderEvent;
     
     /**
     * Collection of Charts
@@ -20,7 +26,18 @@
         private var sliders:Array = new Array();
         private var cursor:Sprite;    
         
-        private const SLIDER_HEIGHT:int = 20;
+        private var iconPlayPause:Bitmap;
+        private var sliderSpeed:HSlider;
+        private var playTimer:Timer;
+        private var playPosition:int = 0;
+        
+        private const SLIDER_HEIGHT:int = 25;
+        private const ICON_WIDTH:int = 16;
+        
+        private const PLAY:int = 0;
+        private const PAUSE:int = 1;
+        
+        private var playPauseStatus:int = PLAY;
             
         /**
          * Constructor
@@ -29,9 +46,26 @@
         {
             super();
             addEventListener(Event.RESIZE, doChartsLayout);
-            addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove, true);
-            addEventListener(MouseEvent.MOUSE_WHEEL, onMouseWheel, true);
-            addEventListener(MouseEvent.CLICK, onMouseClick, true);
+            addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+            addEventListener(MouseEvent.MOUSE_WHEEL, onMouseWheel);
+            addEventListener(MouseEvent.CLICK, onMouseClick);
+            
+            iconPlayPause = new AssetManager.ICON_PLAY() as Bitmap;
+            addChild(iconPlayPause);
+            iconPlayPause.x = 0;
+            iconPlayPause.y = (SLIDER_HEIGHT - iconPlayPause.height) / 2; 
+            
+            sliderSpeed = new HSlider;
+            sliderSpeed.y = SLIDER_HEIGHT / 2;
+            sliderSpeed.x = 0;
+            sliderSpeed.minimum = 0;
+            sliderSpeed.maximum = 99;
+            sliderSpeed.liveDragging = true;
+            sliderSpeed.sliderThumbClass = BigThumb;
+            sliderSpeed.setStyle("fillColors", [ 0xFFFFFF, 0]);
+            sliderSpeed.dataTipFormatFunction = function(value:int):String { return "Speed : " + value; };
+            sliderSpeed.addEventListener(Event.CHANGE, onSliderSpeedChange);   
+            addChild(sliderSpeed);            
         }
         
         /**
@@ -79,12 +113,53 @@
             }
         }
         
+        private function onPlayPause(event:MouseEvent):void {
+            removeChild(iconPlayPause)
+            if (playPauseStatus == PLAY) {
+                iconPlayPause = new AssetManager.ICON_PAUSE() as Bitmap;
+                playPauseStatus = PAUSE;                
+                playTimer = new Timer(100 - sliderSpeed.value);
+                playTimer.start();
+                playTimer.addEventListener(TimerEvent.TIMER, onPlayTick);                
+            } else {
+                iconPlayPause = new AssetManager.ICON_PLAY() as Bitmap;
+                playPauseStatus = PLAY;
+                playTimer.stop();
+            }
+            addChild(iconPlayPause);
+            iconPlayPause.x = 0;
+            iconPlayPause.y = (SLIDER_HEIGHT - iconPlayPause.height) / 2; 
+        }
+        
+        private function onSliderSpeedChange(event:SliderEvent):void {
+            playTimer.delay = 100 - event.value;
+        }
+        
+        private function onPlayTick(event:TimerEvent):void {
+            if (++playPosition == 1000) {
+                playPosition = 0;
+                onPlayPause(null);
+            } else {
+                setCursorPosition(playPosition);
+                var chartEvent:ChartEvent = new ChartEvent(ChartEvent.MOVE,
+                                                           (cursor.x - charts[0].xMin) * 1000 / (charts[0].xMax - charts[0].xMin));
+                dispatchEvent(chartEvent);                   
+            }
+        }
+        
         /**
          * Dispatch an event when the mouse click occur over a chart
          * @param	event
          */
         private function onMouseClick(event:MouseEvent):void {
-            if (globalToContent(new Point(event.stageX, event.stageY)).y < SLIDER_HEIGHT) return;
+            Debug.trace("mouse click");
+            Debug.trace(event.target.name);
+            Debug.trace(globalToContent(new Point(event.stageX, event.stageY)).x);
+            Debug.trace(globalToContent(new Point(event.stageX, event.stageY)).y);
+            if (globalToContent(new Point(event.stageX, event.stageY)).y < SLIDER_HEIGHT) {
+                if (globalToContent(new Point(event.stageX, event.stageY)).x < ICON_WIDTH) onPlayPause(event);
+                return;
+            }
             if (cursor) {
                 var chartEvent:ChartEvent = new ChartEvent(ChartEvent.CLICK,
                                                           (cursor.x - charts[0].xMin) * 1000 / (charts[0].xMax - charts[0].xMin));
@@ -135,12 +210,15 @@
         private function doChartsLayout(event:Event):void {    
             if (charts.length == 0) return
             
-            var sliderWidth:int = width / charts.length;
+            var sliderWidth:int = (width - ICON_WIDTH) / (charts.length + 1);
+            
+            sliderSpeed.x = ICON_WIDTH;
+            sliderSpeed.width = sliderWidth;
             
             for (var i:int = 0; i < charts.length; i++) {
                 charts[i].width = width;
                 charts[i].height = height - SLIDER_HEIGHT;
-                sliders[i].x = i * sliderWidth;
+                sliders[i].x = (i + 1) * sliderWidth + ICON_WIDTH;
                 sliders[i].width = sliderWidth;
                 charts[i].draw();
             }
@@ -167,7 +245,6 @@
                     break;
                 }
             }
-            
         }
         
         

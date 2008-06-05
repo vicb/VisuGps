@@ -91,6 +91,8 @@ var VisuGps = new Class({
             // Create the map, add standard controls and keyboard handler
             this.map = new google.maps.Map2(map);
             this.map.setCenter(new google.maps.LatLng(46.73986, 2.17529), 5, G_HYBRID_MAP);
+            this.map.addMapType(G_PHYSICAL_MAP);
+            this.map.addMapType(G_SATELLITE_3D_MAP);
             this.map.addControl(new google.maps.MapTypeControl());
             this.map.addControl(new google.maps.LargeMapControl());
             this.map.addControl(new google.maps.ScaleControl());

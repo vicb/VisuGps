@@ -6,6 +6,7 @@
     import com.google.maps.controls.PositionControl;
     import com.google.maps.controls.PositionControlOptions;
     import com.google.maps.controls.ZoomControl;
+    import com.google.maps.InfoWindowOptions;
     import com.google.maps.LatLngBounds;
     import com.google.maps.MapMouseEvent;
     import com.google.maps.overlays.Marker;
@@ -28,6 +29,7 @@
     import flash.events.Event;    
     import flash.events.EventDispatcher;
     import flash.text.TextField;
+    import flash.text.TextFormat;
     import fr.victorb.chart.Chart;
     import fr.victorb.chart.Charts;
     import fr.victorb.chart.ChartType;
@@ -213,18 +215,19 @@
                 case MeasureState.MEAS_START:
                     measurePoints = [event.latLng];
                     measureLine = null;
-                    layout.addEventListener("mouseMove", onMouseMove);
+                    layout.addEventListener(MapMouseEvent.MOUSE_MOVE, onMouseMove);
                     onMouseMove(event);
                 break;
                 
                 case MeasureState.MEAS_STOP:
-                    layout.removeEventListener("mouseMove", onMouseMove);
+                    layout.removeEventListener(MapMouseEvent.MOUSE_MOVE, onMouseMove);
                 
                 break;
                 
                 case MeasureState.MEAS_REMOVE:
                     map.removeOverlay(measureLine);
                     measureLine = null;
+                    measureState = MeasureState.MEAS_OFF;
                 break;
                 
                 default:
@@ -284,6 +287,33 @@
             pilotMarker = new Marker(new LatLng(0, 0), markerOptions);            
             map.addOverlay(pilotMarker);
             setPilotPosition(0);
+            
+            var iwo:InfoWindowOptions = new InfoWindowOptions({
+                  strokeStyle: {
+                    color: 0x0,
+                    thickness: 1
+                  },
+                  fillStyle: {
+                    color: 0xFFFFCC,
+                    alpha: 0.8
+                  },
+                  contentFormat: new TextFormat("Verdana", 10),
+                  width: 200,
+                  height: 30,
+                  cornerRadius: 12,
+                  padding: 5,
+                  hasCloseButton: true,
+                  hasTail: false,
+                  tailAlign: InfoWindowOptions.ALIGN_RIGHT,
+                  pointOffset: new Point(3, 8),
+                  hasShadow: true
+                });   
+            
+            iwo.contentHTML = "VisuGpsFlash";
+            
+            
+            
+            map.openInfoWindow(new LatLng(track.getLat(0), track.getLon(0)), iwo)
 
             trackControl = new TextControl(new ControlPosition(ControlPosition.ANCHOR_TOP_RIGHT, 7, 35));
             var date:Date = track.getDate();

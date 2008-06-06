@@ -236,8 +236,7 @@ class Modis {
         $y = 3 - $latIdx;
         $date = $this->date;
 
-        $url = "http://rapidfire.sci.gsfc.nasa.gov/subsets/Europe_${y}_0${x}/" .
-               "${date}/Europe_${y}_0${x}.${date}.terra.500m.jpg";
+        $url = "http://rapidfire.sci.gsfc.nasa.gov/subsets/tmp/Europe_${y}_0${x}.${date}.terra.500m.jpg";
 
         return $url;
     }

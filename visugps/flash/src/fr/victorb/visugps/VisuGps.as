@@ -7,6 +7,7 @@
     import com.google.maps.controls.PositionControlOptions;
     import com.google.maps.controls.ZoomControl;
     import com.google.maps.InfoWindowOptions;
+    import com.google.maps.interfaces.IInfoWindow;
     import com.google.maps.LatLngBounds;
     import com.google.maps.MapMouseEvent;
     import com.google.maps.overlays.Marker;
@@ -62,6 +63,7 @@
         private var measureState:int = MeasureState.MEAS_OFF;
         private var measurePoints:Array = new Array();
         private var measureLine:Polyline = null;
+        private var measureInfo:IInfoWindow = null;
         
         private var pilotMarker:Marker;
         
@@ -79,8 +81,7 @@
         {
             map = new Map();
             map.key = key;
-            map.addEventListener(MapEvent.MAP_READY, onMapReady);    
-            
+            map.addEventListener(MapEvent.MAP_READY, onMapReady);              
         }
 
         public function setSize(size:Point):void {
@@ -101,7 +102,7 @@
             mapHolder.percentWidth = 100;
             mapHolder.addEventListener(Event.RESIZE, doMapLayout);
             map.addEventListener(MapMouseEvent.DOUBLE_CLICK, onRightClick);
-            map.addEventListener(MapMouseEvent.CLICK, onLeftClick);
+            map.addEventListener(MapMouseEvent.CLICK, onLeftClick);            
             layout.addChild(mapHolder);
             
             charts = new Charts();
@@ -160,8 +161,10 @@
             
         }
             
-        private function onMouseMove(event:MapMouseEvent):void {
-            Debug.trace("Mouse move");
+        private function onMouseMove(event:MapMouseEvent):void {                        
+            
+            Debug.trace("mm+");
+            
             if (measureLine) {
                 map.removeOverlay(measureLine);
                 measureLine = null;
@@ -171,16 +174,93 @@
                     
             options = new PolylineOptions({
                 strokeStyle: new StrokeStyle({
-                    color: 0x00ff00,
-                    thickness: 1})
-                });
-                
+                    color: 0xffff00,
+                    thickness: 2})
+                });                
+              
+            measureLine = new Polyline(measurePoints.concat(event.latLng), options);  
             
-            measureLine = new Polyline(measurePoints, options);            
+            if (measureInfo) measureInfo.remove();
+            
+            var iwo:InfoWindowOptions = new InfoWindowOptions({
+                  strokeStyle: {
+                    color: 0x0,
+                    thickness: 1
+                  },
+                  fillStyle: {
+                    color: 0xFFFFCC,
+                    alpha: 0.8
+                  },
+                  titleFormat: new TextFormat("Verdana", 10), 
+                  contentFormat: new TextFormat("Verdana", 10),
+                  width: 120,
+                  height: 65,
+                  cornerRadius: 12,
+                  padding: 2,
+                  hasCloseButton: false,
+                  hasTail: false,
+                  tailAlign: InfoWindowOptions.ALIGN_RIGHT,
+                  pointOffset: new Point(80, 40),
+                  hasShadow: true
+                });   
+            
+            iwo.content = getMeasureText(measurePoints.concat(event.latLng)).title + "\n" + getMeasureText(measurePoints.concat(event.latLng)).content;
+                
+            measureInfo = map.openInfoWindow(event.latLng, iwo)            
             
             map.addOverlay(measureLine);
+            Debug.trace("mm-");            
             
         }
+        
+        private function getMeasureText(measurePoints:Array):Object {
+            var coef:Number = 1.2;
+            var trackType:String = "";
+            var distance:Number = Math.round(measureLine.getLength() / 100) / 100;
+            switch (measurePoints.length) {
+                case 2:
+                    trackType = "Distance libre";
+                    coef = 1;
+                break;
+                case 3:
+                    if (measurePoints[0].distanceFrom(measurePoints[2])  < 3000) {
+                        trackType = "Aller retour";
+                    } else {
+                        trackType = "Distance libre 1";
+                        coef = 1;
+                    }
+                    break;
+                case 4:
+                    if (measurePoints[0].distanceFrom(measurePoints[3]) < 3000) {
+                        var fai:Boolean = false;
+                        for (var i:int = 0; i < 3; i++) {
+                            if (measurePoints[i].distanceFrom(measurePoints[i + 1]) < 280 * distance) {
+                                fai = false;
+                                break;
+                            }
+                        }
+                        trackType = fai?"Triangle FAI":"Triangle plat";
+                        coef = fai?1.4:1.2;
+                    } else {
+                        trackType = "Distance libre 2";
+                        coef = 1;
+                    }
+                    break;
+                case 5:
+                    if (measurePoints[0].distanceFrom(measurePoints[4]) < 3000) {
+                        trackType = "Quadrilatere";
+                    }
+                default:
+                    trackType = "Distance";
+                    coef = 0;
+            }
+            
+        return { title: trackType,
+                 content: distance + "km" + (coef?"\n" + Math.round(distance * coef * 100) / 100 + "pts":"") };
+        
+        }
+        
+        
         
         private function onLeftClick(event:MapMouseEvent):void {
             Debug.trace("left");
@@ -188,9 +268,9 @@
             //    onRightClick(event);
             //    return;
             //}
-            if (measureState == MeasureState.MEAS_START) {
-                measurePoints.push(event.latLng);
+            if (measureState == MeasureState.MEAS_ON) {
                 onMouseMove(event);
+                measurePoints.push(event.latLng);                
             } else {
                 var bestDistance:Number = trackPoints[0].distanceFrom(event.latLng);
                 var bestIndex:int = 0;
@@ -207,28 +287,25 @@
         }        
 
         private function onRightClick(event:MapMouseEvent):void {
-            Debug.trace("right");
             measureState++;
-            Debug.trace("MS " + measureState);
-            Debug.trace("l " + measurePoints.length);
             
             switch (measureState) {
-                case MeasureState.MEAS_START:
+                case MeasureState.MEAS_ON:
                     measurePoints = [event.latLng];
-                    measureLine = null;
-                    layout.addEventListener(MapMouseEvent.MOUSE_MOVE, onMouseMove);
-                    onMouseMove(event);
+                    measureLine = null; 
+                    map.addEventListener(MapMouseEvent.MOUSE_MOVE, onMouseMove);
                 break;
                 
-                case MeasureState.MEAS_STOP:
-                    layout.removeEventListener(MapMouseEvent.MOUSE_MOVE, onMouseMove);
-                
+                case MeasureState.MEAS_STOP: 
+                    map.removeEventListener(MapMouseEvent.MOUSE_MOVE, onMouseMove);
                 break;
                 
                 case MeasureState.MEAS_REMOVE:
                     map.removeOverlay(measureLine);
                     measureLine = null;
                     measureState = MeasureState.MEAS_OFF;
+                    measureInfo.remove();
+                    measureInfo = null;
                 break;
                 
                 default:
@@ -288,34 +365,7 @@
             pilotMarker = new Marker(new LatLng(0, 0), markerOptions);            
             map.addOverlay(pilotMarker);
             setPilotPosition(0);
-            
-            var iwo:InfoWindowOptions = new InfoWindowOptions({
-                  strokeStyle: {
-                    color: 0x0,
-                    thickness: 1
-                  },
-                  fillStyle: {
-                    color: 0xFFFFCC,
-                    alpha: 0.8
-                  },
-                  contentFormat: new TextFormat("Verdana", 10),
-                  width: 200,
-                  height: 30,
-                  cornerRadius: 12,
-                  padding: 5,
-                  hasCloseButton: true,
-                  hasTail: false,
-                  tailAlign: InfoWindowOptions.ALIGN_RIGHT,
-                  pointOffset: new Point(120, 40),
-                  hasShadow: true
-                });   
-            
-            iwo.contentHTML = "VisuGpsFlash";
-            
-            
-            
-            map.openInfoWindow(new LatLng(track.getLat(0), track.getLon(0)), iwo)
-
+                       
             trackControl = new TextControl(new ControlPosition(ControlPosition.ANCHOR_TOP_RIGHT, 7, 35));
             var date:Date = track.getDate();
             trackControl.text(track.getPilot() + "\n" + date.getDay() + "/" + date.getMonth() + "/" + date.getFullYear());

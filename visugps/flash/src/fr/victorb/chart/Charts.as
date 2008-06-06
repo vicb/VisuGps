@@ -179,7 +179,7 @@
                     cursor.x = event.stageX;
                     cursor.y = 0;
                     var chartEvent:ChartEvent = new ChartEvent(ChartEvent.MOVE,
-                                                               (cursor.x - charts[0].xMin) * 1000 / (charts[0].xMax - charts[0].xMin));
+                                                               (cursor.x - charts[0].xMin) * 999 / (charts[0].xMax - charts[0].xMin));
                     dispatchEvent(chartEvent);                    
                 }
         }
@@ -209,6 +209,12 @@
          */
         private function doChartsLayout(event:Event):void {    
             if (charts.length == 0) return
+            
+            // Mouse events do not seem to always trigger without background
+            graphics.clear();
+            graphics.beginFill(0xeeeeee, 0.1);
+            graphics.drawRect(0, 0, width, height);
+            graphics.endFill();
             
             var sliderWidth:int = (width - ICON_WIDTH) / (charts.length + 1);
             

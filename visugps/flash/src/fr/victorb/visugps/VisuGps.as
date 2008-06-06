@@ -161,6 +161,7 @@
         }
             
         private function onMouseMove(event:MapMouseEvent):void {
+            Debug.trace("Mouse move");
             if (measureLine) {
                 map.removeOverlay(measureLine);
                 measureLine = null;
@@ -305,7 +306,7 @@
                   hasCloseButton: true,
                   hasTail: false,
                   tailAlign: InfoWindowOptions.ALIGN_RIGHT,
-                  pointOffset: new Point(3, 8),
+                  pointOffset: new Point(120, 40),
                   hasShadow: true
                 });   
             

@@ -2,7 +2,7 @@
 {
     
     /**
-    * ...
+    * Represents the type of a chart
     * @author Victor Berchet
     */
     public class ChartType 

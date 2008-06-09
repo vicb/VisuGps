@@ -211,7 +211,7 @@
         }
 
         /**
-         * Draw rge horizontal axis and its labels
+         * Draw the horizontal axis and its labels
          */
         private function drawHorizontalAxis():void {
             graphics.lineStyle(1);

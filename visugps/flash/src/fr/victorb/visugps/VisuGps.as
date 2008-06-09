@@ -1,46 +1,28 @@
 ﻿package fr.victorb.visugps 
 {
     import com.adobe.crypto.MD5;
-    import com.google.maps.controls.ControlPosition;
-    import com.google.maps.controls.MapTypeControl;
-    import com.google.maps.controls.PositionControl;
-    import com.google.maps.controls.PositionControlOptions;
-    import com.google.maps.controls.ZoomControl;
+    import com.google.maps.controls.*;
     import com.google.maps.InfoWindowOptions;
     import com.google.maps.interfaces.IInfoWindow;
     import com.google.maps.LatLngBounds;
     import com.google.maps.MapMouseEvent;
-    import com.google.maps.overlays.Marker;
-    import com.google.maps.overlays.MarkerOptions;
-    import com.google.maps.overlays.Polyline;
-    import com.google.maps.overlays.PolylineOptions;
+    import com.google.maps.overlays.*;
     import com.google.maps.LatLng;
     import com.google.maps.Map;
     import com.google.maps.MapEvent;
     import com.google.maps.MapType;
     import com.google.maps.styles.StrokeStyle;
     import com.hexagonstar.util.debug.Debug;
-    import flash.display.Bitmap;
-    import flash.display.DisplayObject;
-    import flash.display.LoaderInfo;
-    import flash.display.MovieClip;
-    import flash.display.Sprite;
-    import flash.events.MouseEvent;
+    import flash.display.*;
+    import flash.events.*;
     import flash.geom.Point;
-    import flash.events.Event;    
-    import flash.events.EventDispatcher;
-    import flash.text.TextField;
-    import flash.text.TextFormat;
-    import fr.victorb.chart.Chart;
-    import fr.victorb.chart.Charts;
-    import fr.victorb.chart.ChartType;
-    import fr.victorb.chart.Serie;
-    import fr.victorb.visugps.TextControl;
-    import fr.victorb.visugps.Track; 
+    import flash.text.*;
+    import fr.victorb.chart.*;
+    import fr.victorb.visugps.*; 
     import fr.victorb.chart.ChartEvent;
     import mx.containers.HBox;
-    import mx.containers.Panel;
     import mx.containers.VBox;
+    import mx.containers.Panel;
     import mx.controls.ProgressBar;
     import mx.controls.ProgressBarLabelPlacement;
     import mx.core.IUIComponent;
@@ -77,6 +59,11 @@
         
         private var panel:Panel;
         
+        
+        /**
+         * Constructor
+         * @param	key Google Map key
+         */
         public function VisuGps(key:String)
         {
             map = new Map();
@@ -84,10 +71,18 @@
             map.addEventListener(MapEvent.MAP_READY, onMapReady);              
         }
 
+        /**
+         * Resize the map when container has been resized
+         * @param	size new size
+         */
         public function setSize(size:Point):void {
             map.setSize(size);
         }
         
+        /**
+         * Create the panel layout and bind events
+         * @param	panel
+         */
         public function init(panel:Panel):void {
             layout = new VBox();
             layout.x = layout.y = 0;
@@ -119,10 +114,13 @@
             loadingMask = new LoadingMask();
             panel.addChild(loadingMask);
             
-            
             this.panel = panel;
         }
         
+        /**
+         * Move the cursor to the pilot position
+         * @param	value pilot position [0...1000]
+         */
         public function setPilotPosition(value:int):void {            
             var index:int = value * track.getLength() / 1000;
             pilotMarker.setLatLng(new LatLng(track.getLat(index), track.getLon(index)));
@@ -135,21 +133,37 @@
                              "[Vx]" + track.getSpeed(index) + "km/h\n" +
                              "[Th]" + track.getTime(index), false);            
         }
-        //////////////////////////////////    
+        
+        /**
+         * Move the pilot position when the cursor is moved on the chart
+         * @param	event
+         */
         private function onChartMove(event:ChartEvent):void {
             setPilotPosition(event.value);
         }
         
+        /**
+         * Zoom In on wheel up on the chart
+         * @param	event
+         */
         private function onChartWheelUp(event:ChartEvent):void {
             onChartClick(event);
             map.zoomIn();
         }
 
+        /**
+         * Zoom Out on wheel down on the chart
+         * @param	event
+         */
         private function onChartWheelDown(event:ChartEvent):void {
             onChartClick(event);
             map.zoomOut();
         }
         
+        /**
+         * Center the map on the current position when the chart is clicked
+         * @param	event
+         */
         private function onChartClick(event:ChartEvent):void {
             var index:int = event.value * track.getLength() / 1000;
             map.setCenter(new LatLng(track.getLat(index), track.getLon(index)));
@@ -157,14 +171,14 @@
         
         
         private function doMapLayout(event:Event):void {
-            map.setSize(new Point(mapHolder.width, mapHolder.height));
-            
+            map.setSize(new Point(mapHolder.width, mapHolder.height));            
         }
             
+        /**
+         * Handle mouse move event
+         * @param	event
+         */
         private function onMouseMove(event:MapMouseEvent):void {                        
-            
-            Debug.trace("mm+");
-            
             if (measureLine) {
                 map.removeOverlay(measureLine);
                 measureLine = null;
@@ -213,10 +227,15 @@
             
         }
         
+        /**
+         * Return the distance as text
+         * @param	measurePoints Array of point for the poly to be measured
+         * @return
+         */
         private function getMeasureText(measurePoints:Array):Object {
             var coef:Number = 1.2;
             var trackType:String = "";
-            var distance:Number = Math.round(measureLine.getLength() / 100) / 100;
+            var distance:Number = Math.round(measureLine.getLength() / 10) / 100;
             switch (measurePoints.length) {
                 case 2:
                     trackType = "Distance libre";
@@ -234,7 +253,7 @@
                     if (measurePoints[0].distanceFrom(measurePoints[3]) < 3000) {
                         var fai:Boolean = false;
                         for (var i:int = 0; i < 3; i++) {
-                            if (measurePoints[i].distanceFrom(measurePoints[i + 1]) < 280 * distance) {
+                            if (measurePoints[i].distanceFrom(measurePoints[i + 1]) < (distance * 1000)) {
                                 fai = false;
                                 break;
                             }
@@ -256,12 +275,14 @@
             }
             
         return { title: trackType,
-                 content: distance + "km" + (coef?"\n" + Math.round(distance * coef * 100) / 100 + "pts":"") };
+                 content: ((distance < 1)?distance * 100 + "m":distance + "km") + (coef?"\n" + Math.round(distance * coef * 100) / 100 + "pts":"") \
+               };        
+        }        
         
-        }
-        
-        
-        
+        /**
+         * Handle left click event 
+         * @param	event
+         */
         private function onLeftClick(event:MapMouseEvent):void {
             Debug.trace("left");
             //if (event.ctrlKey) {
@@ -286,6 +307,10 @@
             }
         }        
 
+        /**
+         * Handle the right click event
+         * @param	event
+         */
         private function onRightClick(event:MapMouseEvent):void {
             measureState++;
             
@@ -313,6 +338,10 @@
             }
         }
             
+        /**
+         * Load the track when the map is ready
+         * @param	event
+         */
         private function onMapReady(event:Event):void {
             map.enableScrollWheelZoom();
             map.enableContinuousZoom();
@@ -347,8 +376,20 @@
             }
         }        
                
+        /**
+         * Add the track to the map once loaded
+         * @param	event
+         */
         private function onTrackReady(event:TrackEvent):void {           
             panel.removeChild(loadingMask);
+            
+            Debug.trace("Track length :" + track.getLength());
+            
+            if (track.getLength() < 5) {
+                Debug.trace("format error");
+                panel.addChild(new ErrorMask("Invalid track format"));
+                return;
+            }
                         
             var markerOptions:MarkerOptions = new MarkerOptions( {
                 strokeStyle: {
@@ -410,7 +451,5 @@
             
             charts.setChartsAlpha([1, 0.1, 0.1]);
         }
-
-      
     }
 }

@@ -6,8 +6,8 @@
     import mx.controls.ProgressBarLabelPlacement;
     
     /**
-    * ...
-    * @author DefaultUser (Tools -> Custom Arguments...)
+    * Display a mask with an indeterminate progress indicator
+    * @author Victor Berchet
     */
     public class LoadingMask extends UIComponent
     {
@@ -19,14 +19,11 @@
         public function LoadingMask() 
         {
             super();
-            addEventListener(Event.RESIZE, onResize);
-            
-            opaqueBackground = true;
-            
+            addEventListener(Event.RESIZE, onResize);            
+            opaqueBackground = true;         
             x = y = 0;
             percentHeight = 100;
-            percentWidth = 100;
-            
+            percentWidth = 100;           
             progress = new ProgressBar();
             progress.indeterminate = true;
             progress.width = PROGRESS_WIDTH;
@@ -40,6 +37,7 @@
         }
         
         private function onResize(event:Event):void {
+            graphics.clear();
             graphics.lineStyle(1, 0xaaaaff);
             graphics.beginFill(0xccccff, 1);
             graphics.drawRoundRect(0, 0, 

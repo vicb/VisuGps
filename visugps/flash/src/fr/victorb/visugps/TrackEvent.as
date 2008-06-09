@@ -3,8 +3,8 @@
     import flash.events.Event;
     
     /**
-    * ...
-    * @author DefaultUser (Tools -> Custom Arguments...)
+    * Track events
+    * @author Victor Berchet
     */
     public class TrackEvent extends Event
     {

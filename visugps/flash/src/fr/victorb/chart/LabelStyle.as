@@ -1,8 +1,8 @@
 ﻿package fr.victorb.chart 
 {    
     /**
-    * ...
-    * @author DefaultUser (Tools -> Custom Arguments...)
+    * Style of chart labels
+    * @author Victor Berchet
     */
     public class LabelStyle 
     {

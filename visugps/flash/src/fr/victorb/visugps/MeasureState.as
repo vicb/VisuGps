@@ -2,8 +2,8 @@
 {
     
     /**
-    * ...
-    * @author DefaultUser (Tools -> Custom Arguments...)
+    * State of the measurment SM
+    * @author Victor Berchet
     */
     public class MeasureState 
     {

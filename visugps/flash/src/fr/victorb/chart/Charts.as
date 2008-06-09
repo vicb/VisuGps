@@ -113,6 +113,10 @@
             }
         }
         
+        /**
+         * Start or stop the cursor animation
+         * @param	event
+         */
         private function onPlayPause(event:MouseEvent):void {
             removeChild(iconPlayPause)
             if (playPauseStatus == PLAY) {
@@ -131,10 +135,18 @@
             iconPlayPause.y = (SLIDER_HEIGHT - iconPlayPause.height) / 2; 
         }
         
+        /**
+         * Set the animation speed (when the slider is moved)
+         * @param	event
+         */
         private function onSliderSpeedChange(event:SliderEvent):void {
             playTimer.delay = 100 - event.value;
         }
         
+        /**
+         * Handle animation ticks by moving the cursor and dispatching the MOVE event
+         * @param	event
+         */
         private function onPlayTick(event:TimerEvent):void {
             if (++playPosition == 1000) {
                 playPosition = 0;
@@ -252,8 +264,5 @@
                 }
             }
         }
-        
-        
-    }
-    
+    }   
 }

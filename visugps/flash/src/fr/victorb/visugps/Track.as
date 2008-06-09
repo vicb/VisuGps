@@ -40,7 +40,7 @@
             }
             catch (error:Error)
             {
-                Debug.trace("Unable to load URL");
+                dispatchEvent(new TrackEvent(TrackEvent.TRACK_LOADED)); 
             }            
             loader.addEventListener(Event.COMPLETE, completeHandler);        
         }

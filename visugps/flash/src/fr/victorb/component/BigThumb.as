@@ -4,8 +4,8 @@
     import mx.controls.sliderClasses.SliderThumb;
     
     /**
-    * ...
-    * @author DefaultUser (Tools -> Custom Arguments...)
+    * Bigger than standard thumb for sliders 
+    * @author Victor Berchet
     */
     public class BigThumb extends SliderThumb
     {

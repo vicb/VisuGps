@@ -2,7 +2,7 @@
 {
     import com.hexagonstar.util.debug.Debug;
     /**
-    * ...
+    * Represnts a serie to be drawn a the chart
     * @author Victor Berchet
     */
     public class Serie 

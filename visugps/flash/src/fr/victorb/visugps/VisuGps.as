@@ -251,9 +251,9 @@
                     break;
                 case 4:
                     if (measurePoints[0].distanceFrom(measurePoints[3]) < 3000) {
-                        var fai:Boolean = false;
+                        var fai:Boolean = true;
                         for (var i:int = 0; i < 3; i++) {
-                            if (measurePoints[i].distanceFrom(measurePoints[i + 1]) < (distance * 1000)) {
+                            if (measurePoints[i].distanceFrom(measurePoints[i + 1]) < (distance * 1000 * 0.28)) {
                                 fai = false;
                                 break;
                             }
@@ -275,7 +275,7 @@
             }
             
         return { title: trackType,
-                 content: ((distance < 1)?distance * 100 + "m":distance + "km") + (coef?"\n" + Math.round(distance * coef * 100) / 100 + "pts":"") \
+                 content: ((distance < 1)?distance * 100 + "m":distance + "km") + (coef?"\n" + Math.round(distance * coef * 100) / 100 + "pts":"") 
                };        
         }        
         

@@ -32,22 +32,85 @@ header('Content-type: text/plain; charset=ISO-8859-1');
 
 require('vg_cfg.php');
 
-if (isset($_GET['track'])) {         
+if (isset($_GET['track'])) {
     echo MakeTrack($_GET['track']);
+} else if (isset($_GET['trackid'])) {
+    echo GetDatabaseTrack(intval($_GET['trackid']));
 } else {
     echo @json_encode(array('error' => 'invalid URL'));
+}
+
+function GetDatabaseTrack($trackId) {
+    define('dbHost', 'localhost');
+    define('dbUser', 'root');
+    define('dbPassword', '');
+    define('dbName', 'gps');
+
+    $link = mysql_connect(dbHost, dbUser, dbPassword) or die ('Could not connect: ' . mysql_error());
+    mysql_select_db(dbName) or die ('Database does not exist');
+
+    // Track shoud be long enough to be valid
+    $query = "SELECT latitude FROM point WHERE flightId = $trackId";
+    $result = mysql_query($query) or die('Query error: ' . mysql_error());
+    if (mysql_num_rows($result) > 5) {
+
+        // Get the pilot id when it exists otherwise exit
+        $query = "SELECT latitude, longitude, elevation, DATE_FORMAT(time, '%H') AS hour, " .
+                 "DATE_FORMAT(time, '%i') AS min, DATE_FORMAT(time, '%S') AS sec, time " .
+                 "FROM point WHERE flightId = $trackId ORDER BY time";
+        $result = mysql_query($query) or die('Query error: ' . mysql_error());
+        for ($i = 0; $i < mysql_num_rows($result); $i++) {
+            $row = mysql_fetch_object($result);
+            $track['lat'][$i] = $row->latitude;
+            $track['lon'][$i] = $row->longitude;
+            $track['elev'][$i] = $row->elevation;
+            $track['time']['hour'][$i] = $row->hour;
+            $track['time']['min'][$i] = $row->min;
+            $track['time']['sec'][$i] = $row->sec;
+        }
+
+        $track['date'] = array('day' => 0, 'month' => 0, 'year' => 0);
+        $track['pilot'] = '';
+
+        $query = "SELECT DATE_FORMAT(start, '%d') as day,
+                         DATE_FORMAT(start, '%c') as month,
+                         DATE_FORMAT(start, '%Y') as year,
+                         pilotId
+                         FROM flight WHERE id = $trackId";
+        $result = mysql_query($query) or die('Query error: ' . mysql_error());
+        if (mysql_num_rows($result) == 1) {
+            $row = mysql_fetch_object($result);
+            if (isset($row->day)) $track['date']['day'] = $row->day;
+            if (isset($row->month)) $track['date']['month'] = $row->month;
+            if (isset($row->year)) $track['date']['year'] = $row->year;
+        }
+
+        $query = "SELECT name FROM pilot WHERE id = $row->pilotId";
+        $result = mysql_query($query) or die('Query error: ' . mysql_error());
+        if (mysql_num_rows($result) == 1) {
+            $row = mysql_fetch_object($result);
+            $track['pilot'] = $row->name;
+        }
+
+        $jsTrack = MakeJsonTrack($track);
+    } else {
+        $jsTrack['error'] = 'Invalid track';
+    }
+    
+    $data = @json_encode($jsTrack);
+    return $data;
 }
 
 /*
 Function: MakeTrack
         Return a JSON encoded GPS track
-        
+
 Arguments:
         url - url of the track file
-        
+
 Returns:
         JSON encoded track. See track format below
-        
+
 Track format:
         The track is an array with the following fields:
         lat - latitudes [Array]
@@ -67,9 +130,9 @@ Track format:
         nbChartPt - number of points in elev, elevGnd, speed, vario
         nbChartLbl - number of labels (time.labels)
 */
-function MakeTrack($url) 
-{   
-    require('vg_cache.php');       
+function MakeTrack($url)
+{
+    require('vg_cache.php');
 
     $cache = new Cache(CACHE_BASE_FOLDER . CACHE_FOLDER_TRACK, CACHE_NB_TRACK, 9);
 
@@ -112,38 +175,7 @@ function MakeTrack($url)
                 $jsTrack['error'] = 'Unsupported track format!';
             }
         } else {
-            // Generate the time in second
-            for ($i = 0; $i < count($track['time']['hour']); $i++) {
-                $track['timeSec'][$i] = $track['time']['hour'][$i] * 3600 +
-                                        $track['time']['min'][$i] * 60 +
-                                        $track['time']['sec'][$i];
-            }
-
-            // Generate CHART_NBLBL labels
-            for ($i = 0, $idx = 0, $step = ($nbPts - 1) / (CHART_NBLBL - 1); $i < CHART_NBLBL; $i++, $idx += $step) {
-                $jsTrack['time']['label'][$i] = $track['time']['hour'][$idx] . "h" . $track['time']['min'][$idx];
-            }
-
-            // Change the number of points to CHART_NBPTS
-            for ($i = 0, $idx = 0, $step = ($nbPts - 1) / (CHART_NBPTS - 1); $i < CHART_NBPTS; $i++, $idx += $step) {
-                $jsTrack['elev'][$i] = $track['elev'][$idx];
-                $jsTrack['time']['hour'][$i] = $track['time']['hour'][$idx];
-                $jsTrack['time']['min'][$i] = $track['time']['min'][$idx];
-                $jsTrack['time']['sec'][$i] = $track['time']['sec'][$idx];
-            }
-
-            $jsTrack['lat'] = $track['lat'];
-            $jsTrack['lon'] = $track['lon'];
-
-            $jsTrack['elevGnd'] = GetElevGnd($track, CHART_NBPTS);
-            $jsTrack['speed'] = GetSpeed($track, CHART_NBPTS);
-            $jsTrack['vario'] = GetVario($track, CHART_NBPTS);
-
-            $jsTrack['nbTrackPt'] = $track['nbPt'];
-            $jsTrack['nbChartPt'] = CHART_NBPTS;
-            $jsTrack['nbChartLbl'] = CHART_NBLBL;
-            $jsTrack['date'] = $track['date'];
-            $jsTrack['pilot'] = $track['pilot'];
+            $jsTrack = MakeJsonTrack($track);
         }
 
         $data = @json_encode($jsTrack);
@@ -153,18 +185,57 @@ function MakeTrack($url)
         }
 
         return $data;
-    }    
+    }
+}
+
+function MakeJsonTrack($track) {
+    $track['nbPt'] = $nbPts = count($track['lat']);
+
+    // Generate the time in second
+    for ($i = 0; $i < count($track['time']['hour']); $i++) {
+        $track['timeSec'][$i] = $track['time']['hour'][$i] * 3600 +
+                                $track['time']['min'][$i] * 60 +
+                                $track['time']['sec'][$i];
+    }
+
+    // Generate CHART_NBLBL labels
+    for ($i = 0, $idx = 0, $step = ($nbPts - 1) / (CHART_NBLBL - 1); $i < CHART_NBLBL; $i++, $idx += $step) {
+        $jsTrack['time']['label'][$i] = $track['time']['hour'][$idx] . "h" . $track['time']['min'][$idx];
+    }
+
+    // Change the number of points to CHART_NBPTS
+    for ($i = 0, $idx = 0, $step = ($nbPts - 1) / (CHART_NBPTS - 1); $i < CHART_NBPTS; $i++, $idx += $step) {
+        $jsTrack['elev'][$i] = $track['elev'][$idx];
+        $jsTrack['time']['hour'][$i] = $track['time']['hour'][$idx];
+        $jsTrack['time']['min'][$i] = $track['time']['min'][$idx];
+        $jsTrack['time']['sec'][$i] = $track['time']['sec'][$idx];
+    }
+
+    $jsTrack['lat'] = $track['lat'];
+    $jsTrack['lon'] = $track['lon'];
+
+    $jsTrack['elevGnd'] = GetElevGnd($track, CHART_NBPTS);
+    $jsTrack['speed'] = GetSpeed($track, CHART_NBPTS);
+    $jsTrack['vario'] = GetVario($track, CHART_NBPTS);
+
+    $jsTrack['nbTrackPt'] = $track['nbPt'];
+    $jsTrack['nbChartPt'] = CHART_NBPTS;
+    $jsTrack['nbChartLbl'] = CHART_NBLBL;
+    $jsTrack['date'] = $track['date'];
+    $jsTrack['pilot'] = $track['pilot'];
+
+    return $jsTrack;
 }
 
 /*
 Function: GetElevGnd
         Return the ground elevation of the track points
-        
+
 Arguments:
         track - track as associative array.
                 [nbPt] point coordinates in [lat] and [lon]
         dstPts - number of points to generate
-        
+
 Return:
         An array of ground elevation in meters
 */
@@ -216,7 +287,7 @@ Return:
 */
 function GetSpeed($track, $dstPts) {
     $speed = array_fill(0, $dstPts, 0);
-    
+
     for ($i = 0, $idx = 0, $step = ($track['nbPt'] - 1) / ($dstPts - 1); $i < $dstPts; $i++, $idx += $step) {
         $dist = $count = $time = 0;
         $avgidx = $idx;

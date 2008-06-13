@@ -41,10 +41,7 @@ if (isset($_GET['track'])) {
 }
 
 function GetDatabaseTrack($trackId) {
-    define('dbHost', 'localhost');
-    define('dbUser', 'root');
-    define('dbPassword', '');
-    define('dbName', 'gps');
+    include_once('mvg_db.inc.php');
 
     $link = mysql_connect(dbHost, dbUser, dbPassword) or die ('Could not connect: ' . mysql_error());
     mysql_select_db(dbName) or die ('Database does not exist');
@@ -61,12 +58,12 @@ function GetDatabaseTrack($trackId) {
         $result = mysql_query($query) or die('Query error: ' . mysql_error());
         for ($i = 0; $i < mysql_num_rows($result); $i++) {
             $row = mysql_fetch_object($result);
-            $track['lat'][$i] = $row->latitude;
-            $track['lon'][$i] = $row->longitude;
-            $track['elev'][$i] = $row->elevation;
-            $track['time']['hour'][$i] = $row->hour;
-            $track['time']['min'][$i] = $row->min;
-            $track['time']['sec'][$i] = $row->sec;
+            $track['lat'][$i] = floatval($row->latitude);
+            $track['lon'][$i] = floatval($row->longitude);
+            $track['elev'][$i] = intval($row->elevation);
+            $track['time']['hour'][$i] = intval($row->hour);
+            $track['time']['min'][$i] = intval($row->min);
+            $track['time']['sec'][$i] = intval($row->sec);
         }
 
         $track['date'] = array('day' => 0, 'month' => 0, 'year' => 0);
@@ -80,9 +77,9 @@ function GetDatabaseTrack($trackId) {
         $result = mysql_query($query) or die('Query error: ' . mysql_error());
         if (mysql_num_rows($result) == 1) {
             $row = mysql_fetch_object($result);
-            if (isset($row->day)) $track['date']['day'] = $row->day;
-            if (isset($row->month)) $track['date']['month'] = $row->month;
-            if (isset($row->year)) $track['date']['year'] = $row->year;
+            if (isset($row->day)) $track['date']['day'] = intval($row->day);
+            if (isset($row->month)) $track['date']['month'] = intval($row->month);
+            if (isset($row->year)) $track['date']['year'] = intval($row->year);
         }
 
         $query = "SELECT name FROM pilot WHERE id = $row->pilotId";

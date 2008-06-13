@@ -91,7 +91,7 @@
                 track.date.year is int) {
                     return new Date(track.date.year, track.date.month, track.date.day);
                 } else {
-                    return null;
+                    return new Date(2000, 1, 1);
                 }
         }
         

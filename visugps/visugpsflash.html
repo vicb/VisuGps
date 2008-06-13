@@ -24,29 +24,36 @@
 
 
     <script>
-         var trackName = decodeURIComponent(location.search) || 'noparam';
-         var proxy = "http://victorb.fr/visugps/php/vg_proxy.php?";
+        var trackName = decodeURIComponent(location.search) || 'noparam';
+        var proxy = "http://victorb.fr/visugps/php/vg_proxy.php?";
 
-          if (m = /^\?track=(.*)$/i.exec(trackName)) {
-              trackName = proxy + "track=" + m[1];
-          } else {
-              trackName = proxy + "track=" + location.href.replace(/[\w\.]*$/, 'test.igc');
-          }
+        var isLive = /live=1/i.test(trackName)?1:0;
 
+        if (m = /track=(.*)$/i.exec(trackName)) {
+          trackName = proxy + "track=" + m[1];
+        } else if (m = /trackid=(\d+)/i.exec(trackName)) {
+          trackName = proxy + "trackid=" + m[1];
+        } else {
+          trackName = proxy + "track=" + location.href.replace(/[\w\.]*$/, 'test.igc');
+        }
+        
+        alert(trackName);
+        
         swfobject.embedSWF("./flash/bin/vgpsflash.swf",
                            "map", 
                            "300", "200",
                            "9.0.0", 
                            "expressInstall.swf",
                            {trackUrl:trackName,
-                            version:1.4});
+                            version:1.4,
+                            live:isLive});
 
     </script>
 
   </head>
   <body>
     <div id='map'>
-        <p>blabla</p>
+        <p>Please install flash player v9</p>
     </div>
   </body>
 </html>

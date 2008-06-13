@@ -60,7 +60,7 @@
         
         private var panel:Panel;
         
-        private var firstLoad:Boolean = true;
+        private var loadTimes:int = 0;
         private var trackPoly:Polyline = null;
         
         
@@ -371,14 +371,14 @@
             var params:Object = map.root.loaderInfo.parameters;
                     
             if ("trackUrl" in params) {
-                track.load(params.trackUrl)
+                track.load(params.trackUrl + "&load=" + loadTimes);
             } else {
-                track.load("http://www.victorb.fr/visugps/php/vg_proxy.php?track=http://www.victorb.fr/track/2005-05-25.igc")                                                
+                track.load("http://victorb.fr/visugps/php/vg_proxy.php?track=http://victorb.fr/track/2006-06-23.igc");
             }
             
             if (params.live == 1) {
                 var timer:Timer = new Timer(5 * 60 * 1000);
-                timer.addEventListener(TimerEvent.TIMER, function():void { track.load(params.trackUrl)});                
+                timer.addEventListener(TimerEvent.TIMER, function():void { track.load(params.trackUrl + "&load=" + loadTimes)});                
             }
         }        
                
@@ -387,8 +387,8 @@
          * @param	event
          */
         private function onTrackReady(event:TrackEvent):void {  
-            if (firstLoad) {
-                firstLoad = false;
+            if (loadTimes == 0) {
+                loadTimes++;;
             
                 panel.removeChild(loadingMask);
 
@@ -403,14 +403,12 @@
                       radius: 7,
                       hasShadow: true
                     });                   
-
                 pilotMarker = new Marker(new LatLng(0, 0), markerOptions);            
                 map.addOverlay(pilotMarker);
-
                 trackControl = new TextControl(new ControlPosition(ControlPosition.ANCHOR_TOP_RIGHT, 7, 35));
                 var date:Date = track.getDate();
                 trackControl.text(track.getPilot() + "\n" + date.getDay() + "/" + date.getMonth() + "/" + date.getFullYear());
-                map.addControl(trackControl);            
+                map.addControl(trackControl); 
             } else {
                 charts.init();
                 if (trackPoly) {
@@ -418,7 +416,6 @@
                     trackPoly = null;
                 }
             }            
-                       
             if (track.getLength() < 5) {
                 panel.addChild(new ErrorMask("Invalid track format"));
                 return;
@@ -435,7 +432,6 @@
                 trackPoints.push(point);
                 bounds.extend(point);
             }
-            
             map.setCenter(bounds.getCenter(), map.getBoundsZoomLevel(bounds));
             
             var options:PolylineOptions;
@@ -445,10 +441,8 @@
                     color: 0xFF0000,
                     thickness: 1})
                 });
-            
             trackPoly = new Polyline(trackPoints, options);
             map.addOverlay(trackPoly);    
-            
             var chart:Chart = new Chart();
             chart.addSerie(new Serie("Elevation", track.elevation(), new ChartType(ChartType.CHART_LINE), 0xff0000));
             chart.addSerie(new Serie("Ground elevation", track.groundElevation(), new ChartType(ChartType.CHART_AREA), 0x957565));

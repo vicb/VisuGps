@@ -17,6 +17,7 @@
     import flash.events.*;
     import flash.geom.Point;
     import flash.text.*;
+    import flash.utils.Timer;
     import fr.victorb.chart.*;
     import fr.victorb.visugps.*; 
     import fr.victorb.chart.ChartEvent;
@@ -58,6 +59,9 @@
         private var loadingMask:LoadingMask;
         
         private var panel:Panel;
+        
+        private var firstLoad:Boolean = true;
+        private var trackPoly:Polyline = null;
         
         
         /**
@@ -222,9 +226,7 @@
                 
             measureInfo = map.openInfoWindow(event.latLng, iwo)            
             
-            map.addOverlay(measureLine);
-            Debug.trace("mm-");            
-            
+            map.addOverlay(measureLine);            
         }
         
         /**
@@ -284,7 +286,6 @@
          * @param	event
          */
         private function onLeftClick(event:MapMouseEvent):void {
-            Debug.trace("left");
             //if (event.ctrlKey) {
             //    onRightClick(event);
             //    return;
@@ -374,43 +375,56 @@
             } else {
                 track.load("http://www.victorb.fr/visugps/php/vg_proxy.php?track=http://www.victorb.fr/track/2005-05-25.igc")                                                
             }
+            
+            if (params.live == 1) {
+                var timer:Timer = new Timer(5 * 60 * 1000);
+                timer.addEventListener(TimerEvent.TIMER, function():void { track.load(params.trackUrl)});                
+            }
         }        
                
         /**
          * Add the track to the map once loaded
          * @param	event
          */
-        private function onTrackReady(event:TrackEvent):void {           
-            panel.removeChild(loadingMask);
+        private function onTrackReady(event:TrackEvent):void {  
+            if (firstLoad) {
+                firstLoad = false;
             
-            Debug.trace("Track length :" + track.getLength());
-            
+                panel.removeChild(loadingMask);
+
+                var markerOptions:MarkerOptions = new MarkerOptions( {
+                    strokeStyle: {
+                        color: 0x000000
+                      },
+                      fillStyle: {
+                        color: 0x111188,
+                        alpha: 0.8
+                      },
+                      radius: 7,
+                      hasShadow: true
+                    });                   
+
+                pilotMarker = new Marker(new LatLng(0, 0), markerOptions);            
+                map.addOverlay(pilotMarker);
+
+                trackControl = new TextControl(new ControlPosition(ControlPosition.ANCHOR_TOP_RIGHT, 7, 35));
+                var date:Date = track.getDate();
+                trackControl.text(track.getPilot() + "\n" + date.getDay() + "/" + date.getMonth() + "/" + date.getFullYear());
+                map.addControl(trackControl);            
+            } else {
+                charts.init();
+                if (trackPoly) {
+                    map.removeOverlay(trackPoly);
+                    trackPoly = null;
+                }
+            }            
+                       
             if (track.getLength() < 5) {
-                Debug.trace("format error");
                 panel.addChild(new ErrorMask("Invalid track format"));
                 return;
             }
                         
-            var markerOptions:MarkerOptions = new MarkerOptions( {
-                strokeStyle: {
-                    color: 0x000000
-                  },
-                  fillStyle: {
-                    color: 0x111188,
-                    alpha: 0.8
-                  },
-                  radius: 7,
-                  hasShadow: true
-                });                   
-
-            pilotMarker = new Marker(new LatLng(0, 0), markerOptions);            
-            map.addOverlay(pilotMarker);
-            setPilotPosition(0);
-                       
-            trackControl = new TextControl(new ControlPosition(ControlPosition.ANCHOR_TOP_RIGHT, 7, 35));
-            var date:Date = track.getDate();
-            trackControl.text(track.getPilot() + "\n" + date.getDay() + "/" + date.getMonth() + "/" + date.getFullYear());
-            map.addControl(trackControl);            
+            setPilotPosition(0);                       
             
             trackPoints = new Array();
             var point:LatLng;            
@@ -422,19 +436,19 @@
                 bounds.extend(point);
             }
             
-            var options:PolylineOptions;
-            
             map.setCenter(bounds.getCenter(), map.getBoundsZoomLevel(bounds));
             
+            var options:PolylineOptions;
+                                  
             options = new PolylineOptions({
                 strokeStyle: new StrokeStyle({
                     color: 0xFF0000,
                     thickness: 1})
                 });
-            var line:Polyline = new Polyline(trackPoints, options);
             
-            map.addOverlay(line);    
-                    
+            trackPoly = new Polyline(trackPoints, options);
+            map.addOverlay(trackPoly);    
+            
             var chart:Chart = new Chart();
             chart.addSerie(new Serie("Elevation", track.elevation(), new ChartType(ChartType.CHART_LINE), 0xff0000));
             chart.addSerie(new Serie("Ground elevation", track.groundElevation(), new ChartType(ChartType.CHART_AREA), 0x957565));

@@ -26,8 +26,8 @@
         private var sliders:Array = new Array();
         private var cursor:Sprite;    
         
-        private var iconPlayPause:Bitmap;
-        private var sliderSpeed:HSlider;
+        private var iconPlayPause:Bitmap = null;
+        private var sliderSpeed:HSlider = null;
         private var playTimer:Timer;
         private var playPosition:int = 0;
         
@@ -50,6 +50,16 @@
             addEventListener(MouseEvent.MOUSE_WHEEL, onMouseWheel);
             addEventListener(MouseEvent.CLICK, onMouseClick);
             
+            init();
+        }
+        
+        public function init():void {
+            if (iconPlayPause) removeChild(iconPlayPause);
+            if (sliderSpeed) removeChild(sliderSpeed);  
+            
+            charts = new Array();
+            sliders = new Array();
+            
             iconPlayPause = new AssetManager.ICON_PLAY() as Bitmap;
             addChild(iconPlayPause);
             iconPlayPause.x = 0;
@@ -65,7 +75,7 @@
             sliderSpeed.setStyle("fillColors", [ 0xFFFFFF, 0]);
             sliderSpeed.dataTipFormatFunction = function(value:int):String { return "Speed : " + value; };
             sliderSpeed.addEventListener(Event.CHANGE, onSliderSpeedChange);   
-            addChild(sliderSpeed);            
+            addChild(sliderSpeed);                 
         }
         
         /**

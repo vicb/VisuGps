@@ -38,7 +38,6 @@
         }
 
         private function onResize(event:Event):void {
-            Debug.trace("Error resize");
             text.x = (width - text.width) / 2;
             text.y = (height - text.height) / 2;
             graphics.clear();

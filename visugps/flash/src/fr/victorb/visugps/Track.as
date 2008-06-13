@@ -190,9 +190,7 @@
             var loader:URLLoader = URLLoader(event.target);            
             var json:JSONDecoder = new JSONDecoder(loader.data);            
             track = json.getValue();
-            Debug.trace("dispatch+");
             dispatchEvent(new TrackEvent(TrackEvent.TRACK_LOADED));            
-            Debug.trace("dispatch-");
         }
 
     }

@@ -23,8 +23,8 @@ public class Configuration implements Serializable {
     static private final int CFGVERSION = 0;
     private String gpsName = "BlueGPS";
     private String gpsUrl = "btspp://000A3A25DF6B:1;authenticate=false;encrypt=false;master=true";
-    private String logUrl = "http://www.victorb.fr/mvgpslog.php";
-    private String pilotId = "Test";
+    private String logUrl = "http://www.victorb.fr/visugps/php/mvg_track.php";
+    private String pilotId = "vb0001";
     private short logInterval = 10;
     private short sendInterval = 10;
     

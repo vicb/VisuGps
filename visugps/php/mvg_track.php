@@ -76,7 +76,6 @@ if (isset($_POST['gps'])) {
     }
     // Remove the extra "," from the query end
     $insert = rtrim ($insert, ",");
-    echo "<br>REQUEST<br>$insert";
     mysql_query($insert) or die ('Query error: ' . mysql_error());
 }
 

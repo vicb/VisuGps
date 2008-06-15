@@ -45,6 +45,8 @@ public class OptionMenu extends Form implements CommandListener {
     }
     
     public void init() {
+        idTxt.setString(controller.configuration.getPilotId());
+        urlTxt.setString(controller.configuration.getLogUrl());
         switch (controller.configuration.getLogInterval()) {
             case 10:
                 logChoice.setSelectedIndex(0, true);

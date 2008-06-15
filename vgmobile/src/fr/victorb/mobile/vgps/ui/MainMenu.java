@@ -16,6 +16,7 @@ import fr.victorb.mobile.vgps.gps.GpsListener;
 import fr.victorb.mobile.vgps.gps.GpsPosition;
 import fr.victorb.mobile.vgps.gps.GpsRecorder;
 import fr.victorb.mobile.vgps.gps.GpsSender;
+import fr.victorb.mobile.vgps.rmsfile.RmsFile;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Displayable;
@@ -94,8 +95,8 @@ public class MainMenu extends List implements CommandListener, GpsListener {
                         recordState = RECORD_STOP;
                         set(2, "Start", null);                        
                         gps.removeFixValidListner(this);                  
-                        //TODO: flush recorder and send data
                     }
+                    break;
             }
         } else if (command == cmdExit) {
             controller.exit();

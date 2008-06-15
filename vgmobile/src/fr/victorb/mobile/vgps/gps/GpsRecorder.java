@@ -30,7 +30,7 @@ public class GpsRecorder extends TimerTask implements GpsListener {
      * Append recorded position and date to specified arrays
      * @param pos array of positions
      */
-    public /*synchronized*/ void appendRecords(Vector pos) {
+    public synchronized void appendRecords(Vector pos) {
         for (int i = 0; i < positions.size(); i++) {
             pos.addElement((GpsPosition)positions.elementAt(i));            
         }
@@ -51,7 +51,7 @@ public class GpsRecorder extends TimerTask implements GpsListener {
     /**
      * Record GPS positions and dates in an array
      */
-    public /*synchronized*/ void run() {
+    public synchronized void run() {
         if (fixValid) {
             positions.addElement(gps.getPosition().clone());
         }

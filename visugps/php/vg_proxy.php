@@ -27,8 +27,8 @@ Copyright (c) 2007 Victor Berchet, <http://www.victorb.fr>
 
 
 header('Content-type: text/plain; charset=ISO-8859-1');
-//header('Cache-Control: no-cache, must-revalidate');
-//header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+header('Cache-Control: no-cache, must-revalidate');
+header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
 
 require('vg_cfg.php');
 

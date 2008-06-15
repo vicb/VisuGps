@@ -8,7 +8,8 @@ mysql_select_db(dbName) or die ('Database does not exist');
 $query = "SELECT name, start, end, flightId, COUNT(latitude) as points ".
          "FROM pilot, flight, point " .
          "WHERE flightId = flight.id AND pilotId = pilot.id GROUP BY flightId " .
-         "HAVING points > 5";
+         "HAVING points > 5 " .
+         "ORDER BY start DESC";
 $result = mysql_query($query)  or die('Query error: ' . mysql_error());
 
 $tracks['tracks'] = array();

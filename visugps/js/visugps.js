@@ -357,7 +357,7 @@ var VisuGps = new Class({
             this.map.removeOverlay(this.distLine);
             this.distLine = null;
         }
-        this.distLine = new google.maps.Polyline(dPts, '#ff0', 4, 0.6, {'clickable' : false});
+        this.distLine = new google.maps.Polyline(dPts, '#ffff00', 4, 0.6, {'clickable' : false});
         this.map.addOverlay(this.distLine);
         var dist = this.distLine.getLength();
         var legend;
@@ -460,22 +460,22 @@ var VisuGps = new Class({
                                   onMouseDown : this._showMarkerCenter.bind(this),
                                   onMouseWheel : this._showMarkerCenterZoom.bind(this)});
 
-        var chart = this.charts.add('h', 0.9, '#f00');
+        var chart = this.charts.add('h', 0.9, '#ff0000');
         chart.setGridDensity(this.track.nbChartLbl, 4);
         chart.setHorizontalLabels(this.track.time.label);
-        chart.add('hV', '#f00', this.track.elev, CHART_LINE);
+        chart.add('hV', '#ff0000', this.track.elev, CHART_LINE);
         chart.add('hS', '#755545', this.track.elevGnd, CHART_AREA);
 
-        chart = this.charts.add('Vx', 0.2, '#0f0');
+        chart = this.charts.add('Vx', 0.2, '#00ff00');
         chart.setGridDensity(this.track.nbChartLbl, 4);
         chart.setHorizontalLabels(this.track.time.label);
-        chart.add('Vx', '#0f0', this.track.speed, CHART_LINE);
+        chart.add('Vx', '#00ff00', this.track.speed, CHART_LINE);
 
-        chart = this.charts.add('Vz', 0.2, '#00f');
+        chart = this.charts.add('Vz', 0.2, '#0000ff');
         chart.setLabelPrecision(1);
         chart.setGridDensity(this.track.nbChartLbl, 4);
         chart.setHorizontalLabels(this.track.time.label);
-        chart.add('Vz', '#00f', this.track.vario, CHART_LINE);
+        chart.add('Vz', '#0000ff', this.track.vario, CHART_LINE);
 
         this._drawGraph();
     },
@@ -504,7 +504,7 @@ var VisuGps = new Class({
     */
     _displayTrack : function() {
         if (this.points.length < 5) return;
-        var path = new google.maps.Polyline(this._getReducedTrack(), "#f00", 1, 1, {'clickable' : false});
+        var path = new google.maps.Polyline(this._getReducedTrack(), "#ff0000", 1, 1, {'clickable' : false});
         // Remove the click listener from existing track
         if (this.path) {
             this.map.removeOverlay(this.path);
@@ -631,11 +631,11 @@ var VisuGps = new Class({
 
         TitleControl.prototype.initialize = function(map) {
             this.div = new Element('div', {'styles' : {'color': '#000',
-                                                       'border': '1px inset #555',
+                                                       'border': '1px inset #555555',
                                                        'padding': '2px',
                                                        'font':'10px Verdana, Arial, sans-serif',
                                                        'marginBottom':'3px',
-                                                       'background':'#FFC',
+                                                       'background':'#FFFFCC',
                                                        'text-align':'right',
                                                        'opacity': '0.9'}
                                   }).setHTML(this.title)
@@ -668,10 +668,10 @@ var VisuGps = new Class({
 
         InfoControl.prototype.selectable = function(){return false;}
         InfoControl.prototype.initialize = function(map) {
-            var div = new Element('div', {'styles' : {'border': '1px inset #555',
+            var div = new Element('div', {'styles' : {'border': '1px inset #555555',
                                                       'padding': '2px',
                                                       'margin':'1px',
-                                                      'background':'#FFC',
+                                                      'background':'#FFFFCC',
                                                       'opacity':'0.9',
                                                       'text-align':'right',
                                                       'font' : '10px Verdana, Arial, sans-serif'}

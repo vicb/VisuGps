@@ -54,13 +54,13 @@ public class GpsSender extends TimerTask {
         sendData();
     }
     
-    public /*synchronized*/ void stop() {
+    public synchronized void stop() {
         cancel();
         state = STATE_OFF;
         sendData();
     }
     
-    private /*synchronized*/ void sendData() {     
+    private synchronized void sendData() {     
         recorder.appendRecords(positions);
         
         String postData = new String();

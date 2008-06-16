@@ -17,9 +17,11 @@ import fr.victorb.mobile.vgps.gps.GpsPosition;
 import fr.victorb.mobile.vgps.gps.GpsRecorder;
 import fr.victorb.mobile.vgps.gps.GpsSender;
 import fr.victorb.mobile.vgps.rmsfile.RmsFile;
+import java.io.IOException;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Displayable;
+import javax.microedition.lcdui.Image;
 import javax.microedition.lcdui.List;
 
 /**
@@ -52,9 +54,12 @@ public class MainMenu extends List implements CommandListener, GpsListener {
         this.controller = controller;
         addCommand(cmdExit);
         setSelectCommand(cmdSelect);
-        append("GPS: -", null);
-        append("Options", null);
-        append("Start", null);    
+        try {
+            append("GPS: -", Image.createImage(this.getClass().getResourceAsStream("/res/gps.png")));
+            append("Options", Image.createImage(this.getClass().getResourceAsStream("/res/config.png")));
+            append("Start", Image.createImage(this.getClass().getResourceAsStream("/res/start.png")));
+        } catch (IOException ex) {
+        }
         append("Fix invalid", null);
         setCommandListener(this);        
     }
@@ -65,7 +70,10 @@ public class MainMenu extends List implements CommandListener, GpsListener {
         } else {
             gpsName = name;            
         }
-        set(0, "GPS: " + gpsName, null);
+        try {
+            set(0, "GPS: " + gpsName, Image.createImage(this.getClass().getResourceAsStream("/res/gps.png")));
+        } catch (Exception e) {
+        }
     }
     
     public void commandAction(Command command, Displayable displayable) {
@@ -81,7 +89,10 @@ public class MainMenu extends List implements CommandListener, GpsListener {
                     if (recordState == RECORD_STOP) {
                         // Start GSP tarcking
                         recordState = RECORD_START;                        
-                        set(2, "Stop", null);
+                        try {
+                            set(2, "Stop", Image.createImage(this.getClass().getResourceAsStream("/res/start.png")));
+                        } catch (IOException ex) {
+                        }
                         recorder = new GpsRecorder(gps);
                         sender = new GpsSender(gps, recorder);
                         gps.start(controller.configuration.getGpsUrl());
@@ -93,7 +104,10 @@ public class MainMenu extends List implements CommandListener, GpsListener {
                         recorder.stop();                        
                         gps.stop();                        
                         recordState = RECORD_STOP;
-                        set(2, "Start", null);                        
+                        try {
+                            set(2, "Start", Image.createImage(this.getClass().getResourceAsStream("/res/start.png")));
+                        } catch (IOException ex) {
+                        }
                         gps.removeFixValidListner(this);                  
                     }
                     break;

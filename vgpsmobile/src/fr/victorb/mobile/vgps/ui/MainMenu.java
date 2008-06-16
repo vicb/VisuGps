@@ -137,12 +137,12 @@ public class MainMenu extends List implements CommandListener, GpsListener {
     public void gpsFixValidUpdated(boolean valid) {
         if (valid) {
             try {
-                append("Fix valid", Image.createImage(this.getClass().getResourceAsStream("/res/valid.png")));
+                set(3, "Fix valid", Image.createImage(this.getClass().getResourceAsStream("/res/valid.png")));
             } catch (IOException ex) {
             }
         } else {
             try {
-                append("Fix invalid", Image.createImage(this.getClass().getResourceAsStream("/res/invalid.png")));
+                set(3, "Fix invalid", Image.createImage(this.getClass().getResourceAsStream("/res/invalid.png")));
             } catch (IOException ex) {
             }
         }

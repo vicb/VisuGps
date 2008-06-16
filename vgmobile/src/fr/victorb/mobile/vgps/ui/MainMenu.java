@@ -58,9 +58,10 @@ public class MainMenu extends List implements CommandListener, GpsListener {
             append("GPS: -", Image.createImage(this.getClass().getResourceAsStream("/res/gps.png")));
             append("Options", Image.createImage(this.getClass().getResourceAsStream("/res/config.png")));
             append("Start", Image.createImage(this.getClass().getResourceAsStream("/res/start.png")));
+            append("Fix invalid", Image.createImage(this.getClass().getResourceAsStream("/res/invalid.png")));
         } catch (IOException ex) {
         }
-        append("Fix invalid", null);
+        
         setCommandListener(this);        
     }
 
@@ -122,9 +123,15 @@ public class MainMenu extends List implements CommandListener, GpsListener {
 
     public void gpsFixValidUpdated(boolean valid) {
         if (valid) {
-            set(3, "Fix valid", null);
+            try {
+                append("Fix valid", Image.createImage(this.getClass().getResourceAsStream("/res/valid.png")));
+            } catch (IOException ex) {
+            }
         } else {
-            set(3, "Fix invalid", null);
+            try {
+                append("Fix invalid", Image.createImage(this.getClass().getResourceAsStream("/res/invalid.png")));
+            } catch (IOException ex) {
+            }
         }
     }
    

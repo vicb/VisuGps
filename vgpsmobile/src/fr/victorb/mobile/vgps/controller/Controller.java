@@ -120,4 +120,8 @@ public class Controller implements BluetoothFinderListener {
         } catch (Exception e) {
         }        
     }
+    
+    public Display getDisplay() {
+        return display;
+    }
 }

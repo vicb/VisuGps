@@ -31,6 +31,7 @@ import fr.victorb.mobile.vgps.gps.GpsPosition;
 import fr.victorb.mobile.vgps.gps.GpsRecorder;
 import fr.victorb.mobile.vgps.gps.GpsSender;
 import java.io.IOException;
+import javax.microedition.lcdui.Alert;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Displayable;
@@ -97,7 +98,13 @@ public class MainMenu extends List implements CommandListener, GpsListener {
                     controller.searchDevice();
                     break;
                 case 1:
-                    controller.showOptionMenu();
+                    if (recordState == RECORD_STOP) {
+                        controller.showOptionMenu();
+                    } else {
+                        Alert alert = new Alert("Warning", "Options can not be changed when tracking is active", null, null);
+                        alert.setTimeout(Alert.FOREVER);
+                        controller.getDisplay().setCurrent(alert, this);                        
+                    }
                     break;
                 case 2:
                     if (recordState == RECORD_STOP) {

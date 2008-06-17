@@ -33,7 +33,6 @@ import javax.microedition.io.HttpConnection;
 
 public class GpsSender extends TimerTask {
 
-    private Gps gps;
     private String id;
     private GpsRecorder recorder;
     
@@ -45,10 +44,9 @@ public class GpsSender extends TimerTask {
     private static final int STATE_OFF = 2;
     private int state;
     
-    public GpsSender(Gps gps, GpsRecorder recorder) {
+    public GpsSender(GpsRecorder recorder) {
         super();
         Controller controller = Controller.getController();
-        this.gps = gps;        
         id = controller.configuration.getPilotId();
         url = controller.configuration.getLogUrl();
         this.recorder = recorder;
@@ -82,32 +80,24 @@ public class GpsSender extends TimerTask {
         try {
             postData += "id=" + id;            
             if (state == STATE_START) {
-                // date
                 postData += "&start=1";
                 state = STATE_ON;
             }
             if (state == STATE_OFF) {
                 postData += "&stop=1";
             }
-            for (int i = 0; i < positions.size(); i++) {                
+            for (int i = 0; i < positions.size(); i++) {   
+                GpsPosition fix = (GpsPosition)positions.elementAt(i);
                 postData += "&gps[]="
-                         + Float.toString(((GpsPosition)positions.elementAt(i)).latitude)
-                         + ";"
-                         + Float.toString(((GpsPosition)positions.elementAt(i)).longitude)
-                         + ";"
-                         + Integer.toString(((GpsPosition)positions.elementAt(i)).elevation)
-                         + ";"
-                         + Integer.toString(((GpsPosition)positions.elementAt(i)).time.hour)
-                         + ";"
-                         + Integer.toString(((GpsPosition)positions.elementAt(i)).time.minute)
-                         + ";"
-                         + Integer.toString(((GpsPosition)positions.elementAt(i)).time.second)
-                         + ";"
-                         + Integer.toString(((GpsPosition)positions.elementAt(i)).date.day)
-                         + ";"
-                         + Integer.toString(((GpsPosition)positions.elementAt(i)).date.month)
-                         + ";"
-                         + Integer.toString(((GpsPosition)positions.elementAt(i)).date.year);                         
+                         + Float.toString(fix.latitude)  + ";"
+                         + Float.toString(fix.longitude) + ";"
+                         + Integer.toString(fix.elevation) + ";"
+                         + Integer.toString(fix.time.hour) + ";"
+                         + Integer.toString(fix.time.minute) + ";"
+                         + Integer.toString(fix.time.second) + ";"
+                         + Integer.toString(fix.date.day) + ";"
+                         + Integer.toString(fix.date.month) + ";"
+                         + Integer.toString(fix.date.year);                        
             } 
         } catch (Exception e) {
         }

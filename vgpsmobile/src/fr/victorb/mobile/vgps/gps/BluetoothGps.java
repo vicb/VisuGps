@@ -99,7 +99,7 @@ public class BluetoothGps extends Gps implements Runnable {
                 } else if (nmea.startsWith("GPRMC")) {
                     split = new Split(nmea);
                     split.next();           //GPRMC
-                    string = split.next();    //time
+                    string = split.next();  //time
                     split.next();           // status
                     position.time.hour = Integer.parseInt(string.substring(0, 2));
                     position.time.minute = Integer.parseInt(string.substring(2, 4));

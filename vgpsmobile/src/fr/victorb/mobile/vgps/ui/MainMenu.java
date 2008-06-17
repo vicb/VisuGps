@@ -111,7 +111,7 @@ public class MainMenu extends List implements CommandListener, GpsListener {
                         } catch (IOException ex) {
                         }
                         recorder = new GpsRecorder(gps);
-                        sender = new GpsSender(gps, recorder);
+                        sender = new GpsSender(recorder);
                         gps.start(controller.configuration.getGpsUrl());
                         gps.addFixValidListener(this);
                         recorder.start();

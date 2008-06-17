@@ -34,15 +34,11 @@ public abstract class Gps {
     
     public void stop(){        
     }
-       
+    
     public GpsPosition getPosition() {
-        return new GpsPosition();
+        return null;
     }
-    
-    public GpsDate getDate() {
-        return new GpsDate();
-    }
-    
+         
     public void addPositionListener(GpsListener listener){
         if (positionListeners.indexOf(listener) == -1) {
             positionListeners.addElement(listener);

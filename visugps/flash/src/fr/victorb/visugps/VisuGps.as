@@ -1,4 +1,26 @@
-﻿package fr.victorb.visugps 
+﻿/*
+License: GNU General Public License
+
+This file is part of VisuGps
+
+VisuGps is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+VisuGps is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with VisuGps; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
+*/
+
+package fr.victorb.visugps 
 {
     import com.adobe.crypto.MD5;
     import com.google.maps.controls.*;
@@ -392,7 +414,6 @@
                 loadTimes++;;
             
                 panel.removeChild(loadingMask);
-
                 var markerOptions:MarkerOptions = new MarkerOptions( {
                     strokeStyle: {
                         color: 0x000000
@@ -404,7 +425,7 @@
                       radius: 7,
                       hasShadow: true
                     });                   
-                pilotMarker = new Marker(new LatLng(0, 0), markerOptions);            
+                pilotMarker = new Marker(new LatLng(0, 0), markerOptions);  
                 map.addOverlay(pilotMarker);
                 trackControl = new TextControl(new ControlPosition(ControlPosition.ANCHOR_TOP_RIGHT, 7, 35));
                 var date:Date = track.getDate();
@@ -417,6 +438,7 @@
                     trackPoly = null;
                 }
             }            
+                       
             if (track.getLength() < 5) {
                 panel.addChild(new ErrorMask("Invalid track format"));
                 return;

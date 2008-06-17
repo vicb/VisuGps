@@ -44,12 +44,12 @@ if (mysql_num_rows($result) == 1) {
 
 // Create a new flight on start
 if (isset($_POST['start'])) {
-    $query = "INSERT INTO flight (pilotId) VALUES ($pilotId)";
+    $query = "INSERT INTO flight (pilotId, start, end) VALUES ($pilotId, NULL, NULL)";
     mysql_query($query) or die('Query error: ' . mysql_error());
 }
 
 // Get the current flight id
-$query = "SELECT max(id) as id FROM flight WHERE pilotId = '$pilotId'";
+$query = "SELECT MAX(id) AS id FROM flight WHERE pilotId = '$pilotId'";
 $result = mysql_query($query) or die('Query error: ' . mysql_error());
 if (mysql_num_rows($result) == 1) {
     $flight = mysql_fetch_object($result);

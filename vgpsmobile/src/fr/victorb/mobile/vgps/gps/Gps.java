@@ -24,10 +24,6 @@ package fr.victorb.mobile.vgps.gps;
 
 import java.util.Vector;
 
-/**
- *
- * @author a0919217
- */
 public abstract class Gps {
     private Vector positionListeners = new Vector();
     private Vector fixValidListeners = new Vector();

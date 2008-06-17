@@ -20,16 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 */
 
-
 package fr.victorb.mobile.vgps.gps;
 
 import fr.victorb.mobile.utils.Date;
 import fr.victorb.mobile.utils.Time;
 
-/**
- *
- * @author Victor
- */
 public class GpsPosition {
         public float latitude;
         public float longitude;

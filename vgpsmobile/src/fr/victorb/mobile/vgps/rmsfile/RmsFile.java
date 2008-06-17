@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 */
 
-
 package fr.victorb.mobile.vgps.rmsfile;
 
 import java.io.ByteArrayInputStream;
@@ -30,10 +29,6 @@ import java.io.DataOutputStream;
 import javax.microedition.rms.RecordStore;
 import javax.microedition.rms.RecordStoreNotFoundException;
 
-/**
- *
- * @author Victor
- */
 public class RmsFile {
 
     private static final int MAGIC = 0xBABA;

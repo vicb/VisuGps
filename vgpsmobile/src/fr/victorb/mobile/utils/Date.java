@@ -22,10 +22,6 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 package fr.victorb.mobile.utils;
 
-/**
- *
- * @author Victor
- */
 public class Date {
     public int year;
     public int month;

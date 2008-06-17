@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 */
 
-
 package fr.victorb.mobile.vgps.gps;
 
 import fr.victorb.mobile.utils.Split;
@@ -28,10 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import javax.microedition.io.Connector;
 
-/**
- *
- * @author Victor
- */
 public class BluetoothGps extends Gps implements Runnable {
 
     private InputStream gpsStream;
@@ -47,7 +42,7 @@ public class BluetoothGps extends Gps implements Runnable {
 
     public boolean start(String url) {
         this.url = url;
-        connected = true;
+        connected = false;
         try {
             new Thread(this).start();
         } catch (Exception ex) {            
@@ -71,7 +66,8 @@ public class BluetoothGps extends Gps implements Runnable {
         try {            
             gpsStream = Connector.openInputStream(url);    
             connected = true;
-        } catch (IOException ex) {            
+        } catch (IOException ex) { 
+            connected = false;
         }
                
         while (connected) {
@@ -80,10 +76,8 @@ public class BluetoothGps extends Gps implements Runnable {
                 while((c = (char)gpsStream.read()) != '$'){}
                 while((c = (char)gpsStream.read()) != 10) {
                     buffer.append(c);
-                }
-                
+                }                
                 String nmea = buffer.toString();
-
                 if (nmea.startsWith("GPGGA")) {
                     // Use GPGGA messages to get the validity of the fix
                     // and the elevation
@@ -103,8 +97,6 @@ public class BluetoothGps extends Gps implements Runnable {
                     elevation =(int) Float.parseFloat(split.next()); // elevation                           
                     updatefixValid(valid);
                 } else if (nmea.startsWith("GPRMC")) {
-
-                    
                     split = new Split(nmea);
                     split.next();           //GPRMC
                     string = split.next();    //time
@@ -122,10 +114,9 @@ public class BluetoothGps extends Gps implements Runnable {
                     position.date.month = Integer.parseInt(string.substring(2, 4));
                     position.date.year = Integer.parseInt(string.substring(4, 6));                    
                     updatePosition(position);
-                }
-                
+                }                
             } catch (Exception ex) {
-                System.out.println("Parsing Exception" + ex.getMessage());
+                // Parsing exception
             }            
         }
         try {

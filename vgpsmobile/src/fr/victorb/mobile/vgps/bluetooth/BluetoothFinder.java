@@ -39,10 +39,6 @@ import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Displayable;
 import javax.microedition.lcdui.List;
 
-/**
- *
- * @author Victor
- */
 public class BluetoothFinder extends List  implements DiscoveryListener, CommandListener {
     // List of devices found
     private Vector allDevices = new Vector();    

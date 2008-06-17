@@ -22,10 +22,6 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 package fr.victorb.mobile.vgps.rmsfile;
 
-/**
- *
- * @author Victor
- */
 public class RmsSerializeException extends Exception {
     
     /** Creates a new instance of RmsSerializeException */

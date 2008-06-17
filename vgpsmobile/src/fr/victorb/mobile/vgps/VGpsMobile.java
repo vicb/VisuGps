@@ -20,17 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 */
 
-
 package fr.victorb.mobile.vgps;
 
 import fr.victorb.mobile.vgps.controller.Controller;
 import javax.microedition.midlet.*;
 
-/**
- *
- * @author  Victor
- * @version
- */
 public class VGpsMobile extends MIDlet {
     private Controller controller;
     

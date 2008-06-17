@@ -31,10 +31,6 @@ import java.util.Vector;
 import javax.microedition.io.Connector;
 import javax.microedition.io.HttpConnection;
 
-/**
- *
- * @author a0919217
- */
 public class GpsSender extends TimerTask {
 
     private Gps gps;

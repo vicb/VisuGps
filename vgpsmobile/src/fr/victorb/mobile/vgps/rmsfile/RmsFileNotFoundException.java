@@ -22,10 +22,6 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 package fr.victorb.mobile.vgps.rmsfile;
 
-/**
- *
- * @author Victor
- */
 public class RmsFileNotFoundException extends RmsFileException {
     
     /** Creates a new instance of RmsFileNotFoundException */

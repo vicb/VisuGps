@@ -80,13 +80,12 @@ function generate_kmllive_track($jsonTrack) {
                    "      <visibility>1</visibility>\n" .
                    "      <open>1</open>\n" .
                    "      <refreshVisibility>0</refreshVisibility>\n" .
-                   "      <flyToView>0</flyToView>\n" .
+                   "      <flyToView>1</flyToView>\n" .
                    "      <Link>\n" .
                    "        <href>%s</href>\n" .
                    "        <httpQuery>trackid=%d&amp;format=kml</httpQuery>\n" .
+                   "        <refreshMode>onInterval</refreshMode>\n" .
                    "        <refreshInterval>60</refreshInterval>\n" .
-                   "        <viewRefreshMode>onStop</viewRefreshMode>\n" .
-                   "        <viewRefreshTime>1</viewRefreshTime>\n" .
                    "      </Link>\n" .
                    "    </NetworkLink>\n" .
                    "  </Folder>\n" .

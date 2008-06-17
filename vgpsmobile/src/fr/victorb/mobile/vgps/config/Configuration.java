@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 */
 
-
 package fr.victorb.mobile.vgps.config;
 
 import fr.victorb.mobile.vgps.rmsfile.RmsSerializeException;
@@ -29,10 +28,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-/**
- *
- * @author Victor
- */
 public class Configuration implements Serializable {
     static private final int CFGVERSION = 1;
     private String gpsName = "BlueGPS";

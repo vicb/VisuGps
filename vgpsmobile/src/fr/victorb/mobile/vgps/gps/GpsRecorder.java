@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 */
 
-
 package fr.victorb.mobile.vgps.gps;
 
 import fr.victorb.mobile.vgps.controller.Controller;
@@ -28,10 +27,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 
-/**
- *
- * @author a0919217
- */
 public class GpsRecorder extends TimerTask implements GpsListener {
 
     private Vector positions = new Vector();

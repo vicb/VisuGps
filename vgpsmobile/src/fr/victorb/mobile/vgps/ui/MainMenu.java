@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 */
 
-
 package fr.victorb.mobile.vgps.ui;
 
 import fr.victorb.mobile.vgps.controller.Controller;
@@ -38,10 +37,6 @@ import javax.microedition.lcdui.Displayable;
 import javax.microedition.lcdui.Image;
 import javax.microedition.lcdui.List;
 
-/**
- *
- * @author a0919217
- */
 public class MainMenu extends List implements CommandListener, GpsListener {
     private Command cmdExit = new Command("Exit", Command.EXIT, 1);
     private Command cmdSelect = new Command("Select", Command.ITEM, 1);
@@ -73,6 +68,7 @@ public class MainMenu extends List implements CommandListener, GpsListener {
             append("Options", Image.createImage(this.getClass().getResourceAsStream("/res/config.png")));
             append("Start", Image.createImage(this.getClass().getResourceAsStream("/res/start.png")));
             append("Fix invalid", Image.createImage(this.getClass().getResourceAsStream("/res/invalid.png")));
+            append("About...", Image.createImage(this.getClass().getResourceAsStream("/res/about.png")));
         } catch (IOException ex) {
         }
         
@@ -130,6 +126,15 @@ public class MainMenu extends List implements CommandListener, GpsListener {
                         } catch (IOException ex) {
                         }
                         gps.removeFixValidListner(this);                  
+                    }
+                    break;
+                case 4:
+                    try {
+                        Alert alert = new Alert("VGpsMobile", controller.getVersion() + "\nby Victor Berchet\nwww.victorb.fr", 
+                                                Image.createImage(this.getClass().getResourceAsStream("/res/icon_big.png")), null);
+                        alert.setTimeout(Alert.FOREVER);
+                        controller.getDisplay().setCurrent(alert, this);
+                    }catch (IOException ex) {
                     }
                     break;
             }

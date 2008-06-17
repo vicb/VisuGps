@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 */
 
-
 package fr.victorb.mobile.vgps.controller;
 
 import fr.victorb.mobile.vgps.ui.MainMenu;
@@ -33,10 +32,6 @@ import javax.bluetooth.UUID;
 import javax.microedition.lcdui.Display;
 import javax.microedition.midlet.MIDlet;
 
-/**
- *
- * @author Victor
- */
 public class Controller implements BluetoothFinderListener {    
     private static Controller controller;
     private Display display;
@@ -44,6 +39,7 @@ public class Controller implements BluetoothFinderListener {
     private MIDlet midlet;
     public Configuration configuration = new Configuration();
     private static final String CONFIG_FILE = "config.ini";    
+    private static final String VERSION = "v1.0";
     
     private MainMenu menu;
     private OptionMenu options;
@@ -123,5 +119,9 @@ public class Controller implements BluetoothFinderListener {
     
     public Display getDisplay() {
         return display;
+    }
+    
+    public String getVersion() {
+        return VERSION;        
     }
 }

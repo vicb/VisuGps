@@ -43,12 +43,60 @@ if (isset($_GET['track'])) {
 }
 
 switch ($format) {
+    case 'kmllive':
+        generate_kmllive_track($jsonTrack);
+        break;
     case 'kml':
         generate_kml_track($jsonTrack);
         break;
     default:
         generate_igc_track($jsonTrack);
     
+}
+
+function generate_kmllive_track($jsonTrack) {
+    $track = @json_decode($jsonTrack, true);
+    if (!isset($track['nbTrackPt']) || $track['nbTrackPt'] < 5) exit;
+    
+    if (isset($_GET['trackid'])) {
+        $trackId = $_GET['trackid'];
+    } else {
+        exit;
+    }
+    
+    header('Content-Type: application/vnd.google-earth.kml+xml kml; charset=utf8');
+    header('Content-Disposition: attachment; filename="track.kml"');
+    header('Cache-Control: no-cache, must-revalidate');
+    header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+
+    $file= sprintf("<?xml version='1.0' encoding='UTF-8'?>\n" .
+                   "<kml xmlns='http://earth.google.com/kml/2.2'>\n" .
+                   "  <Folder>\n" .
+                   "    <name>GPS Live tracking</name>\n" .
+                   "    <visibility>1</visibility>\n" .
+                   "    <open>0</open>\n" .
+                   "    <NetworkLink>\n" .
+                   "      <name>%s</name>\n" .
+                   "      <visibility>1</visibility>\n" .
+                   "      <open>1</open>\n" .
+                   "      <refreshVisibility>0</refreshVisibility>\n" .
+                   "      <flyToView>0</flyToView>\n" .
+                   "      <Link>\n" .
+                   "        <href>%s</href>\n" .
+                   "        <httpQuery>trackid=%d&amp;format=kml</httpQuery>\n" .
+                   "        <refreshInterval>60</refreshInterval>\n" .
+                   "        <viewRefreshMode>onStop</viewRefreshMode>\n" .
+                   "        <viewRefreshTime>1</viewRefreshTime>\n" .
+                   "      </Link>\n" .
+                   "    </NetworkLink>\n" .
+                   "  </Folder>\n" .
+                   "</kml>\n",
+                   $track['pilot'],
+                   "http://" . $_SERVER['SERVER_NAME'] . $_SERVER['PHP_SELF'],
+                   $trackId);
+               
+    echo $file;
+
 }
 
 /*
@@ -84,13 +132,13 @@ function generate_kml_track($jsonTrack) {
     $track = @json_decode($jsonTrack, true);
     if (!isset($track['nbTrackPt']) || $track['nbTrackPt'] < 5) exit;
 
-    header("Content-Type: application/vnd.google-earth.kml+xml kml; charset=utf8");
+    header('Content-Type: application/vnd.google-earth.kml+xml kml; charset=utf8');
     header('Content-Disposition: attachment; filename="track.kml"');
     header('Cache-Control: no-cache, must-revalidate');
     header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
 
     $file = sprintf("<?xml version='1.0' encoding='UTF-8'?>\n" .
-                    "<kml xmlns='http://earth.google.com/kml/2.0'>\n" .
+                    "<kml xmlns='http://earth.google.com/kml/2.2'>\n" .
                     "<Folder>\n" .
                     "<name>%s</name>\n" .
                     "<LookAt>\n" .

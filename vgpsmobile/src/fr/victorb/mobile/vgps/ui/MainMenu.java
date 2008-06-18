@@ -23,12 +23,13 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 package fr.victorb.mobile.vgps.ui;
 
 import fr.victorb.mobile.vgps.controller.Controller;
+import fr.victorb.mobile.vgps.controller.RecordState;
 import fr.victorb.mobile.vgps.gps.BluetoothGps;
 import fr.victorb.mobile.vgps.gps.Gps;
 import fr.victorb.mobile.vgps.gps.GpsListener;
 import fr.victorb.mobile.vgps.gps.GpsPosition;
-import fr.victorb.mobile.vgps.gps.GpsRecorder;
-import fr.victorb.mobile.vgps.gps.GpsSender;
+import fr.victorb.mobile.vgps.controller.GpsRecorder;
+import fr.victorb.mobile.vgps.controller.GpsSender;
 import java.io.IOException;
 import javax.microedition.lcdui.Alert;
 import javax.microedition.lcdui.Command;
@@ -42,25 +43,14 @@ public class MainMenu extends List implements CommandListener, GpsListener {
     private Command cmdSelect = new Command("Select", Command.ITEM, 1);
     
     private Controller controller;
-    
     private String gpsName = "-";
-    
-    private Gps gps = new BluetoothGps();
-    
-    private static final int RECORD_START = 0;
-    private static final int RECORD_STOP = 1;
-    
-    private int recordState = RECORD_STOP;
-    
-    private GpsRecorder recorder;
-    private GpsSender sender;
-       
+          
     /** Creates a new instance of MainMenu
      * @param controller controller
      */
-    public MainMenu(Controller controller) {
+    public MainMenu() {
         super("Menu", List.IMPLICIT);
-        this.controller = controller;
+        controller = Controller.getController();
         addCommand(cmdExit);
         setSelectCommand(cmdSelect);
         try {
@@ -94,7 +84,7 @@ public class MainMenu extends List implements CommandListener, GpsListener {
                     controller.searchDevice();
                     break;
                 case 1:
-                    if (recordState == RECORD_STOP) {
+                    if (controller.getRecordState() == RecordState.STOP) {
                         controller.showOptionMenu();
                     } else {
                         Alert alert = new Alert("Warning", "Options can not be changed when tracking is active", null, null);
@@ -103,30 +93,18 @@ public class MainMenu extends List implements CommandListener, GpsListener {
                     }
                     break;
                 case 2:
-                    if (recordState == RECORD_STOP) {
-                        // Start GSP tarcking
-                        recordState = RECORD_START;                        
-                        try {
+                    try {
+                        if (controller.getRecordState() == RecordState.STOP) {
+                            controller.startRecording();
                             set(2, "Stop", Image.createImage(this.getClass().getResourceAsStream("/res/start.png")));
-                        } catch (IOException ex) {
-                        }
-                        recorder = new GpsRecorder(gps);
-                        sender = new GpsSender(recorder);
-                        gps.start(controller.configuration.getGpsUrl());
-                        gps.addFixValidListener(this);
-                        recorder.start();
-                        sender.start();                    
-                    } else {
-                        sender.stop();
-                        recorder.stop();                        
-                        gps.stop();                        
-                        recordState = RECORD_STOP;
-                        try {
+                            controller.getGps().addFixValidListener(this);
+                        } else {
+                            controller.stopRecording();
                             set(2, "Start", Image.createImage(this.getClass().getResourceAsStream("/res/start.png")));
-                        } catch (IOException ex) {
+                            controller.getGps().removeFixValidListner(this);                  
                         }
-                        gps.removeFixValidListner(this);                  
-                    }
+                    } catch (IOException ex) {
+                    }                            
                     break;
                 case 4:
                     try {

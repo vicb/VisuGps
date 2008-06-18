@@ -42,9 +42,9 @@ public class OptionMenu extends Form implements CommandListener {
     private Command cmdOk = new Command("Ok", Command.OK, 1);
     private Command cmdCancel = new Command("Cancel", Command.CANCEL, 1);
     
-    public OptionMenu(Controller controller) {
+    public OptionMenu() {
         super("Options");
-        this.controller = controller;
+        controller = Controller.getController();
         
         append(idTxt = new TextField("Pilot ID", controller.configuration.getPilotId(), 10, TextField.ANY));
         append(urlTxt = new TextField("Log URL", controller.configuration.getLogUrl(), 50, TextField.URL));

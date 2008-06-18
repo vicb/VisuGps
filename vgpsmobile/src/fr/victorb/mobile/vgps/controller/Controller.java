@@ -26,6 +26,10 @@ import fr.victorb.mobile.vgps.ui.MainMenu;
 import fr.victorb.mobile.vgps.bluetooth.BluetoothFinder;
 import fr.victorb.mobile.vgps.bluetooth.BluetoothFinderListener;
 import fr.victorb.mobile.vgps.config.Configuration;
+import fr.victorb.mobile.vgps.gps.BluetoothGps;
+import fr.victorb.mobile.vgps.gps.Gps;
+import fr.victorb.mobile.vgps.controller.GpsRecorder;
+import fr.victorb.mobile.vgps.controller.GpsSender;
 import fr.victorb.mobile.vgps.rmsfile.RmsFile;
 import fr.victorb.mobile.vgps.ui.OptionMenu;
 import javax.bluetooth.UUID;
@@ -41,20 +45,30 @@ public class Controller implements BluetoothFinderListener {
     private static final String CONFIG_FILE = "config.ini";    
     private static final String VERSION = "v1.0";
     
+    private int recordState = RecordState.STOP;
+    
+    private Gps gps = new BluetoothGps();         
+    private GpsRecorder recorder;
+    private GpsSender sender;
+    
     private MainMenu menu;
     private OptionMenu options;
     
     /** Creates a new instance of Controller */
     private Controller() {
-        menu = new MainMenu(this);
-        options = new OptionMenu(this);
     }
     
     static synchronized public Controller getController() {
         if (controller == null) {
             controller = new Controller();
+            controller.init();
         }
         return controller;
+    }
+
+    private void init() {
+        menu = new MainMenu();
+        options = new OptionMenu();
     }
     
     public void start(MIDlet midlet) {        
@@ -80,6 +94,30 @@ public class Controller implements BluetoothFinderListener {
 
     public void exit() {
         midlet.notifyDestroyed();
+    }
+
+    public Gps getGps() {
+        return gps;
+    }
+    
+    public int getRecordState() {
+        return recordState;
+    }
+    
+    public void startRecording() {
+        recorder = new GpsRecorder(gps);
+        sender = new GpsSender(recorder);
+        gps.start(configuration.getGpsUrl());                       
+        recorder.start();
+        sender.start(); 
+        recordState = RecordState.START;
+    }
+    
+    public void stopRecording() {
+        sender.stop();
+        recorder.stop();                        
+        gps.stop();                        
+        recordState = RecordState.STOP;        
     }
     
     public void searchDevice() {

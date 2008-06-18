@@ -23,7 +23,6 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 package fr.victorb.mobile.vgps.controller;
 
 import fr.victorb.mobile.vgps.gps.*;
-import fr.victorb.mobile.vgps.controller.GpsRecorder;
 import fr.victorb.mobile.vgps.controller.Controller;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -48,9 +47,6 @@ public class GpsSender extends TimerTask {
     
     public GpsSender(GpsRecorder recorder) {
         super();
-        Controller controller = Controller.getController();
-        id = controller.configuration.getPilotId();
-        url = controller.configuration.getLogUrl();
         this.recorder = recorder;
     } 
     
@@ -58,21 +54,32 @@ public class GpsSender extends TimerTask {
         sendData();
     }
     
+    /**
+     * Start sending positions
+     */
     public void start()  {
         state = STATE_START;
         positions.removeAllElements();
         Controller controller = Controller.getController();
+        id = controller.configuration.getPilotId();
+        url = controller.configuration.getLogUrl();
         int period = controller.configuration.getSendInterval() * 60  * 1000;
         new Timer().scheduleAtFixedRate(this, period, period);  
         sendData();
     }
     
+    /**
+     * Stop sending positions
+     */
     public synchronized void stop() {
         cancel();
         state = STATE_OFF;
         sendData();
     }
     
+    /**
+     * Send positions
+     */
     private synchronized void sendData() {     
         recorder.appendRecords(positions);
         

@@ -22,6 +22,7 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 package fr.victorb.mobile.vgps.ui;
 
+import fr.victorb.mobile.vgps.config.Configuration;
 import fr.victorb.mobile.vgps.controller.Controller;
 import javax.microedition.lcdui.Choice;
 import javax.microedition.lcdui.ChoiceGroup;
@@ -58,9 +59,10 @@ public class OptionMenu extends Form implements CommandListener {
     }
     
     public void init() {
-        idTxt.setString(controller.configuration.getPilotId());
-        urlTxt.setString(controller.configuration.getLogUrl());
-        switch (controller.configuration.getLogInterval()) {
+        Configuration cfg = controller.configuration;
+        idTxt.setString(cfg.getPilotId());
+        urlTxt.setString(cfg.getLogUrl());
+        switch (cfg.getLogInterval()) {
             case 10:
                 logChoice.setSelectedIndex(0, true);
                 break;
@@ -71,7 +73,7 @@ public class OptionMenu extends Form implements CommandListener {
                 logChoice.setSelectedIndex(2, true);
         }
 
-        switch (controller.configuration.getSendInterval()) {
+        switch (cfg.getSendInterval()) {
             case 10:
                 sendChoice.setSelectedIndex(0, true);
                 break;
@@ -85,28 +87,29 @@ public class OptionMenu extends Form implements CommandListener {
 
     public void commandAction(Command command, Displayable arg1) {
         if (command == cmdOk) {
-            controller.configuration.setPilotId(idTxt.getString());
-            controller.configuration.setLogUrl(urlTxt.getString());
+            Configuration cfg = controller.configuration;
+            cfg.setPilotId(idTxt.getString());
+            cfg.setLogUrl(urlTxt.getString());
             switch (logChoice.getSelectedIndex()) {
                 case 0:
-                    controller.configuration.setLogInterval(10);
+                    cfg.setLogInterval(10);
                     break;
                 case 1:
-                    controller.configuration.setLogInterval(60);
+                    cfg.setLogInterval(60);
                     break;
                 default:
-                    controller.configuration.setLogInterval(600);
+                    cfg.setLogInterval(600);
             }
 
             switch (sendChoice.getSelectedIndex()) {
                 case 0:
-                    controller.configuration.setSendInterval(10);
+                    cfg.setSendInterval(10);
                     break;
                 case 1:
-                    controller.configuration.setSendInterval(30);
+                    cfg.setSendInterval(30);
                     break;
                 default:
-                    controller.configuration.setSendInterval(60);
+                    cfg.setSendInterval(60);
             } 
             
             controller.saveConfig();    

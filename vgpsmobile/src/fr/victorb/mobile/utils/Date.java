@@ -27,6 +27,9 @@ public class Date {
     public int month;
     public int day;   
     
+    /**
+     * @return A copy of the current Date object
+     */
     public Date clone() {
         Date date = new Date();
         date.year = year;

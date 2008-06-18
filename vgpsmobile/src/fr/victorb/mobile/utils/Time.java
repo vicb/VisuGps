@@ -28,6 +28,9 @@ public class Time {
     public int minute;
     public int second;
     
+    /**
+     * @return A copy of the Time object
+     */
     public Time clone() {
         Time time = new Time();
         time.hour = hour;

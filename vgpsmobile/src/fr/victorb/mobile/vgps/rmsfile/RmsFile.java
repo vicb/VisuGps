@@ -38,6 +38,12 @@ public class RmsFile {
     public RmsFile() {
     }
     
+    /**
+     * Serialize an object to the filesystem
+     * @param filename Name of the file
+     * @param data object
+     * @throws fr.victorb.mobile.vgps.rmsfile.RmsSerializeException
+     */
     static public void serialize(String filename, Serializable data) throws RmsSerializeException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(bos);
@@ -54,6 +60,14 @@ public class RmsFile {
         }
     }    
     
+    /**
+     * Save a file to the filesystem
+     * @param filename name of the file
+     * @param data content of the file
+     * @throws fr.victorb.mobile.vgps.rmsfile.RmsFileException
+     * @throws fr.victorb.mobile.vgps.rmsfile.RmsFileNotFoundException
+     * @throws fr.victorb.mobile.vgps.rmsfile.RmsFileBadFormatException
+     */
     static public void save(String filename, byte[] data) throws RmsFileException,
             RmsFileNotFoundException,
             RmsFileBadFormatException {
@@ -114,6 +128,12 @@ public class RmsFile {
         }        
     }   
     
+    /**
+     * Unserialize an object from the filesystem
+     * @param filename Name of the file
+     * @param data Object
+     * @throws fr.victorb.mobile.vgps.rmsfile.RmsSerializeException
+     */
     static public void unserialize(String filename, Serializable data) throws RmsSerializeException {
         ByteArrayInputStream bis = null;
         DataInputStream dis = null;
@@ -131,6 +151,14 @@ public class RmsFile {
         }        
     }    
            
+    /**
+     * Load the content of a file from the filesystem
+     * @param filename
+     * @return
+     * @throws fr.victorb.mobile.vgps.rmsfile.RmsFileException
+     * @throws fr.victorb.mobile.vgps.rmsfile.RmsFileNotFoundException
+     * @throws fr.victorb.mobile.vgps.rmsfile.RmsFileBadFormatException
+     */
     static public byte[] load(String filename) throws RmsFileException, 
             RmsFileNotFoundException, 
             RmsFileBadFormatException {        

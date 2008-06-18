@@ -27,16 +27,28 @@ public class Split {
     private int pos;
     private String src;    
 
-    /** Creates a new instance of Split */
+    /**
+     * Constructor
+     * @param src String to be splitted
+     */
     public Split(String src) {
         this.src = src;
     }
 
+    /**
+     * Constructor
+     * @param src String to be splitted
+     * @param delimiter Delimiter
+     */
     public Split(String src, String delimiter) {
         this.src = src;
         this.delimiter = delimiter;
     }    
 
+    /**
+     * Get the next part of the string
+     * @return part of string or null when e/o string reached
+     */
     public String next() {
         String sub;
         if (pos >= src.length()) {

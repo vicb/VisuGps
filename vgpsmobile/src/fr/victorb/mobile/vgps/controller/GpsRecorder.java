@@ -34,6 +34,10 @@ public class GpsRecorder extends TimerTask implements GpsListener {
     private Gps gps;   
     private boolean fixValid;
     
+    /**
+     * Constructor
+     * @param gps GPS to be used by the recorder
+     */
     public GpsRecorder(Gps gps) {
         super();
         this.gps = gps;
@@ -41,7 +45,7 @@ public class GpsRecorder extends TimerTask implements GpsListener {
     }
     
     /**
-     * Append recorded position and date to specified arrays
+     * Append recorded position to the specified array
      * @param pos array of positions
      */
     public synchronized void appendRecords(Vector pos) {
@@ -51,6 +55,9 @@ public class GpsRecorder extends TimerTask implements GpsListener {
         positions.removeAllElements();
     }    
     
+    /**
+     * Start recording GPS position
+     */
     public void start() {
         Controller controller = Controller.getController();
         positions.removeAllElements();
@@ -58,6 +65,9 @@ public class GpsRecorder extends TimerTask implements GpsListener {
         new Timer().scheduleAtFixedRate(this, 5000, controller.configuration.getLogInterval() * 1000);
     }
     
+    /**
+     * Stop recording gps position
+     */
     public void stop() {
         cancel();
     }
@@ -71,9 +81,17 @@ public class GpsRecorder extends TimerTask implements GpsListener {
         }
     }
 
+    /**
+     * Called when the gps position has been updated
+     * @param position GPS position
+     */
     public void gpsPositionUpdated(GpsPosition position) {
     }
 
+    /**
+     * Called for each fix giving its status
+     * @param valid
+     */
     public void gpsFixValidUpdated(boolean valid) {
         fixValid = valid;
     }

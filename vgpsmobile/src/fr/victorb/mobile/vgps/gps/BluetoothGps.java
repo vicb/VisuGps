@@ -40,6 +40,11 @@ public class BluetoothGps extends Gps implements Runnable {
         super();
     }
 
+    /**
+     * Connect and start listening to a bluetooth GPS
+     * @param url URL of the GPS
+     * @return false
+     */
     public boolean start(String url) {
         this.url = url;
         connected = false;
@@ -50,14 +55,23 @@ public class BluetoothGps extends Gps implements Runnable {
         return false;
     }
 
+    /**
+     * Stop listening to the bluetooth GPS
+     */
     public void stop() {
         connected = false;       
     }
     
+    /**
+     * @return Last GPS position received
+     */
     public GpsPosition getPosition() {       
         return position;
     }
     
+    /**
+     * Receive and decode GPS positions
+     */
     public void run() {
         char c;
         Split split;

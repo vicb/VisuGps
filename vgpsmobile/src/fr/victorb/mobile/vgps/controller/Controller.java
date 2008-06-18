@@ -47,7 +47,7 @@ public class Controller implements BluetoothFinderListener {
     
     private int recordState = RecordState.STOP;
     
-    private Gps gps = new BluetoothGps();         
+    private Gps gps;
     private GpsRecorder recorder;
     private GpsSender sender;
     
@@ -58,6 +58,10 @@ public class Controller implements BluetoothFinderListener {
     private Controller() {
     }
     
+    /**
+     * Singleton 
+     * @return Controller instance
+     */
     static synchronized public Controller getController() {
         if (controller == null) {
             controller = new Controller();
@@ -66,9 +70,15 @@ public class Controller implements BluetoothFinderListener {
         return controller;
     }
 
+    /**
+     * Initialize the controller
+     */
     private void init() {
         menu = new MainMenu();
         options = new OptionMenu();
+        gps = new BluetoothGps();    
+        recorder = new GpsRecorder(gps);
+        sender = new GpsSender(recorder);        
     }
     
     public void start(MIDlet midlet) {        
@@ -83,7 +93,6 @@ public class Controller implements BluetoothFinderListener {
                 configuration = new Configuration();
             }                      
         } 
-
         menu.setGpsName(configuration.getGpsName());
         display.setCurrent(menu);
     }
@@ -96,23 +105,33 @@ public class Controller implements BluetoothFinderListener {
         midlet.notifyDestroyed();
     }
 
+    /**
+     * @return GPS currently in use
+     */
     public Gps getGps() {
         return gps;
     }
     
+    /**
+     * @return Current record state
+     */
     public int getRecordState() {
         return recordState;
     }
     
+    /**
+     * Start recording and sending position
+     */
     public void startRecording() {
-        recorder = new GpsRecorder(gps);
-        sender = new GpsSender(recorder);
         gps.start(configuration.getGpsUrl());                       
         recorder.start();
         sender.start(); 
         recordState = RecordState.START;
     }
     
+    /**
+     * Stop recording and sending position
+     */
     public void stopRecording() {
         sender.stop();
         recorder.stop();                        
@@ -120,12 +139,21 @@ public class Controller implements BluetoothFinderListener {
         recordState = RecordState.STOP;        
     }
     
+    /** 
+     * Start searching bluetooth devices
+     */
     public void searchDevice() {
         BluetoothFinder btFinder = new BluetoothFinder(this);;
         display.setCurrent(btFinder);
         btFinder.startSearch(new UUID[] {new UUID(0x1101)});        
     }
     
+    /**
+     * Set the bluetooth GPS to use
+     * @param status Search status
+     * @param deviceName Device name (when a device has been selected)
+     * @param deviceUrl Device URL (when a device has been selected)
+     */
     public void deviceSearchCompleted(int status, String deviceName, String deviceUrl) {
         if (status == BluetoothFinderListener.DEVICE_FOUND) {
             if (!deviceUrl.equals(configuration.getGpsUrl())) {

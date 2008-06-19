@@ -22,14 +22,14 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 package fr.victorb.mobile.vgps.controller;
 
+import fr.victorb.mobile.utils.GpsUtil;
 import fr.victorb.mobile.vgps.ui.MainMenu;
 import fr.victorb.mobile.vgps.bluetooth.BluetoothFinder;
 import fr.victorb.mobile.vgps.bluetooth.BluetoothFinderListener;
 import fr.victorb.mobile.vgps.config.Configuration;
 import fr.victorb.mobile.vgps.gps.BluetoothGps;
 import fr.victorb.mobile.vgps.gps.Gps;
-import fr.victorb.mobile.vgps.controller.GpsRecorder;
-import fr.victorb.mobile.vgps.controller.GpsSender;
+import fr.victorb.mobile.vgps.gps.InternalGps;
 import fr.victorb.mobile.vgps.rmsfile.RmsFile;
 import fr.victorb.mobile.vgps.ui.OptionMenu;
 import javax.bluetooth.UUID;
@@ -76,7 +76,11 @@ public class Controller implements BluetoothFinderListener {
     private void init() {
         menu = new MainMenu();
         options = new OptionMenu();
-        gps = new BluetoothGps();    
+        if (GpsUtil.hasInternalGps()) {
+            gps = new InternalGps();
+        } else {
+            gps = new BluetoothGps();    
+        }                
         recorder = new GpsRecorder(gps);
         sender = new GpsSender(recorder);        
     }
@@ -92,8 +96,12 @@ public class Controller implements BluetoothFinderListener {
             } catch (Exception e) {
                 configuration = new Configuration();
             }                      
-        } 
-        menu.setGpsName(configuration.getGpsName());
+        }    
+        if (GpsUtil.hasInternalGps()) {
+            menu.setGpsName("Internal Gps");
+        } else {
+            menu.setGpsName(configuration.getGpsName());
+        }
         display.setCurrent(menu);
     }
     

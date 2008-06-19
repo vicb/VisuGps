@@ -115,18 +115,18 @@ public class BluetoothGps extends Gps implements Runnable {
                     split.next();           //GPRMC
                     string = split.next();  //time
                     split.next();           // status
-                    position.time.hour = Integer.parseInt(string.substring(0, 2));
-                    position.time.minute = Integer.parseInt(string.substring(2, 4));
-                    position.time.second = Integer.parseInt(string.substring(4, 6));                    
+                    position.time.hour = (byte)Integer.parseInt(string.substring(0, 2));
+                    position.time.minute = (byte)Integer.parseInt(string.substring(2, 4));
+                    position.time.second = (byte)Integer.parseInt(string.substring(4, 6));                    
                     position.latitude = Float.parseFloat(split.next()) * (split.next().toUpperCase().equals("N")?1:-1) / 100;
                     position.longitude = Float.parseFloat(split.next()) * (split.next().toUpperCase().equals("E")?1:-1) / 100;
                     position.elevation = elevation;                    
                     split.next();           // speed    
                     split.next();           // degrees
                     string = split.next();
-                    position.date.day = Integer.parseInt(string.substring(0, 2));
-                    position.date.month = Integer.parseInt(string.substring(2, 4));
-                    position.date.year = Integer.parseInt(string.substring(4, 6));                    
+                    position.date.day = (byte)Integer.parseInt(string.substring(0, 2));
+                    position.date.month = (byte)Integer.parseInt(string.substring(2, 4));
+                    position.date.year = (byte)Integer.parseInt(string.substring(4, 6));                    
                     updatePosition(position);
                 }                
             } catch (Exception ex) {

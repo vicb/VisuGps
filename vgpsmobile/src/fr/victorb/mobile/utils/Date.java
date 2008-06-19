@@ -23,9 +23,9 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 package fr.victorb.mobile.utils;
 
 public class Date {
-    public int year;
-    public int month;
-    public int day;   
+    public byte year;
+    public byte month;
+    public byte day;   
     
     /**
      * @return A copy of the current Date object

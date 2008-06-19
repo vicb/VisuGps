@@ -22,14 +22,11 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 package fr.victorb.mobile.vgps.ui;
 
+import fr.victorb.mobile.utils.GpsUtil;
 import fr.victorb.mobile.vgps.controller.Controller;
 import fr.victorb.mobile.vgps.controller.RecordState;
-import fr.victorb.mobile.vgps.gps.BluetoothGps;
-import fr.victorb.mobile.vgps.gps.Gps;
 import fr.victorb.mobile.vgps.gps.GpsListener;
 import fr.victorb.mobile.vgps.gps.GpsPosition;
-import fr.victorb.mobile.vgps.controller.GpsRecorder;
-import fr.victorb.mobile.vgps.controller.GpsSender;
 import java.io.IOException;
 import javax.microedition.lcdui.Alert;
 import javax.microedition.lcdui.Command;
@@ -91,7 +88,9 @@ public class MainMenu extends List implements CommandListener, GpsListener {
         if (command == cmdSelect) {
             switch (getSelectedIndex()) {
                 case 0:
-                    controller.searchDevice();
+                    if (!GpsUtil.hasInternalGps()) {
+                        controller.searchDevice();
+                    }
                     break;
                 case 1:
                     if (controller.getRecordState() == RecordState.STOP) {

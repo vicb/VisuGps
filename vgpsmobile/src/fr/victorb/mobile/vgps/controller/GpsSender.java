@@ -64,8 +64,7 @@ public class GpsSender extends TimerTask {
         id = controller.configuration.getPilotId();
         url = controller.configuration.getLogUrl();
         int period = controller.configuration.getSendInterval() * 60  * 1000;
-        new Timer().scheduleAtFixedRate(this, period, period);  
-        sendData();
+        new Timer().scheduleAtFixedRate(this, 100, period);  
     }
     
     /**
@@ -74,7 +73,7 @@ public class GpsSender extends TimerTask {
     public synchronized void stop() {
         cancel();
         state = STATE_OFF;
-        sendData();
+        new Thread(new Runnable() {public void run(){sendData();}}).start();
     }
     
     /**

@@ -24,9 +24,9 @@ package fr.victorb.mobile.utils;
 
 
 public class Time {
-    public int hour;
-    public int minute;
-    public int second;
+    public byte hour;
+    public byte minute;
+    public byte second;
     
     /**
      * @return A copy of the Time object

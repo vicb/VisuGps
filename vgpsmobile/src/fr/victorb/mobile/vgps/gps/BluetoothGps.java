@@ -105,7 +105,6 @@ public class BluetoothGps extends Gps implements Runnable {
                     split.next();       // E/W
                     string = split.next();                    
                     valid = (Integer.parseInt(string)) > 0;  // fix valid                    
-                    System.out.println("valid :" + string + " -> " + valid);
                     split.next();       // nb satellites
                     split.next();       // h dilution
                     elevation =(int) Float.parseFloat(split.next()); // elevation                           

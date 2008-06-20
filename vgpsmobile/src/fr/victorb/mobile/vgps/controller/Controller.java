@@ -76,11 +76,15 @@ public class Controller implements BluetoothFinderListener {
     private void init() {
         menu = new MainMenu();
         options = new OptionMenu();
-        if (GpsUtil.hasInternalGps()) {
-            gps = new InternalGps();
-        } else {
-            gps = new BluetoothGps();    
-        }                
+//#if USE_INTERNAL_GPS
+//#         if (GpsUtil.hasInternalGps()) {
+//#             gps = new InternalGps();
+//#         } else {
+//#             gps = new BluetoothGps();    
+//#         }                
+//#else
+        gps = new BluetoothGps();    
+//#endif
         recorder = new GpsRecorder(gps);
         sender = new GpsSender(recorder);        
     }
@@ -97,11 +101,16 @@ public class Controller implements BluetoothFinderListener {
                 configuration = new Configuration();
             }                      
         }    
-        if (GpsUtil.hasInternalGps()) {
-            menu.setGpsName("Internal Gps");
-        } else {
-            menu.setGpsName(configuration.getGpsName());
-        }
+        
+//#if USE_INTERNAL_GPS
+//#         if (GpsUtil.hasInternalGps()) {
+//#             menu.setGpsName("Internal Gps");
+//#         } else {
+//#             menu.setGpsName(configuration.getGpsName());
+//#         }
+//#else
+        menu.setGpsName(configuration.getGpsName());
+//#endif
         display.setCurrent(menu);
     }
     

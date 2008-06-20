@@ -23,7 +23,6 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 package fr.victorb.mobile.vgps.controller;
 
 import fr.victorb.mobile.vgps.gps.*;
-import fr.victorb.mobile.vgps.controller.Controller;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Timer;

@@ -138,8 +138,8 @@ public class BlueGps extends MIDlet implements Runnable
                 
                 gpggaSentence = "$GPGGA," +
                                 igcSentence.substring(1, 7) + "," +
-                                igcSentence.substring(7, 9) + "." + igcSentence.substring(9, 14) + "," + igcSentence.substring(14, 15) + "," +
-                                igcSentence.substring(15, 18) + "." + igcSentence.substring(18, 23) + "," + igcSentence.substring(23, 24) + "," +
+                                igcSentence.substring(7, 11) + "." + igcSentence.substring(11, 14) + "," + igcSentence.substring(14, 15) + "," +
+                                igcSentence.substring(15, 20) + "." + igcSentence.substring(20, 23) + "," + igcSentence.substring(23, 24) + "," +
                                 "1,08,0.9," +
                                 igcSentence.substring(25,30) + "," +
                                 "M,46.9,M,,*47";
@@ -147,8 +147,8 @@ public class BlueGps extends MIDlet implements Runnable
                 gprmcSentence = "$GPRMC," +
                                 igcSentence.substring(1, 7) + "," +
                                 "A," +
-                                igcSentence.substring(7, 9) + "." + igcSentence.substring(9, 14) + "," + igcSentence.substring(14, 15) + "," +
-                                igcSentence.substring(15, 18) + "." + igcSentence.substring(18, 23) + "," + igcSentence.substring(23, 24) + "," +
+                                igcSentence.substring(7, 11) + "." + igcSentence.substring(11, 14) + "," + igcSentence.substring(14, 15) + "," +
+                                igcSentence.substring(15, 20) + "." + igcSentence.substring(20, 23) + "," + igcSentence.substring(23, 24) + "," +
                                 "005.0,315.0," + date + ",000.0,E*6F";
                 
                 try  {

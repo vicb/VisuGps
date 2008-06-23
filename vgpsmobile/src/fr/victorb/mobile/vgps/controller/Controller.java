@@ -22,19 +22,18 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 package fr.victorb.mobile.vgps.controller;
 
-import fr.victorb.mobile.utils.GpsUtil;
 import fr.victorb.mobile.vgps.ui.MainMenu;
 import fr.victorb.mobile.vgps.bluetooth.BluetoothFinder;
 import fr.victorb.mobile.vgps.bluetooth.BluetoothFinderListener;
 import fr.victorb.mobile.vgps.config.Configuration;
 import fr.victorb.mobile.vgps.gps.BluetoothGps;
 import fr.victorb.mobile.vgps.gps.Gps;
-import fr.victorb.mobile.vgps.gps.InternalGps;
 import fr.victorb.mobile.vgps.rmsfile.RmsFile;
 import fr.victorb.mobile.vgps.ui.OptionMenu;
 import javax.bluetooth.UUID;
 import javax.microedition.lcdui.Display;
 import javax.microedition.midlet.MIDlet;
+import fr.victorb.mobile.vgps.gps.InternalGps;
 
 public class Controller implements BluetoothFinderListener {    
     private static Controller controller;
@@ -178,7 +177,6 @@ public class Controller implements BluetoothFinderListener {
                 configuration.setGpsName(deviceName);
                 menu.setGpsName(deviceName);
                 saveConfig();
-                System.out.println(deviceUrl);
             }                        
         }
         showMainMenu();

@@ -89,11 +89,13 @@ public class MainMenu extends List implements CommandListener, GpsListener {
             switch (getSelectedIndex()) {
                 case 0:
 //#if USE_INTERNAL_GPS
-//#                     if (!GpsUtil.hasInternalGps()) {
+//#                     if (!GpsUtil.hasInternalGps() && controller.getRecordState() == RecordState.STOP) {
 //#                         controller.searchDevice();
 //#                     }
 //#else
-                    controller.searchDevice();
+                    if (controller.getRecordState() == RecordState.STOP) {                    
+                        controller.searchDevice();
+                    }
 //#endif
                     break;
                 case 1:

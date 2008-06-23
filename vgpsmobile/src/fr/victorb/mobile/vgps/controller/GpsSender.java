@@ -113,26 +113,22 @@ public class GpsSender {
             connection = (HttpConnection)Connector.open(url, Connector.WRITE);
             connection.setRequestMethod(HttpConnection.POST);
             connection.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
-            connection.setRequestProperty("Content-Length", data.length + "");
+            connection.setRequestProperty("Content-Length", Integer.toString(data.length));
             stream = connection.openDataOutputStream();            
             stream.write(data, 0, data.length);
-            stream.flush();
             stream.close();
             positions.removeAllElements();
-        } catch (IOException e) {
-            System.out.println("Sender error:" + e.getMessage());
+        } catch (IOException e) {            
         } finally {
             if (connection != null) {
                 try {
                     connection.close();
                 } catch (Exception e) {
-                    System.out.println("Error:" + e.getMessage());
                 }
             }
             try {
                 stream.close();
             } catch (Exception e) {
-                System.out.println("Error:" + e.getMessage());
             }
         }       
     }    

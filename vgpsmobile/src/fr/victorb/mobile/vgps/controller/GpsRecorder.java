@@ -27,11 +27,12 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 
-public class GpsRecorder extends TimerTask implements GpsListener {
+public class GpsRecorder implements GpsListener {
 
     private Vector positions = new Vector();
     private Gps gps;   
     private boolean fixValid;
+    Timer timer;
     
     /**
      * Constructor
@@ -61,25 +62,17 @@ public class GpsRecorder extends TimerTask implements GpsListener {
         Controller controller = Controller.getController();
         positions.removeAllElements();
         fixValid = false;
-        new Timer().scheduleAtFixedRate(this, 5000, controller.configuration.getLogInterval() * 1000);
+        timer = new Timer();
+        timer.scheduleAtFixedRate(new Helper(), 5000, controller.configuration.getLogInterval() * 1000);
     }
     
     /**
      * Stop recording gps position
      */
     public void stop() {
-        cancel();
+        timer.cancel();
     }
     
-    /**
-     * Record GPS positions and dates in an array
-     */
-    public synchronized void run() {
-        if (fixValid) {
-            positions.addElement(gps.getPosition().clone());
-        }
-    }
-
     /**
      * Called when the gps position has been updated
      * @param position GPS position
@@ -93,6 +86,17 @@ public class GpsRecorder extends TimerTask implements GpsListener {
      */
     public void gpsFixValidUpdated(boolean valid) {
         fixValid = valid;
+    }
+    
+    private class Helper extends TimerTask {
+    /**
+     * Record GPS positions and dates in an array
+     */
+        public synchronized void run() {
+            if (fixValid) {
+                positions.addElement(gps.getPosition().clone());
+            }
+        }        
     }
 
 }

@@ -31,7 +31,7 @@ import java.util.Vector;
 import javax.microedition.io.Connector;
 import javax.microedition.io.HttpConnection;
 
-public class GpsSender extends TimerTask {
+public class GpsSender {
 
     private String id;
     private GpsRecorder recorder;
@@ -44,15 +44,13 @@ public class GpsSender extends TimerTask {
     private static final int STATE_OFF = 2;
     private int state;
     
+    private Timer timer;
+    
     public GpsSender(GpsRecorder recorder) {
         super();
         this.recorder = recorder;
     } 
-    
-    public void run() {
-        sendData();
-    }
-    
+      
     /**
      * Start sending positions
      */
@@ -63,14 +61,15 @@ public class GpsSender extends TimerTask {
         id = controller.configuration.getPilotId();
         url = controller.configuration.getLogUrl();
         int period = controller.configuration.getSendInterval() * 60  * 1000;
-        new Timer().scheduleAtFixedRate(this, 100, period);  
+        timer = new Timer();
+        timer.scheduleAtFixedRate(new Helper(), 100, period);  
     }
     
     /**
      * Stop sending positions
      */
     public synchronized void stop() {
-        cancel();
+        timer.cancel();
         state = STATE_OFF;
         new Thread(new Runnable() {public void run(){sendData();}}).start();
     }
@@ -137,4 +136,10 @@ public class GpsSender extends TimerTask {
             }
         }       
     }    
+    
+    private class Helper extends TimerTask {
+        public void run() {
+            sendData();
+        }
+    }
 }

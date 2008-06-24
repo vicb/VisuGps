@@ -79,7 +79,12 @@ package fr.victorb.chart
             if (iconPlayPause) removeChild(iconPlayPause);
             if (sliderSpeed) removeChild(sliderSpeed);  
             
-            charts = new Array();
+            for (var i:int = 0; i < charts.length; i++) {
+				removeChild(charts[i]);
+				removeChild(sliders[i]);
+			}			
+			
+			charts = new Array();
             sliders = new Array();
             
             iconPlayPause = new AssetManager.ICON_PLAY() as Bitmap;
@@ -196,10 +201,6 @@ package fr.victorb.chart
          * @param	event
          */
         private function onMouseClick(event:MouseEvent):void {
-            Debug.trace("mouse click");
-            Debug.trace(event.target.name);
-            Debug.trace(globalToContent(new Point(event.stageX, event.stageY)).x);
-            Debug.trace(globalToContent(new Point(event.stageX, event.stageY)).y);
             if (globalToContent(new Point(event.stageX, event.stageY)).y < SLIDER_HEIGHT) {
                 if (globalToContent(new Point(event.stageX, event.stageY)).x < ICON_WIDTH) onPlayPause(event);
                 return;

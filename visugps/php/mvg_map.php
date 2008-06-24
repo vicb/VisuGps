@@ -1,3 +1,8 @@
+<html>
+<head>
+<title>Carte</title>
+</head>
+<body>
 <?php
 /*
 Script: mvg_track.php
@@ -37,10 +42,10 @@ if (!isset($_GET['zoom'])) {
 $link = mysql_connect(dbHost, dbUser, dbPassword) or die ('Could not connect: ' . mysql_error());
 mysql_select_db(dbName) or die ('Database does not exist');
 
-$query = sprintf("SELECT latitude, longitude FROM pilot, flight, point " .
+$query = sprintf("SELECT latitude, longitude, time FROM pilot, flight, point " .
                  "WHERE pseudo = '%s' AND " .
-                 "flight.pilotId = pilot.id AND " .
-                 "point.flightId = flight.id " .
+                 "pilotId = pilot.id AND " .
+                 "flightId = flight.id " .
                  "ORDER BY point.time DESC " .
                  "LIMIT 0,1",
                  format_mysql($_GET['id']));
@@ -48,20 +53,16 @@ $query = sprintf("SELECT latitude, longitude FROM pilot, flight, point " .
 $result = mysql_query($query) or die('Query error: ' . mysql_error());
 if (mysql_num_rows($result) == 1) {
     $position = mysql_fetch_object($result);
-    $img = sprintf("<img src='http://maps.google.com/staticmap?zoom=%d&size=200x200&" .
+    $img = sprintf("Date: $position->time<br/>\n<img src='http://maps.google.com/staticmap?zoom=%d&size=180x180&" .
                    "maptype=mobile&markers=$position->latitude,$position->longitude,smallgreen&" .
-                   "key=ABQIAAAAJPvmQMZVrrV3inIwT2t4RBQf-JSUIEMNUNF63gcoYgskNGvaZRQmUvzGcFUdj4nlylxP8SK4sRKYsg'></img>",
+                   "key=ABQIAAAAJPvmQMZVrrV3inIwT2t4RBQf-JSUIEMNUNF63gcoYgskNGvaZRQmUvzGcFUdj4nlylxP8SK4sRKYsg'></img>\n",
                    $zoom);
     $zoomIn = $zoomOut = "<br/><a href='http://" . $_SERVER['SERVER_NAME'] . $_SERVER['PHP_SELF'];
-    $zoomIn .= "?id=" . $_GET['id'] . "&zoom=" . ($zoom + 1) .  "'>zoomIn</a>";
-    $zoomOut .= "?id=" . $_GET['id'] . "&zoom=" . ($zoom - 1) . "'>zoomOut</a>";
+    $zoomIn .= "?id=" . $_GET['id'] . "&zoom=" . ($zoom + 1) .  "'>zoomIn</a>\n";
+    $zoomOut .= "?id=" . $_GET['id'] . "&zoom=" . ($zoom - 1) . "'>zoomOut</a>\n";
     echo $img . $zoomIn . $zoomOut;
-
-
-
 } else {
-    echo "result: " . mysql_num_rows($result);
-    exit;
+    echo "No map available";
 }
 
 mysql_close($link);
@@ -78,3 +79,5 @@ function format_mysql($text) {
 }
 
 ?>
+</body>
+</html>

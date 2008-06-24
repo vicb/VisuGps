@@ -429,7 +429,7 @@ package fr.victorb.visugps
                 map.addOverlay(pilotMarker);
                 trackControl = new TextControl(new ControlPosition(ControlPosition.ANCHOR_TOP_RIGHT, 7, 35));
                 var date:Date = track.getDate();
-                trackControl.text(track.getPilot() + "\n" + date.getDay() + "/" + date.getMonth() + "/" + date.getFullYear());
+                trackControl.text(track.getPilot() + "\n" + date.getDate() + "/" + (date.getMonth() + 1) + "/" + date.getFullYear());
                 map.addControl(trackControl); 
             } else {
                 charts.init();

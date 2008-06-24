@@ -108,11 +108,11 @@ package fr.victorb.visugps
          * @return Date of the flight
          */
         public function getDate() : Date {
-            if (track.date is Array &&
+            if (track.date is Object &&
                 track.date.day is int &&
                 track.date.month is int &&
                 track.date.year is int) {
-                    return new Date(track.date.year, track.date.month, track.date.day);
+                    return new Date(track.date.year, track.date.month - 1, track.date.day);
                 } else {
                     return new Date(2000, 1, 1);
                 }

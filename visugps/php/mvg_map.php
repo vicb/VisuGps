@@ -53,7 +53,9 @@ $query = sprintf("SELECT latitude, longitude, time FROM pilot, flight, point " .
 $result = mysql_query($query) or die('Query error: ' . mysql_error());
 if (mysql_num_rows($result) == 1) {
     $position = mysql_fetch_object($result);
-    $img = sprintf("Date: $position->time<br/>\n<img src='http://maps.google.com/staticmap?zoom=%d&size=180x180&" .
+    $img = sprintf("Date: $position->time<br/>\n" .
+                   "Lieu: " . getNearbyPlace($position->latitude,$position->longitude) . "<br/>\n" .
+                   "<img src='http://maps.google.com/staticmap?zoom=%d&size=180x180&" .
                    "maptype=mobile&markers=$position->latitude,$position->longitude,smallgreen&" .
                    "key=ABQIAAAAJPvmQMZVrrV3inIwT2t4RBQf-JSUIEMNUNF63gcoYgskNGvaZRQmUvzGcFUdj4nlylxP8SK4sRKYsg'></img>\n",
                    $zoom);
@@ -76,6 +78,19 @@ function format_mysql($text) {
         }
     }
     return mysql_real_escape_string($text);
+}
+
+function getNearbyPlace($lat, $lon) {
+    $url = "http://ws.geonames.org/findNearbyPlaceNameJSON?lat=$lat&lng=$lon";
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_FAILONERROR, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    $data = curl_exec($ch);
+    curl_close($ch);
+    return json_decode($data)->geonames[0]->name;
 }
 
 ?>

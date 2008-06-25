@@ -30,6 +30,7 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 */
 require('mvg_db.inc.php');
+require('vg_cfg.php');
 
 // Keep going only if an id has been provided
 if (isset($_GET['id'])) {
@@ -42,7 +43,7 @@ if (isset($_GET['id'])) {
     $link = mysql_connect(dbHost, dbUser, dbPassword) or die ('Could not connect: ' . mysql_error());
     mysql_select_db(dbName) or die ('Database does not exist');
 
-    $query = sprintf("SELECT latitude, longitude, time FROM pilot, flight, point " .
+    $query = sprintf("SELECT latitude, longitude, elevation, time FROM pilot, flight, point " .
                      "WHERE pseudo = '%s' AND " .
                      "pilotId = pilot.id AND " .
                      "flightId = flight.id " .
@@ -55,6 +56,7 @@ if (isset($_GET['id'])) {
         $position = mysql_fetch_object($result);
         $img = sprintf("Date: $position->time<br/>\n" .
                        "Lieu: " . getNearbyPlace($position->latitude,$position->longitude) . "<br/>\n" .
+                       "h: " . $position->elevation . "m (" . max(0, $position->elevation - GetElevGnd($position->latitude,$position->longitude)) . "m/sol)<br/>\n" .
                        "<img src='http://maps.google.com/staticmap?zoom=%d&size=180x180&" .
                        "maptype=mobile&markers=$position->latitude,$position->longitude,smallgreen&" .
                        "key=ABQIAAAAJPvmQMZVrrV3inIwT2t4RBQf-JSUIEMNUNF63gcoYgskNGvaZRQmUvzGcFUdj4nlylxP8SK4sRKYsg'></img>\n",
@@ -100,6 +102,31 @@ function getNearbyPlace($lat, $lon) {
     curl_close($ch);
     return json_decode($data)->geonames[0]->name;
 }
+
+/*
+Function: GetElevGnd
+        Return the ground elevation
+*/
+function GetElevGnd($lat, $lon)
+{
+    $fileLat = (int)floor($lat / SRTM_TILE_SIZE_DEG) * SRTM_TILE_SIZE_DEG;
+    $fileLon = (int)floor($lon / SRTM_TILE_SIZE_DEG) * SRTM_TILE_SIZE_DEG;
+    $fileName = "strm3_" . $fileLat . "_" . $fileLon . ".strmb";
+    $latPx = (int)floor(($fileLat + SRTM_TILE_SIZE_DEG - $lat) * (SRTM_TILE_SIZE_PX - 1) / SRTM_TILE_SIZE_DEG);
+    $lonPx = (int)floor(($lon - $fileLon) * (SRTM_TILE_SIZE_PX - 1) / SRTM_TILE_SIZE_DEG);
+
+    $elevGnd = 0;
+    $handle = @fopen(SRTM_PATH . $fileName, "rb");
+    if ($handle) {
+        fseek($handle, $latPx * SRTM_TILE_SIZE_PX);
+        $line = fread($handle, SRTM_TILE_SIZE_PX);
+        $elevGnd = ord($line[$lonPx]) * 20;
+    }
+    fclose($handle);
+
+    return $elevGnd;
+}
+
 
 ?>
 </body>

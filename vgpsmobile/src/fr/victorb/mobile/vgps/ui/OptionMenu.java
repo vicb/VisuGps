@@ -49,8 +49,8 @@ public class OptionMenu extends Form implements CommandListener {
         
         append(idTxt = new TextField("Pilot ID", controller.configuration.getPilotId(), 10, TextField.ANY));
         append(urlTxt = new TextField("Log URL", controller.configuration.getLogUrl(), 50, TextField.URL));
-        append(logChoice = new ChoiceGroup("Log Interval (sec)", Choice.EXCLUSIVE, new String[] {"10", "60", "600"}, null));
-        append(sendChoice = new ChoiceGroup("Track Interval (min)", Choice.EXCLUSIVE, new String[] {"10", "30", "60"}, null));       
+        append(logChoice = new ChoiceGroup("Log Interval (sec)", Choice.EXCLUSIVE, new String[] {"5", "10", "60", "600"}, null));
+        append(sendChoice = new ChoiceGroup("Track Interval (min)", Choice.EXCLUSIVE, new String[] {"5", "10", "30", "60"}, null));       
 
         addCommand(cmdOk);
         addCommand(cmdCancel);
@@ -63,25 +63,31 @@ public class OptionMenu extends Form implements CommandListener {
         idTxt.setString(cfg.getPilotId());
         urlTxt.setString(cfg.getLogUrl());
         switch (cfg.getLogInterval()) {
-            case 10:
+            case 5:
                 logChoice.setSelectedIndex(0, true);
                 break;
-            case 60:
+            case 10:
                 logChoice.setSelectedIndex(1, true);
                 break;
-            default:
+            case 60:
                 logChoice.setSelectedIndex(2, true);
+                break;
+            default:
+                logChoice.setSelectedIndex(3, true);
         }
 
         switch (cfg.getSendInterval()) {
-            case 10:
+            case 5:
                 sendChoice.setSelectedIndex(0, true);
                 break;
-            case 30:
+            case 10:
                 sendChoice.setSelectedIndex(1, true);
                 break;
-            default:
+            case 30:
                 sendChoice.setSelectedIndex(2, true);
+                break;
+            default:
+                sendChoice.setSelectedIndex(3, true);
         }
     }
 
@@ -92,9 +98,12 @@ public class OptionMenu extends Form implements CommandListener {
             cfg.setLogUrl(urlTxt.getString());
             switch (logChoice.getSelectedIndex()) {
                 case 0:
-                    cfg.setLogInterval(10);
+                    cfg.setLogInterval(5);
                     break;
                 case 1:
+                    cfg.setLogInterval(10);
+                    break;
+                case 2:
                     cfg.setLogInterval(60);
                     break;
                 default:
@@ -103,9 +112,12 @@ public class OptionMenu extends Form implements CommandListener {
 
             switch (sendChoice.getSelectedIndex()) {
                 case 0:
-                    cfg.setSendInterval(10);
+                    cfg.setSendInterval(5);
                     break;
                 case 1:
+                    cfg.setSendInterval(10);
+                    break;
+                case 2:
                     cfg.setSendInterval(30);
                     break;
                 default:

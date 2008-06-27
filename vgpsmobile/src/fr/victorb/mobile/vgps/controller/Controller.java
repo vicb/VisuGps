@@ -34,6 +34,7 @@ import javax.bluetooth.UUID;
 import javax.microedition.lcdui.Display;
 import javax.microedition.midlet.MIDlet;
 import fr.victorb.mobile.vgps.gps.InternalGps;
+import fr.victorb.mobile.utils.GpsUtil;
 
 public class Controller implements BluetoothFinderListener {    
     private static Controller controller;
@@ -42,7 +43,7 @@ public class Controller implements BluetoothFinderListener {
     private MIDlet midlet;
     public Configuration configuration = new Configuration();
     private static final String CONFIG_FILE = "config.ini";    
-    private static final String VERSION = "v1.0";
+    private static final String VERSION = "v1.1.1";
     
     private int recordState = RecordState.STOP;
     

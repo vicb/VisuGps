@@ -48,11 +48,13 @@ public class GpsRecorder implements GpsListener {
      * Append recorded position to the specified array
      * @param pos array of positions
      */
-    public synchronized void appendRecords(Vector pos) {
-        for (int i = 0; i < positions.size(); i++) {
-            pos.addElement((GpsPosition)positions.elementAt(i));            
+    public void appendRecords(Vector pos) {
+        synchronized (positions) {
+            for (int i = 0; i < positions.size(); i++) {
+                pos.addElement((GpsPosition)positions.elementAt(i));            
+            }
+            positions.removeAllElements();
         }
-        positions.removeAllElements();
     }    
     
     /**
@@ -92,9 +94,11 @@ public class GpsRecorder implements GpsListener {
     /**
      * Record GPS positions and dates in an array
      */
-        public synchronized void run() {
+        public void run() {
             if (fixValid) {
-                positions.addElement(gps.getPosition().clone());
+                synchronized (positions) {
+                    positions.addElement(gps.getPosition().clone());  
+                }
             }
         }        
     }

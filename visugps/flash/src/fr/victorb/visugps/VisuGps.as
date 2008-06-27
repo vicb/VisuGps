@@ -399,7 +399,7 @@ package fr.victorb.visugps
             }
             
             if (params.live == 1) {
-                var timer:Timer = new Timer(5 * 60 * 1000);
+                var timer:Timer = new Timer(2 * 60 * 1000);
                 timer.addEventListener(TimerEvent.TIMER, function():void { track.load(params.trackUrl + "&load=" + loadTimes) } );                
 				timer.start();
             }

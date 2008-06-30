@@ -56,7 +56,8 @@ if (isset($_GET['id'])) {
     if (mysql_num_rows($result) == 1) {
         $position = mysql_fetch_object($result);
         $img = sprintf("Date: $position->time<br/>\n" .
-                       "Lieu: " . getNearbyPlace($position->latitude,$position->longitude) . "<br/>\n" .
+                       "Lieu: " . getNearbyPlace($position->latitude,$position->longitude) . 
+                       " [" . $position->latitude . " - " . $position->longitude . "]<br/>\n" .
                        "h: " . $position->elevation . "m (" . max(0, $position->elevation - GetElevGnd($position->latitude,$position->longitude)) . "m/sol)<br/>\n" .
                        "<img src='http://maps.google.com/staticmap?zoom=%d&size=180x180&" .
                        "maptype=mobile&markers=$position->latitude,$position->longitude,smallgreen&" .

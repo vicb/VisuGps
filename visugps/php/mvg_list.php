@@ -34,7 +34,29 @@ require('mvg_db.inc.php');
 $link = mysql_connect(dbHost, dbUser, dbPassword) or die ('Could not connect: ' . mysql_error());
 mysql_select_db(dbName) or die ('Database does not exist');
 
-$query = "SELECT name, start, end, flightId, COUNT(latitude) as points ".
+
+// Set the end time for old flights which haven't received a stop
+$query = "SELECT id, end " .
+         "FROM flight " .
+         "WHERE end IS NULL ";
+$result = mysql_query($query) or die('Query error: ' . mysql_error());
+if (mysql_num_rows($result)) {
+    while ($flight = mysql_fetch_object($result)) {
+        $query = "SELECT time, DATEDIFF(CURDATE(), time) AS delta " .
+                 "FROM point WHERE flightId=$flight->id " .
+                 "HAVING delta > 1 " .
+                 "ORDER BY time DESC limit 0,1";
+        $result2 = mysql_query($query) or die('Query error: ' . mysql_error());
+        if (mysql_num_rows($result2) == 1) {
+            $point = mysql_fetch_object($result2);
+            $query = "UPDATE flight SET end='$point->time' WHERE id = $flight->id";
+            mysql_query($query) or die('Query error: ' . mysql_error());
+        }
+    }
+}
+
+// List flights having more than 5 points
+$query = "SELECT name, start, end, flightId, COUNT(latitude) as points " .
          "FROM pilot, flight, point " .
          "WHERE flightId = flight.id AND pilotId = pilot.id GROUP BY flightId " .
          "HAVING points > 5 " .
@@ -51,8 +73,8 @@ if (mysql_num_rows($result)) {
         $track['end']['time'] = $row->end;
 
         $query = "SELECT latitude, longitude FROM point " .
-                 "WHERE flightId = " . $row->flightId .
-                 " ORDER BY point.time ASC " .
+                 "WHERE flightId = $row->flightId " .
+                 "ORDER BY point.time ASC " .
                  "LIMIT 0,1";
 
         if ($result2 = mysql_query($query)) {
@@ -65,8 +87,8 @@ if (mysql_num_rows($result)) {
         }
 
         $query = "SELECT latitude, longitude FROM point " .
-                 "WHERE flightId = " . $row->flightId .
-                 " ORDER BY point.time DESC " .
+                 "WHERE flightId = $row->flightId " .
+                 "ORDER BY point.time DESC " .
                  "LIMIT 0,1";
 
         if ($result2 = mysql_query($query)) {
@@ -95,7 +117,10 @@ function getNearbyPlace($lat, $lon) {
     curl_setopt($ch, CURLOPT_TIMEOUT, 10);
     $data = curl_exec($ch);
     curl_close($ch);
-    return json_decode($data)->geonames[0]->name;
+    $data = json_decode($data)->geonames[0];
+    $location['place'] = $data->name;
+    $location['country'] = strtolower($data->countryCode);
+    return $location;
 }
 
 ?>

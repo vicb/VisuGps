@@ -44,11 +44,58 @@ $result = mysql_query($query)  or die('Query error: ' . mysql_error());
 $tracks['tracks'] = array();
 
 if (mysql_num_rows($result)) {
-    while ($row = mysql_fetch_assoc($result)) {
-        $tracks['tracks'][] = $row;
-    }
+    while ($row = mysql_fetch_object($result)) {
+        $track['name'] = $row->name;
+        $track['flightId'] = $row->flightId;
+        $track['start']['time'] = $row->start;
+        $track['end']['time'] = $row->end;
+
+        $query = "SELECT latitude, longitude FROM point " .
+                 "WHERE flightId = " . $row->flightId .
+                 " ORDER BY point.time ASC " .
+                 "LIMIT 0,1";
+
+        if ($result2 = mysql_query($query)) {
+            if (mysql_num_rows($result2) == 1) {
+                $takeoff = mysql_fetch_object($result2);
+                $track['start']['lat'] = $takeoff->latitude;
+                $track['start']['lon'] = $takeoff->longitude;
+                $track['start']['location'] = getNearbyPlace($takeoff->latitude, $takeoff->longitude);
+            }
+        }
+
+        $query = "SELECT latitude, longitude FROM point " .
+                 "WHERE flightId = " . $row->flightId .
+                 " ORDER BY point.time DESC " .
+                 "LIMIT 0,1";
+
+        if ($result2 = mysql_query($query)) {
+            if (mysql_num_rows($result2) == 1) {
+                $landing = mysql_fetch_object($result2);
+                $track['end']['lat'] = $landing->latitude;
+                $track['end']['lon'] = $landing->longitude;
+                $track['end']['location'] = getNearbyPlace($landing->latitude, $landing->longitude);
+            }
+        }
+
+  $tracks['tracks'][] = $track;
+
+  }
 }
 
 echo @json_encode($tracks);
+
+function getNearbyPlace($lat, $lon) {
+    $url = "http://ws.geonames.org/findNearbyPlaceNameJSON?lat=$lat&lng=$lon";
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_FAILONERROR, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    $data = curl_exec($ch);
+    curl_close($ch);
+    return json_decode($data)->geonames[0]->name;
+}
 
 ?>

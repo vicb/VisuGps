@@ -28,16 +28,9 @@ public abstract class Gps {
     private Vector positionListeners = new Vector();
     private Vector fixValidListeners = new Vector();
        
-    public boolean start(String config){
-        return false;
-    }
-    
-    public void stop(){        
-    }
-    
-    public GpsPosition getPosition() {
-        return null;
-    }
+    public abstract boolean start(String config);   
+    public abstract void stop();
+    public abstract GpsPosition getPosition();
          
     public void addPositionListener(GpsListener listener){
         if (positionListeners.indexOf(listener) == -1) {

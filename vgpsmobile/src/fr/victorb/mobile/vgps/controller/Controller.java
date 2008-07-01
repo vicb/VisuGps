@@ -43,7 +43,7 @@ public class Controller implements BluetoothFinderListener {
     private MIDlet midlet;
     public Configuration configuration = new Configuration();
     private static final String CONFIG_FILE = "config.ini";    
-    private static final String VERSION = "v1.1.1";
+    private static final String VERSION = "v1.1.2";
     
     private int recordState = RecordState.STOP;
     

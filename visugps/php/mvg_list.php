@@ -83,6 +83,13 @@ if (mysql_num_rows($result)) {
                 $track['start']['lat'] = $takeoff->latitude;
                 $track['start']['lon'] = $takeoff->longitude;
                 $track['start']['location'] = getNearbyPlace($takeoff->latitude, $takeoff->longitude);
+                // Convert UTC to local time
+                $timeZone = new DateTimeZone(getTimeZone($takeoff->latitude, $takeoff->longitude));
+                $timeOffset = timezone_offset_get($timeZone, new DateTime($track['start']['time']));
+                $startTime = mysql2timestamp($track['start']['time']) + $timeOffset;
+                $track['start']['time'] = date("Y-m-d H:i:s", $startTime);
+                $endTime = mysql2timestamp($track['end']['time']) + $timeOffset;
+                $track['end']['time'] = date("Y-m-d H:i:s", $endTime);
             }
         }
 
@@ -121,6 +128,26 @@ function getNearbyPlace($lat, $lon) {
     $location['place'] = $data->name;
     $location['country'] = strtolower($data->countryCode);
     return $location;
+}
+
+function getTimeZone($lat, $lon) {
+    $url = "http://ws.geonames.org/timezoneJSON?lat=$lat&lng=$lon";
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_FAILONERROR, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    $data = curl_exec($ch);
+    curl_close($ch);
+    return json_decode($data)->timezoneId;
+}
+
+function mysql2timestamp($datetime){
+       $val = explode(" ",$datetime);
+       $date = explode("-",$val[0]);
+       $time = explode(":",$val[1]);
+       return mktime($time[0],$time[1],$time[2],$date[1],$date[2],$date[0]);
 }
 
 ?>

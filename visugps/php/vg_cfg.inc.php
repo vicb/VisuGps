@@ -1,6 +1,6 @@
 <?php
 /*
-Script: vg_cfg.php
+Script: vg_cfg.inc.php
         VisuGps server side configuration
 
 License: GNU General Public License

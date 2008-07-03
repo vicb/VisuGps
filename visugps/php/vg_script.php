@@ -25,7 +25,7 @@ Copyright (c) 2007 Victor Berchet, <http://www.victorb.fr>
 
 */
 
-require('vg_cfg.php');
+require('vg_cfg.inc.php');
 require('jsmin-1.1.0.php');
 
 define('SCRIPT_FILE', CACHE_BASE_FOLDER . 'scripts.js');

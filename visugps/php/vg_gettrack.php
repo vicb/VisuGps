@@ -25,7 +25,7 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 */
 
-require('vg_cfg.php');
+require('vg_cfg.inc.php');
 require('vg_tracks.php');
 
 if (isset($_GET['format'])) {

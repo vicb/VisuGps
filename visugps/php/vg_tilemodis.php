@@ -25,7 +25,7 @@ Copyright (c) 2007 Victor Berchet, <http://www.victorb.fr>
 
 */
 
-require('vg_cfg.php');
+require('vg_cfg.inc.php');
 require('vg_cache.php');
 
 if (isset($_GET['x']) &&

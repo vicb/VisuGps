@@ -30,7 +30,7 @@ header('Content-type: text/plain; charset=ISO-8859-1');
 header('Cache-Control: no-cache, must-revalidate');
 header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
 
-require('vg_cfg.php');
+require('vg_cfg.inc.php');
 require('vg_tracks.php');
 
 if (isset($_GET['track'])) {

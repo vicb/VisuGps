@@ -31,7 +31,7 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 */
 require('mvg_db.inc.php');
-require('vg_cfg.php');
+require('vg_cfg.inc.php');
 
 // Keep going only if an id has been provided
 if (isset($_GET['id'])) {

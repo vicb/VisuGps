@@ -25,7 +25,7 @@ Copyright (c) 2007 Victor Berchet, <http://www.victorb.fr>
 
 */
 
-require('vg_cfg.php');
+require('vg_cfg.inc.php');
 
 if (isset($_GET['x']) && isset($_GET['y']) && isset($_GET['z'])) {
     $x = (int)$_GET['x'];

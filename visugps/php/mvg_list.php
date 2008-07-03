@@ -34,6 +34,12 @@ require('mvg_db.inc.php');
 $link = mysql_connect(dbHost, dbUser, dbPassword) or die ('Could not connect: ' . mysql_error());
 mysql_select_db(dbName) or die ('Database does not exist');
 
+$start = isset($_POST['start'])?intval($_POST['start']):0;
+$end = isset($_POST['end'])?intval($_POST['end']):200;
+if ($start < 0) $start = 0;
+if ($end < $start) $end = $start;
+$sort = isset($_POST['sort'])?format_mysql($_POST['sort']):'start';
+$dir = isset($_POST['dir'])?(strtoupper($_POST['dir']) == 'ASC'?'ASC':'DESC'):'DESC';
 
 // Set the end time for old flights which haven't received a stop
 $query = "SELECT id, end " .
@@ -60,7 +66,7 @@ $query = "SELECT name, start, end, flightId, COUNT(latitude) as points " .
          "FROM pilot, flight, point " .
          "WHERE flightId = flight.id AND pilotId = pilot.id GROUP BY flightId " .
          "HAVING points > 5 " .
-         "ORDER BY start DESC";
+         "ORDER BY $sort $dir LIMIT $start," . ($end - $start + 1);
 $result = mysql_query($query)  or die('Query error: ' . mysql_error());
 
 $tracks['tracks'] = array();
@@ -83,13 +89,6 @@ if (mysql_num_rows($result)) {
                 $track['start']['lat'] = $takeoff->latitude;
                 $track['start']['lon'] = $takeoff->longitude;
                 $track['start']['location'] = getNearbyPlace($takeoff->latitude, $takeoff->longitude);
-                // Convert UTC to local time
-                $timeZone = new DateTimeZone(getTimeZone($takeoff->latitude, $takeoff->longitude));
-                $timeOffset = timezone_offset_get($timeZone, new DateTime($track['start']['time']));
-                $startTime = mysql2timestamp($track['start']['time']) + $timeOffset;
-                $track['start']['time'] = date("Y-m-d H:i:s", $startTime);
-                $endTime = mysql2timestamp($track['end']['time']) + $timeOffset;
-                $track['end']['time'] = date("Y-m-d H:i:s", $endTime);
             }
         }
 
@@ -130,24 +129,15 @@ function getNearbyPlace($lat, $lon) {
     return $location;
 }
 
-function getTimeZone($lat, $lon) {
-    $url = "http://ws.geonames.org/timezoneJSON?lat=$lat&lng=$lon";
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_FAILONERROR, true);
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-    $data = curl_exec($ch);
-    curl_close($ch);
-    return json_decode($data)->timezoneId;
-}
-
-function mysql2timestamp($datetime){
-       $val = explode(" ",$datetime);
-       $date = explode("-",$val[0]);
-       $time = explode(":",$val[1]);
-       return mktime($time[0],$time[1],$time[2],$date[1],$date[2],$date[0]);
+function format_mysql($text) {
+    if(get_magic_quotes_gpc()) {
+        if(ini_get('magic_quotes_sybase')) {
+            $text = str_replace("''", "'", $text);
+        } else {
+            $text = stripslashes($text);
+        }
+    }
+    return mysql_real_escape_string($text);
 }
 
 ?>

@@ -30,7 +30,6 @@ import fr.victorb.mobile.vgps.gps.GpsPosition;
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
 import javax.microedition.io.Connector;
 import javax.microedition.io.HttpConnection;
 import javax.microedition.lcdui.Command;
@@ -86,7 +85,6 @@ public class Weather extends Form implements CommandListener {
                 String url = "http://www.victorb.fr/visugps/php/mvg_weather.php?" + 
                              "lat=" +  position.latitude + 
                              "&lon=" + position.longitude;
-                System.out.println("url:" + url);
                 try {
                     connection = (HttpConnection)Connector.open(url, Connector.READ);
                     connection.setRequestMethod(HttpConnection.GET);

@@ -33,8 +33,11 @@ import fr.victorb.mobile.vgps.ui.OptionMenu;
 import javax.bluetooth.UUID;
 import javax.microedition.lcdui.Display;
 import javax.microedition.midlet.MIDlet;
-import fr.victorb.mobile.vgps.gps.InternalGps;
 import fr.victorb.mobile.utils.GpsUtil;
+import fr.victorb.mobile.vgps.ui.Weather;
+//#if USE_INTERNAL_GPS
+//# import fr.victorb.mobile.vgps.gps.InternalGps;
+//#endif
 
 public class Controller implements BluetoothFinderListener {    
     private static Controller controller;
@@ -43,7 +46,7 @@ public class Controller implements BluetoothFinderListener {
     private MIDlet midlet;
     public Configuration configuration = new Configuration();
     private static final String CONFIG_FILE = "config.ini";    
-    private static final String VERSION = "v1.1.2";
+    private static final String VERSION = "v1.2.0";
     
     private int recordState = RecordState.STOP;
     
@@ -53,6 +56,7 @@ public class Controller implements BluetoothFinderListener {
     
     private MainMenu menu;
     private OptionMenu options;
+    private Weather weather;
     
     /** Creates a new instance of Controller */
     private Controller() {
@@ -76,6 +80,7 @@ public class Controller implements BluetoothFinderListener {
     private void init() {
         menu = new MainMenu();
         options = new OptionMenu();
+        weather = new Weather();
 //#if USE_INTERNAL_GPS
 //#         if (GpsUtil.hasInternalGps()) {
 //#             gps = new InternalGps();
@@ -190,6 +195,11 @@ public class Controller implements BluetoothFinderListener {
     public void showOptionMenu() {
         options.init();
         display.setCurrent(options);
+    }
+    
+    public void showWeather() {
+        weather.start();
+        display.setCurrent(weather);
     }
     
     public void saveConfig() {

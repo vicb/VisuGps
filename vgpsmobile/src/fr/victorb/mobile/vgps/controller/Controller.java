@@ -22,6 +22,8 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 package fr.victorb.mobile.vgps.controller;
 
+import fr.victorb.mobile.utils.ImageViewer;
+import fr.victorb.mobile.utils.MapViewer;
 import fr.victorb.mobile.vgps.ui.MainMenu;
 import fr.victorb.mobile.vgps.bluetooth.BluetoothFinder;
 import fr.victorb.mobile.vgps.bluetooth.BluetoothFinderListener;
@@ -33,20 +35,23 @@ import fr.victorb.mobile.vgps.ui.OptionMenu;
 import javax.bluetooth.UUID;
 import javax.microedition.lcdui.Display;
 import javax.microedition.midlet.MIDlet;
-import fr.victorb.mobile.utils.GpsUtil;
 import fr.victorb.mobile.vgps.ui.Weather;
 //#if USE_INTERNAL_GPS
 //# import fr.victorb.mobile.vgps.gps.InternalGps;
+//# import fr.victorb.mobile.utils.GpsUtil;
 //#endif
+import fr.victorb.mobile.vgps.ui.Sites;
+import javax.microedition.lcdui.Displayable;
 
 public class Controller implements BluetoothFinderListener {    
     private static Controller controller;
     private Display display;
+    private Displayable savedDisplay;
     private boolean paused = false;
     private MIDlet midlet;
     public Configuration configuration = new Configuration();
     private static final String CONFIG_FILE = "config.ini";    
-    private static final String VERSION = "v1.2.0";
+    private static final String VERSION = "v1.3.0";
     
     private int recordState = RecordState.STOP;
     
@@ -57,6 +62,7 @@ public class Controller implements BluetoothFinderListener {
     private MainMenu menu;
     private OptionMenu options;
     private Weather weather;
+    private Sites sites;
     
     /** Creates a new instance of Controller */
     private Controller() {
@@ -81,6 +87,7 @@ public class Controller implements BluetoothFinderListener {
         menu = new MainMenu();
         options = new OptionMenu();
         weather = new Weather();
+        sites = new Sites();
 //#if USE_INTERNAL_GPS
 //#         if (GpsUtil.hasInternalGps()) {
 //#             gps = new InternalGps();
@@ -201,6 +208,11 @@ public class Controller implements BluetoothFinderListener {
         weather.start();
         display.setCurrent(weather);
     }
+
+    public void showSites() {
+        sites.start();
+        display.setCurrent(sites);
+    }    
     
     public void saveConfig() {
         try {
@@ -216,4 +228,18 @@ public class Controller implements BluetoothFinderListener {
     public String getVersion() {
         return VERSION;        
     }
+    
+    public void viewImage(String url) {
+        savedDisplay = display.getCurrent();
+        display.setCurrent(new ImageViewer(url).start());
+    }
+
+    public void viewMap(float latSite, float lngSite, float lat, float lng) {
+        savedDisplay = display.getCurrent();
+        display.setCurrent(new MapViewer(latSite, lngSite, lat, lng).start());
+    }    
+    
+    public void restoreDisplay() {
+        display.setCurrent(savedDisplay);
+    }    
 }

@@ -22,7 +22,9 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 package fr.victorb.mobile.vgps.ui;
 
-import fr.victorb.mobile.utils.GpsUtil;
+//#if USE_INTERNAL_GPS
+//# import fr.victorb.mobile.utils.GpsUtil;
+//#endif
 import fr.victorb.mobile.vgps.controller.Controller;
 import fr.victorb.mobile.vgps.controller.RecordState;
 import fr.victorb.mobile.vgps.gps.GpsListener;
@@ -56,6 +58,7 @@ public class MainMenu extends List implements CommandListener, GpsListener {
             append("Start", Image.createImage(this.getClass().getResourceAsStream("/res/start.png")));
             append("Fix invalid", Image.createImage(this.getClass().getResourceAsStream("/res/invalid.png")));
             append("Weather", Image.createImage(this.getClass().getResourceAsStream("/res/weather.png")));
+            append("Flying sites", Image.createImage(this.getClass().getResourceAsStream("/res/map.png")));
             append("Minimize", Image.createImage(this.getClass().getResourceAsStream("/res/minimize.png")));
             append("About...", Image.createImage(this.getClass().getResourceAsStream("/res/about.png")));
         } catch (IOException ex) {
@@ -126,11 +129,17 @@ public class MainMenu extends List implements CommandListener, GpsListener {
                     controller.showWeather();
                     break;
                 case 5:
-                    controller.getDisplay().setCurrent(null);
+                    controller.showSites();
                     break;
                 case 6:
+                    controller.getDisplay().setCurrent(null);
+                    break;
+                case 7:
                     try {
-                        Alert alert = new Alert("VGpsMobile", controller.getVersion() + "\nby Victor Berchet\nwww.victorb.fr", 
+                        Alert alert = new Alert("VGpsMobile", controller.getVersion() + 
+                                                "\nby Victor Berchet\nwww.victorb.fr\n\n" + 
+                                                "METAR by geonames.org\n" +
+                                                "Flying sites by paraglidingearth.com", 
                                                 Image.createImage(this.getClass().getResourceAsStream("/res/icon_big.png")), null);
                         alert.setTimeout(Alert.FOREVER);
                         controller.getDisplay().setCurrent(alert, this);

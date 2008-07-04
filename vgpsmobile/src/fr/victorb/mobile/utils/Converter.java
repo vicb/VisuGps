@@ -42,6 +42,24 @@ public class Converter {
             return degree;
         }
     }
-    
+
+    /**
+     * Convert a coordinate in degree.minute to degree.degree
+     * @param degreeMin coordinate in degree.minute
+     * @return coordinate in degree
+     */
+    static public float degMinToDeg(float degreeMin){
+        String value = String.valueOf(degreeMin);
+        int position = value.indexOf(".");
+        if (position > 0) {
+            String integer = value.substring(0, position);
+            String decimal = value.substring(position + 1, value.length());
+            decimal = "6." + decimal;
+            decimal = String.valueOf(Float.parseFloat(decimal) * 10 / 6);
+            return Float.parseFloat(integer) + Float.parseFloat(decimal) - 10;
+        } else {
+            return degreeMin;
+        }
+    }    
     
 }

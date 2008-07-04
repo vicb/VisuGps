@@ -29,7 +29,6 @@ import fr.victorb.mobile.vgps.gps.Gps;
 import fr.victorb.mobile.vgps.gps.GpsListener;
 import fr.victorb.mobile.vgps.gps.GpsPosition;
 import java.io.DataInputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import javax.microedition.io.Connector;
 import javax.microedition.io.HttpConnection;
@@ -37,24 +36,29 @@ import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Displayable;
 import javax.microedition.lcdui.Form;
+import javax.microedition.lcdui.Item;
+import javax.microedition.lcdui.ItemCommandListener;
 import javax.microedition.lcdui.StringItem;
 
-public class Weather extends Form implements CommandListener {
+public class Sites extends Form implements CommandListener, ItemCommandListener {
     private StringItem weatherTxt;
     private Command cmdExit = new Command("Exit", Command.EXIT, 1);
+    private Command cmdSelect = new Command("Select", Command.ITEM, 1);
     private Controller controller;
     private Thread thread;
     private Gps gps;  
+    private Sites form;
+    private GpsPosition position;
     
-    public Weather() {
-        super("Weather");
+    public Sites() {
+        super("Flying sites");
         controller = Controller.getController();
-        append(weatherTxt = new StringItem("", ""));
         addCommand(cmdExit);
-        setCommandListener(this);
+        setCommandListener(this);      
+        form = this;
     }
     
-    public void start() {        
+    public void start() {                
         thread = new Thread(new Helper());
         thread.start();
     }
@@ -62,11 +66,10 @@ public class Weather extends Form implements CommandListener {
     
     private class Helper implements GpsListener, Runnable {
         private boolean fixValid = false;
-        private GpsPosition position;
-        
         
         public void run() {
-            weatherTxt.setText("Waiting for a valid GPS fix");
+            deleteAll();
+            append(new StringItem("", "Waiting for a valid GPS fix"));
             gps = controller.getGps();
             if (controller.getRecordState() == RecordState.STOP) {
                 // Start the GPS to get the location
@@ -75,27 +78,54 @@ public class Weather extends Form implements CommandListener {
             gps.addFixValidListener(this);
             gps.addPositionListener(this);                                 
         }       
+                
+        public void gpsPositionUpdated(GpsPosition pos) {
+            if (fixValid) {
+                // Fetch weather info only once
+                gps.removePositionListener(this);
+                gps.removeFixValidListner(this);
+                position = pos;
+                new Thread(new HttpHelper()).start();                
+            }
+        }
+        
+        public void gpsFixValidUpdated(boolean valid) {
+            fixValid = valid;
+        }
         
         private class HttpHelper implements Runnable {
 
             public void run() {
                 HttpConnection connection = null;
                 DataInputStream stream = null;
-                StringBuffer buffer = new StringBuffer();
-                weatherTxt.setText("Retrieving weather info...");
-                String url = "http://www.victorb.fr/visugps/php/mvg_weather.php?" + 
+                StringBuffer distanceBuf;
+                StringBuffer infoBuf; 
+                int c;
+                deleteAll();
+                append(new StringItem("", "Retrieving sites info..."));
+                String url = "http://www.victorb.fr/visugps/php/mvg_sites.php?" + 
                              "lat=" +  Converter.degMinToDeg(position.latitude) + 
                              "&lon=" + Converter.degMinToDeg(position.longitude);
+                System.out.println(url);
                 try {
                     connection = (HttpConnection)Connector.open(url, Connector.READ);
                     connection.setRequestMethod(HttpConnection.GET);
                     stream = connection.openDataInputStream();
-                    try {
-                        while(true)  {
-                            buffer.append((char)stream.readByte());                            
-                        }                        
-                    } catch (EOFException e) {
-                        weatherTxt.setText(buffer.toString());
+                    deleteAll();
+                    while (true) {
+                        distanceBuf = new StringBuffer();
+                        infoBuf = new StringBuffer();                         
+                        while ((c = stream.read()) > 0xa) {
+                            distanceBuf.append((char)c);
+                        }
+                        if (c == -1) break;
+                        while ((c = stream.read()) > 0xa) {
+                            infoBuf.append((char)c);
+                        }
+                        StringItem site = new StringItem(distanceBuf.toString(), infoBuf.toString(), StringItem.BUTTON);
+                        site.setDefaultCommand(cmdSelect);
+                        site.setItemCommandListener(form);
+                        append(site);
                     }
                 } catch (IOException e) {
                     weatherTxt.setText("Connection error!");
@@ -114,28 +144,30 @@ public class Weather extends Form implements CommandListener {
             }            
         }
         
-        public void gpsPositionUpdated(GpsPosition position) {
-            if (fixValid) {
-                // Fetch weather info only once
-                gps.removePositionListener(this);
-                gps.removeFixValidListner(this);
-                this.position = position;
-                new Thread(new HttpHelper()).start();                
-            }
-        }
-        
-        public void gpsFixValidUpdated(boolean valid) {
-            fixValid = valid;
-        }
         
     }
     
     public void commandAction(Command command, Displayable display) {
-        if (controller.getRecordState() == RecordState.STOP) {
-            // Stop the GPS if we started it
-            gps.stop();
+        if (command == cmdExit) {
+            if (controller.getRecordState() == RecordState.STOP) {
+                // Stop the GPS if we started it
+                gps.stop();
+            }
+            controller.showMainMenu();
         }
-        controller.showMainMenu();
+    }
+
+    public void commandAction(Command command, Item item) {
+        StringItem site = (StringItem)item;
+        String coordinates = site.getText();
+        int start = coordinates.indexOf("[") + 1;
+        int middle = coordinates.indexOf(" ", start);
+        float latSite = Float.parseFloat(coordinates.substring(start, middle));
+        float lngSite = Float.parseFloat(coordinates.substring(middle + 1, coordinates.length() - 1));
+        
+        controller.viewMap(latSite, lngSite, 
+                           Converter.degMinToDeg(position.latitude), Converter.degMinToDeg(position.longitude));       
+        
     }
 
 }

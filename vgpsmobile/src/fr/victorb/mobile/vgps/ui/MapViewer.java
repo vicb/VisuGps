@@ -22,26 +22,41 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 package fr.victorb.mobile.vgps.ui;
 
+import fr.victorb.mobile.vgps.Constant;
+
 public class MapViewer extends ImageViewer {
 
+    /**
+     * Display a map with 2 markers
+     * @param latSite Site marker latitude
+     * @param lngSite Site marker longitude
+     * @param lat Other marker latitude
+     * @param lng Other marker longitude
+     */
     public MapViewer(float latSite, float lngSite, float lat, float lng) {
         super("");
         int w = Math.min(getWidth() * 2, 512);
         int h = Math.min(getHeight() * 2, 512);
-        url = "http://maps.google.com/staticmap?size=" + w + "x"  + h + "&" +
+        url = Constant.GMAPURL + "?size=" + w + "x"  + h + "&" +
               "maptype=mobile&markers=" + latSite + "," + lngSite +",smallgreen|" +
               lat + "," + lng + ",smallblue&" +
-              "key=ABQIAAAAJPvmQMZVrrV3inIwT2t4RBQf-JSUIEMNUNF63gcoYgskNGvaZRQmUvzGcFUdj4nlylxP8SK4sRKYsg";           
+              "key=" + Constant.GMAPKEY;           
     }
 
+    /**
+     * Display a map with one marker
+     * @param lat Marker latitude
+     * @param lng Marker longitude
+     * @param zoom Zoom level (as understood by Google Maps APIs)
+     */
     public MapViewer(float lat, float lng, int zoom) {
         super("");
         int w = Math.min(getWidth() * 2, 512);
         int h = Math.min(getHeight() * 2, 512);
-        url = "http://maps.google.com/staticmap?size=" + w + "x"  + h + "&" +
+        url = Constant.GMAPURL + "?size=" + w + "x"  + h + "&" +
               "maptype=mobile&markers=" + lat + "," + lng +",smallgreen&" +
               "zoom=" + zoom +
-              "&key=ABQIAAAAJPvmQMZVrrV3inIwT2t4RBQf-JSUIEMNUNF63gcoYgskNGvaZRQmUvzGcFUdj4nlylxP8SK4sRKYsg";           
+              "&key=" + Constant.GMAPKEY;           
     }
     
     

@@ -45,15 +45,25 @@ package fr.victorb.mobile.vgps.gps;
 //#         } catch (Exception e) {
 //#         }
 //#         controller = Controller.getController();
+//#         
 //#     }
 //#        
 //#     public boolean start(String config) {
-//#         provider.setLocationListener(this, controller.configuration.getLogInterval(), 5, 5);
+//#         final LocationListener me = this;
+//#         new Thread(new Runnable() {
+//#             public void run() {
+//#                 provider.setLocationListener(me, controller.configuration.getLogInterval(), 5, 5);
+//#             }
+//#         }).start();        
 //#         return false;
 //#     }
 //# 
 //#     public void stop() {
-//#         provider.setLocationListener(null, 10, 5, 5);
+//#         new Thread(new Runnable() {
+//#             public void run() {
+//#                 provider.setLocationListener(null, controller.configuration.getLogInterval(), 5, 5);
+//#             }
+//#         }).start();        
 //#     }
 //#     
 //#     public void locationUpdated(LocationProvider provider, Location location) {

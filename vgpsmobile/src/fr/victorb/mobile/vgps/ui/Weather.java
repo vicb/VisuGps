@@ -23,6 +23,7 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 package fr.victorb.mobile.vgps.ui;
 
 import fr.victorb.mobile.utils.Converter;
+import fr.victorb.mobile.vgps.Constant;
 import fr.victorb.mobile.vgps.controller.Controller;
 import fr.victorb.mobile.vgps.controller.RecordState;
 import fr.victorb.mobile.vgps.gps.Gps;
@@ -43,7 +44,7 @@ public class Weather extends Form implements CommandListener {
     private StringItem weatherTxt;
     private Command cmdExit = new Command("Exit", Command.EXIT, 1);
     private Controller controller;
-    private Thread thread;
+    private Helper helper;
     private Gps gps;  
     
     public Weather() {
@@ -55,8 +56,7 @@ public class Weather extends Form implements CommandListener {
     }
     
     public void start() {        
-        thread = new Thread(new Helper());
-        thread.start();
+        new Thread(helper = new Helper()).start();
     }
     
     
@@ -74,7 +74,21 @@ public class Weather extends Form implements CommandListener {
             }
             gps.addFixValidListener(this);
             gps.addPositionListener(this);                                 
-        }       
+        }    
+        
+        public void gpsPositionUpdated(GpsPosition position) {
+            if (fixValid) {
+                // Fetch weather info only once
+                gps.removePositionListener(this);
+                gps.removeFixValidListner(this);
+                this.position = position;
+                new Thread(new HttpHelper()).start();                
+            }
+        }
+        
+        public void gpsFixValidUpdated(boolean valid) {
+            fixValid = valid;
+        }        
         
         private class HttpHelper implements Runnable {
 
@@ -83,8 +97,8 @@ public class Weather extends Form implements CommandListener {
                 DataInputStream stream = null;
                 StringBuffer buffer = new StringBuffer();
                 weatherTxt.setText("Retrieving weather info...");
-                String url = "http://www.victorb.fr/visugps/php/mvg_weather.php?" + 
-                             "lat=" +  Converter.degMinToDeg(position.latitude) + 
+                String url = Constant.WEATHERURL + 
+                             "?lat=" +  Converter.degMinToDeg(position.latitude) + 
                              "&lon=" + Converter.degMinToDeg(position.longitude);
                 try {
                     connection = (HttpConnection)Connector.open(url, Connector.READ);
@@ -112,22 +126,7 @@ public class Weather extends Form implements CommandListener {
                     }
                 }                       
             }            
-        }
-        
-        public void gpsPositionUpdated(GpsPosition position) {
-            if (fixValid) {
-                // Fetch weather info only once
-                gps.removePositionListener(this);
-                gps.removeFixValidListner(this);
-                this.position = position;
-                new Thread(new HttpHelper()).start();                
-            }
-        }
-        
-        public void gpsFixValidUpdated(boolean valid) {
-            fixValid = valid;
-        }
-        
+        }       
     }
     
     public void commandAction(Command command, Displayable display) {
@@ -135,7 +134,10 @@ public class Weather extends Form implements CommandListener {
             // Stop the GPS if we started it
             gps.stop();
         }
+        gps.removePositionListener(helper);
+        gps.removeFixValidListner(helper);
         controller.showMainMenu();
+                        
     }
 
 }

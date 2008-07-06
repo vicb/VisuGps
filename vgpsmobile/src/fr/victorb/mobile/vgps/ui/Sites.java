@@ -23,6 +23,7 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 package fr.victorb.mobile.vgps.ui;
 
 import fr.victorb.mobile.utils.Converter;
+import fr.victorb.mobile.vgps.Constant;
 import fr.victorb.mobile.vgps.controller.Controller;
 import fr.victorb.mobile.vgps.controller.RecordState;
 import fr.victorb.mobile.vgps.gps.Gps;
@@ -45,10 +46,10 @@ public class Sites extends Form implements CommandListener, ItemCommandListener 
     private Command cmdExit = new Command("Exit", Command.EXIT, 1);
     private Command cmdSelect = new Command("Select", Command.ITEM, 1);
     private Controller controller;
-    private Thread thread;
     private Gps gps;  
     private Sites form;
     private GpsPosition position;
+    private Helper helper;
     
     public Sites() {
         super("Flying sites");
@@ -59,11 +60,9 @@ public class Sites extends Form implements CommandListener, ItemCommandListener 
     }
     
     public void start() {                
-        thread = new Thread(new Helper());
-        thread.start();
+        new Thread(helper = new Helper()).start();
     }
-    
-    
+        
     private class Helper implements GpsListener, Runnable {
         private boolean fixValid = false;
         
@@ -103,10 +102,9 @@ public class Sites extends Form implements CommandListener, ItemCommandListener 
                 int c;
                 deleteAll();
                 append(new StringItem("", "Retrieving sites info..."));
-                String url = "http://www.victorb.fr/visugps/php/mvg_sites.php?" + 
-                             "lat=" +  Converter.degMinToDeg(position.latitude) + 
+                String url = Constant.SITEURL + 
+                             "?lat=" + Converter.degMinToDeg(position.latitude) + 
                              "&lon=" + Converter.degMinToDeg(position.longitude);
-                System.out.println(url);
                 try {
                     connection = (HttpConnection)Connector.open(url, Connector.READ);
                     connection.setRequestMethod(HttpConnection.GET);
@@ -122,6 +120,7 @@ public class Sites extends Form implements CommandListener, ItemCommandListener 
                         while ((c = stream.read()) > 0xa) {
                             infoBuf.append((char)c);
                         }
+                        if (c == -1) break;
                         StringItem site = new StringItem(distanceBuf.toString(), infoBuf.toString(), StringItem.BUTTON);
                         site.setDefaultCommand(cmdSelect);
                         site.setItemCommandListener(form);
@@ -143,8 +142,6 @@ public class Sites extends Form implements CommandListener, ItemCommandListener 
                 }                       
             }            
         }
-        
-        
     }
     
     public void commandAction(Command command, Displayable display) {
@@ -153,6 +150,8 @@ public class Sites extends Form implements CommandListener, ItemCommandListener 
                 // Stop the GPS if we started it
                 gps.stop();
             }
+            gps.removeFixValidListner(helper);
+            gps.removePositionListener(helper);            
             controller.showMainMenu();
         }
     }
@@ -166,8 +165,7 @@ public class Sites extends Form implements CommandListener, ItemCommandListener 
         float lngSite = Float.parseFloat(coordinates.substring(middle + 1, coordinates.length() - 1));
         
         controller.viewMap(latSite, lngSite, 
-                           Converter.degMinToDeg(position.latitude), Converter.degMinToDeg(position.longitude));       
-        
+                           Converter.degMinToDeg(position.latitude), 
+                           Converter.degMinToDeg(position.longitude));               
     }
-
 }

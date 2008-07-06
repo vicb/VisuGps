@@ -40,6 +40,7 @@ import fr.victorb.mobile.vgps.ui.Weather;
 //# import fr.victorb.mobile.vgps.gps.InternalGps;
 //# import fr.victorb.mobile.utils.GpsUtil;
 //#endif
+import fr.victorb.mobile.vgps.Constant;
 import fr.victorb.mobile.vgps.ui.Sites;
 import fr.victorb.mobile.vgps.ui.WhereAmI;
 import javax.microedition.lcdui.Displayable;
@@ -52,8 +53,7 @@ public class Controller implements BluetoothFinderListener {
     private MIDlet midlet;
     public Configuration configuration = new Configuration();
     private static final String CONFIG_FILE = "config.ini";    
-    private static final String VERSION = "v1.3.2";
-    
+      
     private int recordState = RecordState.STOP;
     
     private Gps gps;
@@ -234,7 +234,7 @@ public class Controller implements BluetoothFinderListener {
     }
     
     public String getVersion() {
-        return VERSION;        
+        return Constant.VERSION;        
     }
     
     public void viewImage(String url) {

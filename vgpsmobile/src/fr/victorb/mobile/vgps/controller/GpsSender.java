@@ -22,6 +22,7 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 package fr.victorb.mobile.vgps.controller;
 
+import fr.victorb.mobile.vgps.Constant;
 import fr.victorb.mobile.vgps.gps.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -61,7 +62,7 @@ public class GpsSender {
         state = STATE_START;
         positions.removeAllElements();
         id = controller.configuration.getPilotId();
-        url = controller.configuration.getLogUrl();
+        url = Constant.LOGURL;
         int period = controller.configuration.getSendInterval() * 60  * 1000;
         timer = new Timer();
         timer.scheduleAtFixedRate(new Helper(), 100, period);  

@@ -35,7 +35,6 @@ import javax.microedition.lcdui.TextField;
 public class OptionMenu extends Form implements CommandListener {
     
     private TextField idTxt;
-    private TextField urlTxt;    
     private ChoiceGroup logChoice;
     private ChoiceGroup sendChoice;
     private Controller controller;
@@ -48,9 +47,6 @@ public class OptionMenu extends Form implements CommandListener {
         controller = Controller.getController();
         
         append(idTxt = new TextField("Pilot ID", controller.configuration.getPilotId(), 10, TextField.ANY));
-//#if LOG_URL_SUPPORT
-//#         append(urlTxt = new TextField("Log URL", controller.configuration.getLogUrl(), 50, TextField.URL));
-//#endif
         append(logChoice = new ChoiceGroup("Log Interval (sec)", Choice.EXCLUSIVE, new String[] {"5", "10", "60", "600"}, null));
         append(sendChoice = new ChoiceGroup("Track Interval (min)", Choice.EXCLUSIVE, new String[] {"5", "10", "30", "60"}, null));       
 
@@ -63,9 +59,6 @@ public class OptionMenu extends Form implements CommandListener {
     public void init() {
         Configuration cfg = controller.configuration;
         idTxt.setString(cfg.getPilotId());
-//#if LOG_URL_SUPPORT
-//#         urlTxt.setString(cfg.getLogUrl());
-//#endif        
         switch (cfg.getLogInterval()) {
             case 5:
                 logChoice.setSelectedIndex(0, true);
@@ -99,9 +92,6 @@ public class OptionMenu extends Form implements CommandListener {
         if (command == cmdOk) {
             Configuration cfg = controller.configuration;
             cfg.setPilotId(idTxt.getString());
-//#if LOG_URL_SUPPORT
-//#             cfg.setLogUrl(urlTxt.getString());
-//#endif            
             switch (logChoice.getSelectedIndex()) {
                 case 0:
                     cfg.setLogInterval(5);

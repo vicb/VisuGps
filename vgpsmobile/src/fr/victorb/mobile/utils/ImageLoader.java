@@ -31,6 +31,12 @@ import javax.microedition.lcdui.Image;
 
 public class ImageLoader {
 
+    /**
+     * Downlaod an image from the web
+     * @param url Location of the image
+     * @param listener Listener which gets updated with the progress
+     * @return The image
+     */
     static public Image get(String url, ProgressListener listener) {
         HttpConnection connection = null;
         DataInputStream stream = null;

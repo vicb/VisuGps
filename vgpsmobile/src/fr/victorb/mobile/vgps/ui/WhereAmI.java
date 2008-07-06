@@ -29,11 +29,6 @@ import fr.victorb.mobile.vgps.controller.RecordState;
 import fr.victorb.mobile.vgps.gps.Gps;
 import fr.victorb.mobile.vgps.gps.GpsListener;
 import fr.victorb.mobile.vgps.gps.GpsPosition;
-import java.io.DataInputStream;
-import java.io.EOFException;
-import java.io.IOException;
-import javax.microedition.io.Connector;
-import javax.microedition.io.HttpConnection;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Displayable;
@@ -61,8 +56,6 @@ public class WhereAmI extends Form implements CommandListener {
     
     private class Helper implements GpsListener, Runnable {
         private boolean fixValid = false;
-        private GpsPosition position;
-        
         
         public void run() {
             deleteAll();
@@ -81,7 +74,9 @@ public class WhereAmI extends Form implements CommandListener {
                 // Fetch weather info only once
                 gps.removePositionListener(this);
                 gps.removeFixValidListner(this);
-                controller.viewMap(position.latitude, position.longitude, 12, true);
+                controller.viewMap(Converter.degMinToDeg(position.latitude), 
+                                   Converter.degMinToDeg(position.longitude),
+                                   12, true);
             }
         }
         

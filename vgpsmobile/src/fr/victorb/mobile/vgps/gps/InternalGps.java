@@ -85,6 +85,10 @@ package fr.victorb.mobile.vgps.gps;
 //# 
 //#     public void providerStateChanged(LocationProvider arg0, int arg1) {
 //#     }
+//# 
+//#     public boolean UseUtcTime() {
+//#         return false;
+//#     }
 //#     
 //# }
 //#endif

@@ -44,11 +44,14 @@ public class GpsSender {
     private static final int STATE_OFF = 2;
     private int state;
     
+    Controller controller;
+    
     private Timer timer;
     
     public GpsSender(GpsRecorder recorder) {
         super();
         this.recorder = recorder;
+        controller = Controller.getController();
     } 
       
     /**
@@ -57,7 +60,6 @@ public class GpsSender {
     public void start()  {
         state = STATE_START;
         positions.removeAllElements();
-        Controller controller = Controller.getController();
         id = controller.configuration.getPilotId();
         url = controller.configuration.getLogUrl();
         int period = controller.configuration.getSendInterval() * 60  * 1000;
@@ -88,6 +90,9 @@ public class GpsSender {
             if (state == STATE_START) {
                 postData += "&start=1";
                 state = STATE_ON;
+            }
+            if (controller.getGps().UseUtcTime()) {
+                postData += "&utc=1";
             }
             if (state == STATE_OFF) {
                 postData += "&stop=1";

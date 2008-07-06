@@ -28,6 +28,7 @@ require('mvg_db.inc.php');
 
 // Keep going only if an id has been provided
 if (!isset($_POST['id'])) exit;
+$utc = isset($_POST['utc'])1:0;
 
 $link = mysql_connect(dbHost, dbUser, dbPassword) or die ('Could not connect: ' . mysql_error());
 mysql_select_db(dbName) or die ('Database does not exist');
@@ -44,7 +45,7 @@ if (mysql_num_rows($result) == 1) {
 
 // Create a new flight on start
 if (isset($_POST['start'])) {
-    $query = "INSERT INTO flight (pilotId, start, end) VALUES ($pilotId, NULL, NULL)";
+    $query = "INSERT INTO flight (pilotId, start, end, utc) VALUES ($pilotId, NULL, NULL, $utc)";
     mysql_query($query) or die('Query error: ' . mysql_error());
 }
 

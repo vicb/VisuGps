@@ -141,4 +141,8 @@ public class BluetoothGps extends Gps implements Runnable {
         } catch (Exception e) {                
         }           
     }
+
+    public boolean UseUtcTime() {
+        return true;
+    }
 }

@@ -31,6 +31,7 @@ public abstract class Gps {
     public abstract boolean start(String config);   
     public abstract void stop();
     public abstract GpsPosition getPosition();
+    public abstract boolean UseUtcTime();
          
     public void addPositionListener(GpsListener listener){
         if (positionListeners.indexOf(listener) == -1) {

@@ -58,7 +58,7 @@ public class ImageViewer extends Canvas {
             g.drawString("Loading...", 0, fontHeight, Graphics.BASELINE | Graphics.LEFT); 
             
             g.setColor(0x000000);
-            g.drawRect(0, fontHeight + 5, getWidth(), 10);
+            g.drawRect(0, fontHeight + 5, getWidth() - 1, 10);
             
             if (total > 0) {
                 g.setColor(0x0000FF);

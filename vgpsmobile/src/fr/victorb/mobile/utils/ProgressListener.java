@@ -22,15 +22,7 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 package fr.victorb.mobile.utils;
 
-public class MapViewer extends ImageViewer {
+public interface ProgressListener {
+    public void downloadProgress(int value, int total);
 
-    public MapViewer(float latSite, float lngSite, float lat, float lng) {
-        super("");
-        url = "http://maps.google.com/staticmap?size=" + getWidth() + "x"  + getHeight() + "&" +
-                     "maptype=mobile&markers=" + latSite + "," + lngSite +",smallgreen|" +
-                     lat + "," + lng + ",smallblue&" +
-                     "key=ABQIAAAAJPvmQMZVrrV3inIwT2t4RBQf-JSUIEMNUNF63gcoYgskNGvaZRQmUvzGcFUdj4nlylxP8SK4sRKYsg";        
-    
-        System.out.println(url);
-    }
 }

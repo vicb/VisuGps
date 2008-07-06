@@ -31,18 +31,20 @@ import javax.microedition.lcdui.Image;
 
 public class ImageLoader {
 
-    static public Image get(String url) {
+    static public Image get(String url, ProgressListener listener) {
         HttpConnection connection = null;
         DataInputStream stream = null;
         Image image = null;
         ByteArrayOutputStream imageStream = new ByteArrayOutputStream();
-        int c;
+        int c, total, progress = 0;       
 
         try {
             connection = (HttpConnection)Connector.open(url, Connector.READ);
             connection.setRequestMethod(HttpConnection.GET);
             stream = connection.openDataInputStream();
+            total = (int)connection.getLength();
             while ((c = stream.read()) > -1) {
+                if (listener != null & (++progress % 100 == 0)) listener.downloadProgress(progress, total);
                 imageStream.write(c);
             }
             image = Image.createImage(imageStream.toByteArray(), 0, imageStream.toByteArray().length);

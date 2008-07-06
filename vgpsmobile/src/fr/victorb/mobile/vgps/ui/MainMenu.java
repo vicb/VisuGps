@@ -59,6 +59,7 @@ public class MainMenu extends List implements CommandListener, GpsListener {
             append("Fix invalid", Image.createImage(this.getClass().getResourceAsStream("/res/invalid.png")));
             append("Weather", Image.createImage(this.getClass().getResourceAsStream("/res/weather.png")));
             append("Flying sites", Image.createImage(this.getClass().getResourceAsStream("/res/map.png")));
+            append("Where am I ?", Image.createImage(this.getClass().getResourceAsStream("/res/map.png")));
             append("Minimize", Image.createImage(this.getClass().getResourceAsStream("/res/minimize.png")));
             append("About...", Image.createImage(this.getClass().getResourceAsStream("/res/about.png")));
         } catch (IOException ex) {
@@ -132,9 +133,12 @@ public class MainMenu extends List implements CommandListener, GpsListener {
                     controller.showSites();
                     break;
                 case 6:
-                    controller.getDisplay().setCurrent(null);
+                    controller.showWhereAmI();
                     break;
                 case 7:
+                    controller.getDisplay().setCurrent(null);
+                    break;
+                case 8:
                     try {
                         Alert alert = new Alert("VGpsMobile", controller.getVersion() + 
                                                 "\nby Victor Berchet\nwww.victorb.fr\n\n" + 

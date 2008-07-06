@@ -41,6 +41,7 @@ import fr.victorb.mobile.vgps.ui.Weather;
 //# import fr.victorb.mobile.utils.GpsUtil;
 //#endif
 import fr.victorb.mobile.vgps.ui.Sites;
+import fr.victorb.mobile.vgps.ui.WhereAmI;
 import javax.microedition.lcdui.Displayable;
 
 public class Controller implements BluetoothFinderListener {    
@@ -51,7 +52,7 @@ public class Controller implements BluetoothFinderListener {
     private MIDlet midlet;
     public Configuration configuration = new Configuration();
     private static final String CONFIG_FILE = "config.ini";    
-    private static final String VERSION = "v1.3.1";
+    private static final String VERSION = "v1.3.2";
     
     private int recordState = RecordState.STOP;
     
@@ -60,9 +61,10 @@ public class Controller implements BluetoothFinderListener {
     private GpsSender sender;
     
     private MainMenu menu;
-    private OptionMenu options;
-    private Weather weather;
-    private Sites sites;
+    private OptionMenu options = null;
+    private Weather weather = null;
+    private Sites sites = null;
+    private WhereAmI whereAmI = null;
     
     /** Creates a new instance of Controller */
     private Controller() {
@@ -85,9 +87,6 @@ public class Controller implements BluetoothFinderListener {
      */
     private void init() {
         menu = new MainMenu();
-        options = new OptionMenu();
-        weather = new Weather();
-        sites = new Sites();
 //#if USE_INTERNAL_GPS
 //#         if (GpsUtil.hasInternalGps()) {
 //#             gps = new InternalGps();
@@ -200,19 +199,28 @@ public class Controller implements BluetoothFinderListener {
     }
     
     public void showOptionMenu() {
+        if (options == null) options = new OptionMenu();
         options.init();
         display.setCurrent(options);
     }
     
     public void showWeather() {
+        if (weather == null) weather = new Weather();
         weather.start();
         display.setCurrent(weather);
     }
 
     public void showSites() {
+        if (sites == null) sites = new Sites();
         sites.start();
         display.setCurrent(sites);
     }    
+    
+    public void showWhereAmI() {
+        if (whereAmI == null) whereAmI = new WhereAmI();
+        whereAmI.start();
+        display.setCurrent(whereAmI);
+    }
     
     public void saveConfig() {
         try {
@@ -238,7 +246,16 @@ public class Controller implements BluetoothFinderListener {
         savedDisplay = display.getCurrent();
         display.setCurrent(new MapViewer(latSite, lngSite, lat, lng).start());
     }    
-    
+
+    public void viewMap(float lat, float lng, int zoom, boolean backToMainMenu) {
+        if (backToMainMenu) {
+            savedDisplay = menu;
+        } else {
+            savedDisplay = display.getCurrent();
+        }
+        display.setCurrent(new MapViewer(lat, lng, zoom).start());
+    }    
+       
     public void restoreDisplay() {
         display.setCurrent(savedDisplay);
     }    

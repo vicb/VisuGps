@@ -22,8 +22,6 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 package fr.victorb.mobile.vgps.controller;
 
-import fr.victorb.mobile.utils.ImageViewer;
-import fr.victorb.mobile.utils.MapViewer;
 import fr.victorb.mobile.vgps.ui.MainMenu;
 import fr.victorb.mobile.vgps.bluetooth.BluetoothFinder;
 import fr.victorb.mobile.vgps.bluetooth.BluetoothFinderListener;
@@ -31,6 +29,8 @@ import fr.victorb.mobile.vgps.config.Configuration;
 import fr.victorb.mobile.vgps.gps.BluetoothGps;
 import fr.victorb.mobile.vgps.gps.Gps;
 import fr.victorb.mobile.vgps.rmsfile.RmsFile;
+import fr.victorb.mobile.vgps.ui.ImageViewer;
+import fr.victorb.mobile.vgps.ui.MapViewer;
 import fr.victorb.mobile.vgps.ui.OptionMenu;
 import javax.bluetooth.UUID;
 import javax.microedition.lcdui.Display;
@@ -51,7 +51,7 @@ public class Controller implements BluetoothFinderListener {
     private MIDlet midlet;
     public Configuration configuration = new Configuration();
     private static final String CONFIG_FILE = "config.ini";    
-    private static final String VERSION = "v1.3.0";
+    private static final String VERSION = "v1.3.1";
     
     private int recordState = RecordState.STOP;
     

@@ -43,6 +43,7 @@
   <libraryPaths>
     <element path="lib\corelib.swc" />
     <element path="lib\map_flex_1_4.swc" />
+    <element path="lib\map_flex_1_5.swc" />
   </libraryPaths>
   <!-- External Libraries -->
   <externalLibraryPaths>

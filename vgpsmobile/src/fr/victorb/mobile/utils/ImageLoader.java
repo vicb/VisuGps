@@ -31,12 +31,11 @@ import javax.microedition.lcdui.Image;
 
 public class ImageLoader {
 
-    static Image get(String url) {
+    static public Image get(String url) {
         HttpConnection connection = null;
         DataInputStream stream = null;
         Image image = null;
         ByteArrayOutputStream imageStream = new ByteArrayOutputStream();
-        StringBuffer buffer = new StringBuffer();
         int c;
 
         try {

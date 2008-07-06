@@ -50,8 +50,8 @@ public class MainMenu extends List implements CommandListener, GpsListener {
     public MainMenu() {
         super("Menu", List.IMPLICIT);
         controller = Controller.getController();
-        addCommand(cmdExit);
         setSelectCommand(cmdSelect);
+        addCommand(cmdExit);        
         try {
             append("GPS: -", Image.createImage(this.getClass().getResourceAsStream("/res/gps.png")));
             append("Options", Image.createImage(this.getClass().getResourceAsStream("/res/config.png")));

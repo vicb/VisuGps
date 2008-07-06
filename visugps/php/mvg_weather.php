@@ -39,6 +39,11 @@ if (($dept = getFrenchAreaCode($lat, $lon)) > 0) {
 }
 
 function getMetar($lat, $lon) {
+    $windName = array("N", "NNE", "NE", "ENE",
+                      "E", "ESE", "SE", "SSE",
+                      "S", "SSO", "SO", "OSO",
+                      "O", "ONO", "NO", "NNO", "N");
+
     $url = "http://ws.geonames.org/findNearByWeatherJSON?lat=$lat&lng=$lon";
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
@@ -54,7 +59,7 @@ function getMetar($lat, $lon) {
     $msg = "Station: $data->stationName\n" .
            "Date: $data->datetime\n" .
            "Clouds: $data->clouds\n" .
-           "Wind: $data->windDirection $data->windSpeed kt\n" .
+           "Wind: " . $windName[$data->windDirection / 22.5] . "($data->windDirection) " . round($data->windSpeed * 1.852, 0) ."km/h\n" .
            "Temperature: $data->temperature\n" .
            "Dew point: $data->dewPoint\n" .
            "Humidity: $data->humidity\n".

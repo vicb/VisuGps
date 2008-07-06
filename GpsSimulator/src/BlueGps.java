@@ -27,7 +27,6 @@ import javax.microedition.lcdui.*;
 import javax.bluetooth.*;
 import javax.microedition.io.*;
 import java.io.*;
-import java.util.Calendar;
 
 public class BlueGps extends MIDlet implements Runnable
 {
@@ -42,8 +41,9 @@ public class BlueGps extends MIDlet implements Runnable
     private static final UUID L2CAP_UUID = new UUID(256L); // simulate L2CAP service provided by real bluetooth GPS receiver.
     private static String serverUrl = "btspp://localhost:" + L2CAP_UUID + ";authorize=false;encrypt=false"; // simulate no authorize and no encrypt required by real bluetooth GPS receiver.
     OutputStream output;
-    InputStream input;
 
+    private boolean exitApp = false;
+    
     String[] sentence;
 
     // Time in ms to wait until send next NMEA Sentence.
@@ -62,14 +62,8 @@ public class BlueGps extends MIDlet implements Runnable
     }
 
     public void run()
-    {
-        DataInputStream in;
-        int i = 0, numSentence = 0;
-        String str;
-        long time;
-        
-        InputStream igcInputStream;
-        
+    {       
+        InputStream igcInputStream;        
         igcInputStream = getClass().getResourceAsStream("/track.igc");
         DataInputStream igcStream = new DataInputStream(igcInputStream);
         
@@ -78,7 +72,6 @@ public class BlueGps extends MIDlet implements Runnable
 
         try
         {
-            conn = null;
             localDevice = LocalDevice.getLocalDevice();
             localDevice.setDiscoverable(DiscoveryAgent.GIAC);
             notifier = (StreamConnectionNotifier)Connector.open(serverUrl);
@@ -107,17 +100,16 @@ public class BlueGps extends MIDlet implements Runnable
             canvas.paintScreen();
         }
 
-        i = 0;
         char igcChar;
         String date = new String("010101");
             
-        while (true)
+        while (!exitApp)
         {
             StringBuffer igcBuffer = new StringBuffer(); 
             String igcSentence = new String();
             try {
-                while (igcStream.readByte() != 0xa){};
-                while  (true) {
+                while (igcStream.readByte() != 0xa) {}
+                while (true) {
                     igcChar = (char)igcStream.readByte();
                     if (igcChar == 0x0d) break;
                     igcBuffer.append(igcChar);
@@ -170,65 +162,68 @@ public class BlueGps extends MIDlet implements Runnable
                 }
 
                 try  {
-                    Thread.sleep(BREAK); // wait for a while before send next sentence
+                    if (!exitApp) Thread.sleep(BREAK); // wait for a while before send next sentence
                 }
                 catch (Exception e) {}
             }
-
         }
+        //
+        try {
+            output.close();
+            igcStream.close();
+            conn.close();
+            notifier.close();
+        } catch (Exception e) {            
+        }
+        notifyDestroyed();
     }
 
     protected void pauseApp() { }
 
     protected void destroyApp( boolean unconditional ) { }
 
-    public void exitMIDlet()
+    class TestCanvas extends Canvas implements CommandListener
     {
-        destroyApp(true);
-        notifyDestroyed();
+        private BlueGps midlet;
+        public String message;
+        private int width, height;
+        public String sentence;
+
+        public TestCanvas(BlueGps pmidlet)
+        {
+            midlet = pmidlet;
+            setFullScreenMode(true);
+            width = getWidth();
+            height = getHeight();
+            message = new String();
+            sentence = new String();
+            setCommandListener(this);
+        }
+
+        public void paintScreen()
+        {
+            repaint();
+            serviceRepaints();
+        }
+
+        protected void paint(Graphics g)
+        {
+            g.setColor(0xCCFFCC);
+            g.fillRect(0, 0, width, height);
+
+            g.setColor(0x0000FF);
+            g.drawString(message, 0, g.getFont().getHeight() * 1, Graphics.BASELINE | Graphics.LEFT);
+            g.drawString(sentence, 0, g.getFont().getHeight() * 2, Graphics.BASELINE | Graphics.LEFT);
+            g.drawString("Press any key to exit", 0, g.getFont().getHeight()*3, Graphics.BASELINE | Graphics.LEFT);
+        }
+
+        protected void keyPressed(int key)
+        {
+            exitApp = true; 
+            message = sentence = "Exiting...";
+            paintScreen();
+        }
+
+        public void commandAction(Command c, Displayable d) {}
     }
-}
-
-class TestCanvas extends Canvas implements CommandListener
-{
-    private BlueGps midlet;
-    public String message;
-    private int width, height;
-    public String sentence;
-
-    public TestCanvas(BlueGps pmidlet)
-    {
-        midlet = pmidlet;
-        setFullScreenMode(true);
-        width = getWidth();
-        height = getHeight();
-        message = new String();
-        sentence = new String();
-        setCommandListener(this);
-    }
-
-    public void paintScreen()
-    {
-        repaint();
-        serviceRepaints();
-    }
-
-    protected void paint(Graphics g)
-    {
-        g.setColor(0xCCFFCC);
-        g.fillRect(0, 0, width, height);
-
-        g.setColor(0x0000FF);
-        g.drawString(message, 0, g.getFont().getHeight() * 1, Graphics.BASELINE | Graphics.LEFT);
-        g.drawString(sentence, 0, g.getFont().getHeight() * 2, Graphics.BASELINE | Graphics.LEFT);
-        g.drawString("Press any key to exit", 0, g.getFont().getHeight()*3, Graphics.BASELINE | Graphics.LEFT);
-    }
-
-    protected void keyPressed(int key)
-    {
-        midlet.exitMIDlet();
-    }
-
-    public void commandAction(Command c, Displayable d) {}
-
 }

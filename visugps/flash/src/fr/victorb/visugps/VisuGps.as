@@ -197,14 +197,15 @@ package fr.victorb.visugps
         
         
         private function doMapLayout(event:Event):void {
-            map.setSize(new Point(mapHolder.width, mapHolder.height));            
+            map.setSize(new Point(mapHolder.width, mapHolder.height));       
         }
             
         /**
          * Handle mouse move event
          * @param	event
          */
-        private function onMouseMove(event:MapMouseEvent):void {                        
+        private function onMouseMove(event:MapMouseEvent):void {   
+
             if (measureLine) {
                 map.removeOverlay(measureLine);
                 measureLine = null;
@@ -215,13 +216,16 @@ package fr.victorb.visugps
             options = new PolylineOptions({
                 strokeStyle: new StrokeStyle({
                     color: 0xffff00,
-                    thickness: 2})
+					alpha: 0.8,
+                    thickness: 3})
                 });                
               
             measureLine = new Polyline(measurePoints.concat(event.latLng), options);  
-            
+            map.addOverlay(measureLine);            
+			
+			
             if (measureInfo) measureInfo.remove();
-            
+            Debug ("1");
             var iwo:InfoWindowOptions = new InfoWindowOptions({
                   strokeStyle: {
                     color: 0x0,
@@ -243,12 +247,12 @@ package fr.victorb.visugps
                   pointOffset: new Point(80, 40),
                   hasShadow: true
                 });   
-            
+            Debug ("2");
             iwo.content = getMeasureText(measurePoints.concat(event.latLng)).title + "\n" + getMeasureText(measurePoints.concat(event.latLng)).content;
-                
-            measureInfo = map.openInfoWindow(event.latLng, iwo)            
-            
-            map.addOverlay(measureLine);            
+            Debug ("3");    
+            measureInfo = map.openInfoWindow(event.latLng, iwo); 
+			Debug.trace("4");   
+			
         }
         
         /**
@@ -311,7 +315,7 @@ package fr.victorb.visugps
             //if (event.ctrlKey) {
             //    onRightClick(event);
             //    return;
-            //}
+            //}			
             if (measureState == MeasureState.MEAS_ON) {
                 onMouseMove(event);
                 measurePoints.push(event.latLng);                
@@ -447,25 +451,25 @@ package fr.victorb.visugps
             setPilotPosition(0);                       
             
             trackPoints = new Array();
-            var point:LatLng;            
-            var bounds:LatLngBounds = new LatLngBounds();
+            var point:LatLng;                        
                         
             for (var i:int = 0; i < track.getLength(); i++) {
-                point = new LatLng(track.getLat(i), track.getLon(i));
-                trackPoints.push(point);
-                bounds.extend(point);
+                trackPoints.push(new LatLng(track.getLat(i), track.getLon(i)));
             }
-            map.setCenter(bounds.getCenter(), map.getBoundsZoomLevel(bounds));
-            
+			           
             var options:PolylineOptions;
                                   
             options = new PolylineOptions({
                 strokeStyle: new StrokeStyle({
                     color: 0xFF0000,
+					alpha: 1,
                     thickness: 1})
                 });
             trackPoly = new Polyline(trackPoints, options);
+			var bounds:LatLngBounds = trackPoly.getLatLngBounds();
+            map.setCenter(bounds.getCenter(), map.getBoundsZoomLevel(bounds));						
             map.addOverlay(trackPoly);    
+			
             var chart:Chart = new Chart();
             chart.addSerie(new Serie("Elevation", track.elevation(), new ChartType(ChartType.CHART_LINE), 0xff0000));
             chart.addSerie(new Serie("Ground elevation", track.groundElevation(), new ChartType(ChartType.CHART_AREA), 0x957565));

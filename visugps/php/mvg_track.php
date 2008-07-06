@@ -28,7 +28,7 @@ require('mvg_db.inc.php');
 
 // Keep going only if an id has been provided
 if (!isset($_POST['id'])) exit;
-$utc = isset($_POST['utc'])1:0;
+$utc = isset($_POST['utc'])?1:0;
 
 $link = mysql_connect(dbHost, dbUser, dbPassword) or die ('Could not connect: ' . mysql_error());
 mysql_select_db(dbName) or die ('Database does not exist');

@@ -29,7 +29,8 @@ import javax.microedition.lcdui.Image;
 import javax.microedition.lcdui.game.Sprite;
 
 public class ImageViewer extends Canvas {
-    protected String url, error;
+    protected String url;
+    private String error;
     private Image image = null;
     private Controller controller;
     private int x, y, progress, total;
@@ -70,8 +71,7 @@ public class ImageViewer extends Canvas {
                 for (int i = 1; i < (getWidth() - 2) * progress / total; i++) {
                     g.drawLine(i, fontHeight + 6, i, fontHeight + 14);                    
                 }
-            }
-            
+            }            
         }
     }        
     
@@ -84,10 +84,16 @@ public class ImageViewer extends Canvas {
                 x = Math.max(0, x - 30);
                 break;
             case Canvas.DOWN:
-                if (image != null) y = Math.min(image.getHeight() - getHeight(), y + 30);
+                if (image != null) {
+                    y = Math.min(image.getHeight() - getHeight(), y + 30);
+                    y = Math.max(y, 0);
+                }                
                 break;
             case Canvas.RIGHT:
-                if (image != null) x= Math.min(image.getWidth() - getWidth(), x + 30);
+                if (image != null) {
+                    x= Math.min(image.getWidth() - getWidth(), x + 30);
+                    x = Math.max(x, 0);
+                }                
                 break;
             case Canvas.FIRE:
                 controller.restoreDisplay();
@@ -100,17 +106,17 @@ public class ImageViewer extends Canvas {
     }
         
     class Helper implements Runnable, ProgressListener {
-            public void run() {
-                image = ImageLoader.get(url, this);
-                if (image != null) {
-                    x = Math.max((image.getWidth() - getWidth()) / 2, 0);
-                    y = Math.max((image.getHeight() - getHeight()) / 2, 0);
-                    error = null;
-                } else {
-                    error = new String("Connection error!");
-                }
-                repaint();
+        public void run() {
+            image = ImageLoader.get(url, this);
+            if (image != null) {
+                x = Math.max((image.getWidth() - getWidth()) / 2, 0);
+                y = Math.max((image.getHeight() - getHeight()) / 2, 0);
+                error = null;
+            } else {
+                error = new String("Connection error!");
             }
+            repaint();
+        }
 
         public void downloadProgress(int value, int max) {
             progress = value;

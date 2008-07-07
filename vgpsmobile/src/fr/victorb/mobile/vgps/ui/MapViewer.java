@@ -58,6 +58,4 @@ public class MapViewer extends ImageViewer {
               "zoom=" + zoom +
               "&key=" + Constant.GMAPKEY;           
     }
-    
-    
 }

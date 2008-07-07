@@ -346,8 +346,7 @@ package fr.victorb.visugps
                     map.removeOverlay(measureLine);
                     measureLine = null;
                     measureState = MeasureState.MEAS_OFF;
-                    Debug.trace("before remove");
-					measureInfo.remove();
+                    map.closeInfoWindow();
                     measureInfo = null;
 					Debug.trace("after remove");
                 break;
@@ -384,7 +383,6 @@ package fr.victorb.visugps
                        
             track = new Track();
             track.addEventListener(TrackEvent.TRACK_LOADED, onTrackReady);
-            
             
             var params:Object = map.root.loaderInfo.parameters;
                     

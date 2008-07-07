@@ -66,7 +66,6 @@ public abstract class Localize extends Form implements CommandListener {
                 
         public void gpsPositionUpdated(GpsPosition position) {
             if (fixValid) {
-                // Fetch weather info only once
                 gps.removePositionListener(this);
                 gps.removeFixValidListner(this);
                 deleteAll();
@@ -82,7 +81,7 @@ public abstract class Localize extends Form implements CommandListener {
     public void commandAction(Command command, Displayable display) {
         if (command == cmdExit) {
             if (controller.getRecordState() == RecordState.STOP) {
-                // Stop the GPS if we started it
+                // Stop the GPS if we have started it
                 gps.stop();
             }
             gps.removeFixValidListner(helper);

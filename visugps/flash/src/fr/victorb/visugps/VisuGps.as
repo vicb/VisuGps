@@ -223,9 +223,6 @@ package fr.victorb.visugps
             measureLine = new Polyline(measurePoints.concat(event.latLng), options);  
             map.addOverlay(measureLine);            
 			
-			
-            if (measureInfo) measureInfo.remove();
-            Debug ("1");
             var iwo:InfoWindowOptions = new InfoWindowOptions({
                   strokeStyle: {
                     color: 0x0,
@@ -247,11 +244,8 @@ package fr.victorb.visugps
                   pointOffset: new Point(80, 40),
                   hasShadow: true
                 });   
-            Debug ("2");
             iwo.content = getMeasureText(measurePoints.concat(event.latLng)).title + "\n" + getMeasureText(measurePoints.concat(event.latLng)).content;
-            Debug ("3");    
             measureInfo = map.openInfoWindow(event.latLng, iwo); 
-			Debug.trace("4");   
 			
         }
         
@@ -312,10 +306,6 @@ package fr.victorb.visugps
          * @param	event
          */
         private function onLeftClick(event:MapMouseEvent):void {
-            //if (event.ctrlKey) {
-            //    onRightClick(event);
-            //    return;
-            //}			
             if (measureState == MeasureState.MEAS_ON) {
                 onMouseMove(event);
                 measurePoints.push(event.latLng);                
@@ -356,8 +346,10 @@ package fr.victorb.visugps
                     map.removeOverlay(measureLine);
                     measureLine = null;
                     measureState = MeasureState.MEAS_OFF;
-                    measureInfo.remove();
+                    Debug.trace("before remove");
+					measureInfo.remove();
                     measureInfo = null;
+					Debug.trace("after remove");
                 break;
                 
                 default:

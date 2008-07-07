@@ -29,7 +29,7 @@ import javax.microedition.lcdui.Image;
 import javax.microedition.lcdui.game.Sprite;
 
 public class ImageViewer extends Canvas {
-    protected String url;
+    protected String url, error;
     private Image image = null;
     private Controller controller;
     private int x, y, progress, total;
@@ -50,16 +50,21 @@ public class ImageViewer extends Canvas {
     protected void paint(Graphics g) {
         g.setColor(0xFFFFFF);
         g.fillRect(0, 0, getWidth(), getHeight());
-        if (image != null) {
-            g.drawRegion(image, x, y, getWidth(), getHeight(), Sprite.TRANS_NONE, 0, 0, Graphics.TOP | Graphics.LEFT);
-        } else {
+        if (error != null) {
+            // Display error message
             int fontHeight = g.getFont().getHeight();
             g.setColor(0x0000FF);
-            g.drawString("Loading...", 0, fontHeight, Graphics.BASELINE | Graphics.LEFT); 
-            
+            g.drawString(error, 0, fontHeight, Graphics.BASELINE | Graphics.LEFT);             
+        } else if (image != null) {
+            // Display the image
+            g.drawRegion(image, x, y, getWidth(), getHeight(), Sprite.TRANS_NONE, 0, 0, Graphics.TOP | Graphics.LEFT);
+        } else {
+            // Display loading message together with a progress bar
+            int fontHeight = g.getFont().getHeight();
+            g.setColor(0x0000FF);
+            g.drawString("Loading...", 0, fontHeight, Graphics.BASELINE | Graphics.LEFT);             
             g.setColor(0x000000);
-            g.drawRect(0, fontHeight + 5, getWidth() - 1, 10);
-            
+            g.drawRect(0, fontHeight + 5, getWidth() - 1, 10);            
             if (total > 0) {
                 g.setColor(0x0000FF);
                 for (int i = 1; i < (getWidth() - 2) * progress / total; i++) {
@@ -97,8 +102,13 @@ public class ImageViewer extends Canvas {
     class Helper implements Runnable, ProgressListener {
             public void run() {
                 image = ImageLoader.get(url, this);
-                x = Math.max((image.getWidth() - getWidth()) / 2, 0);
-                y = Math.max((image.getHeight() - getHeight()) / 2, 0);
+                if (image != null) {
+                    x = Math.max((image.getWidth() - getWidth()) / 2, 0);
+                    y = Math.max((image.getHeight() - getHeight()) / 2, 0);
+                    error = null;
+                } else {
+                    error = new String("Connection error!");
+                }
                 repaint();
             }
 

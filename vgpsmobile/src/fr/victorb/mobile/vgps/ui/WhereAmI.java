@@ -34,7 +34,7 @@ public class WhereAmI extends Localize {
     
     public void localize(GpsPosition position) {
          controller.viewMap(Converter.degMinToDeg(position.latitude), 
-                           Converter.degMinToDeg(position.longitude),
-                           12, true);
+                            Converter.degMinToDeg(position.longitude),
+                            12, true);
     }
 }

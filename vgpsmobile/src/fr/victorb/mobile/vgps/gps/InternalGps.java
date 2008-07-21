@@ -67,8 +67,7 @@ package fr.victorb.mobile.vgps.gps;
 //#     }
 //#     
 //#     public void locationUpdated(LocationProvider provider, Location location) {
-//#         boolean valid = location.isValid();
-//#         updatefixValid(valid);
+//#         updatefixValid(location.isValid());
 //#         QualifiedCoordinates coordinates = location.getQualifiedCoordinates();
 //#         synchronized (position) {
 //#             position.latitude = Converter.degToDegMin((float) coordinates.getLatitude());
@@ -83,7 +82,6 @@ package fr.victorb.mobile.vgps.gps;
 //#             position.date.month = (byte)(calendar.get(Calendar.MONTH) + 1);
 //#             position.date.year = (byte)(calendar.get(Calendar.YEAR) - 2000);
 //#         }
-//#         updatefixValid(location.isValid());
 //#         updatePosition(position);         
 //#     }
 //#     

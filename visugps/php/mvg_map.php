@@ -1,9 +1,3 @@
-<html>
-<head>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-    <title>Carte</title>
-</head>
-<body>
 <?php
 /*
 Script: mvg_track.php
@@ -33,6 +27,15 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 require('mvg_db.inc.php');
 require('vg_cfg.inc.php');
 
+echo "<?xml version='1.0' encoding='UTF-8'?>\n" .
+     "<!DOCTYPE html PUBLIC '-//WAPFORUM//DTD XHTML Mobile 1.0//EN' 'http://www.wapforum.org/DTD/xhtml-mobile10.dtd'>\n" .
+     "<html xmlns='http://www.w3.org/1999/xhtml'>\n" .
+     "<head>\n" .
+     "    <meta http-equiv='content-type' content='text/html; charset=UTF-8'/>\n" .
+     "    <title>Map</title>\n" .
+     "</head>\n" .
+     "<body>\n";
+
 // Keep going only if an id has been provided
 if (isset($_GET['id'])) {
     if (!isset($_GET['zoom'])) {
@@ -43,6 +46,9 @@ if (isset($_GET['id'])) {
 
     $link = mysql_connect(dbHost, dbUser, dbPassword) or die ('Could not connect: ' . mysql_error());
     mysql_select_db(dbName) or die ('Database does not exist');
+
+    // Map size
+    $w = $h = 180;
 
     $query = sprintf("SELECT latitude, longitude, elevation, time FROM pilot, flight, point " .
                      "WHERE pseudo = '%s' AND " .
@@ -55,18 +61,37 @@ if (isset($_GET['id'])) {
     $result = mysql_query($query) or die('Query error: ' . mysql_error());
     if (mysql_num_rows($result) == 1) {
         $position = mysql_fetch_object($result);
+        // Center psotion
+        $lat = isset($_GET['lat'])?floatval($_GET['lat']):$position->latitude;
+        $lon = isset($_GET['lon'])?floatval($_GET['lon']):$position->longitude;
         $img = sprintf("Date: $position->time<br/>\n" .
-                       "Lieu: " . getNearbyPlace($position->latitude,$position->longitude) . 
+                       "Lieu: " . getNearbyPlace($position->latitude,$position->longitude) .
                        " [" . $position->latitude . " - " . $position->longitude . "]<br/>\n" .
                        "h: " . $position->elevation . "m (" . max(0, $position->elevation - GetElevGnd($position->latitude,$position->longitude)) . "m/sol)<br/>\n" .
-                       "<img src='http://maps.google.com/staticmap?zoom=%d&size=180x180&" .
+                       "<img src='http://maps.google.com/staticmap?zoom=%d&size=${w}x${h}&" .
+                       "center=$lat,$lon&" .
                        "maptype=mobile&markers=$position->latitude,$position->longitude,smallgreen&" .
                        "key=ABQIAAAAJPvmQMZVrrV3inIwT2t4RBQf-JSUIEMNUNF63gcoYgskNGvaZRQmUvzGcFUdj4nlylxP8SK4sRKYsg'></img>\n",
                        $zoom);
-        $zoomIn = $zoomOut = "<br/><a href='http://" . $_SERVER['SERVER_NAME'] . $_SERVER['PHP_SELF'];
-        $zoomIn .= "?id=" . $_GET['id'] . "&zoom=" . ($zoom + 1) .  "'>zoomIn</a>\n";
-        $zoomOut .= "?id=" . $_GET['id'] . "&zoom=" . ($zoom - 1) . "'>zoomOut</a>\n";
-        echo $img . $zoomIn . $zoomOut;
+        $zoomIn = $zoomOut = $up = $down = $left = $right = "<a href='http://" . $_SERVER['SERVER_NAME'] . $_SERVER['PHP_SELF'] . "?id=" . $_GET['id'];
+        $zoomIn .= "&zoom=" . ($zoom + 1) .  "&lat=$lat&lon=$lon'>+</a>\n";
+        $zoomOut .= "&zoom=" . ($zoom - 1) . "&lat=$lat&lon=$lon'>-</a>\n";
+
+        $projection = new Mercator($zoom, 256);
+        $latUp = $latDown = $projection->Y($lat);
+        $lonLeft = $lonRight = $projection->X($lon);
+        $latUp = $projection->Lat($latUp - $h / 2);
+        $latDown = $projection->Lat($latDown + $h / 2);
+        $lonLeft = $projection->Lon($lonLeft - $w / 2);
+        $lonRight = $projection->Lon($lonRight + $w / 2);
+
+        $up .= "&zoom=$zoom&lat=$latUp&lon=$lon'>^</a>\n";
+        $down .= "&zoom=$zoom&lat=$latDown&lon=$lon'>V</a>\n";
+        $left .= "&zoom=$zoom&lat=$lat&lon=$lonLeft'>&lt;</a>\n";
+        $right .= "&zoom=$zoom&lat=$lat&lon=$lonRight'>&gt;</a>\n";
+
+
+        echo "$img<br/>$zoomIn | $zoomOut | $up | $down | $left | $right";
     } else {
         echo "No map available";
     }
@@ -129,7 +154,46 @@ function GetElevGnd($lat, $lon)
     return $elevGnd;
 }
 
+// Coordinate functions
+class Mercator {
+
+    private $nbTiles;
+    private $radius;
+    private $tileSize;
+
+    public function __construct($zoom, $tileSize) {
+        $this->nbTiles = pow(2, $zoom);
+        $this->tileSize = $tileSize;
+        $circumference = $this->tileSize * $this->nbTiles;
+        $this->radius =  $circumference / (2 * pi());
+    }
+
+    public function X($lonDeg) {
+        $lonRad = deg2rad($lonDeg);
+        return ($lonRad * $this->radius) + $this->tileSize * ($this->nbTiles / 2);
+    }
+
+    public function Lon($x) {
+        $lonRad = ($x - $this->tileSize * ($this->nbTiles / 2)) / $this->radius;
+        $lonDeg = rad2deg($lonRad);
+        return $lonDeg;
+    }
+
+    public function Y($latDeg){
+        $latRad = deg2rad($latDeg);
+        $y = $this->radius / 2.0 * log((1.0 + sin($latRad)) / (1.0 - sin($latRad)));
+        return (-1.0 * $y + $this->tileSize * ($this->nbTiles / 2));
+    }
+
+    public function Lat($y) {
+        $y = -1.0 * ($y - $this->tileSize * ($this->nbTiles / 2));
+        $latRad = (pi() / 2) - (2 * atan(exp(-1.0 * $y / $this->radius)));
+        return rad2deg($latRad);
+    }
+}
+
+echo "</body>\n" .
+     "</html>";
+
 
 ?>
-</body>
-</html>

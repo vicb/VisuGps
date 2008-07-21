@@ -43,9 +43,11 @@ public class MainMenu extends List implements CommandListener, GpsListener {
     
     private Controller controller;
     private String gpsName = "-";
+    
+    private Image imgValid;
+    private Image imgInvalid;
           
     /** Creates a new instance of MainMenu
-     * @param controller controller
      */
     public MainMenu() {
         super("Menu", List.IMPLICIT);
@@ -53,10 +55,12 @@ public class MainMenu extends List implements CommandListener, GpsListener {
         setSelectCommand(cmdSelect);
         addCommand(cmdExit);        
         try {
+            imgValid = Image.createImage(this.getClass().getResourceAsStream("/res/valid.png"));
+            imgInvalid = Image.createImage(this.getClass().getResourceAsStream("/res/invalid.png"));
             append("GPS: -", Image.createImage(this.getClass().getResourceAsStream("/res/gps.png")));
             append("Options", Image.createImage(this.getClass().getResourceAsStream("/res/config.png")));
             append("Start", Image.createImage(this.getClass().getResourceAsStream("/res/start.png")));
-            append("Fix invalid", Image.createImage(this.getClass().getResourceAsStream("/res/invalid.png")));
+            append("Fix invalid", imgInvalid);
             append("Weather", Image.createImage(this.getClass().getResourceAsStream("/res/weather.png")));
             append("Flying sites", Image.createImage(this.getClass().getResourceAsStream("/res/map.png")));
             append("Where am I ?", Image.createImage(this.getClass().getResourceAsStream("/res/map.png")));
@@ -169,15 +173,9 @@ public class MainMenu extends List implements CommandListener, GpsListener {
      */
     public void gpsFixValidUpdated(boolean valid) {
         if (valid) {
-            try {
-                set(3, "Fix valid", Image.createImage(this.getClass().getResourceAsStream("/res/valid.png")));
-            } catch (IOException ex) {
-            }
+            set(3, "Fix valid", imgValid);
         } else {
-            try {
-                set(3, "Fix invalid", Image.createImage(this.getClass().getResourceAsStream("/res/invalid.png")));
-            } catch (IOException ex) {
-            }
+            set(3, "Fix invalid", imgInvalid);
         }
     }
    

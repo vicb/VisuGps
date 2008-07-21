@@ -35,7 +35,7 @@ $link = mysql_connect(dbHost, dbUser, dbPassword) or die ('Could not connect: ' 
 mysql_select_db(dbName) or die ('Database does not exist');
 
 $start = isset($_POST['start'])?intval($_POST['start']):0;
-$end = isset($_POST['end'])?intval($_POST['end']):200;
+$limit = isset($_POST['limit'])?intval($_POST['limit']):10;
 if ($start < 0) $start = 0;
 if ($end < $start) $end = $start;
 $sort = isset($_POST['sort'])?format_mysql($_POST['sort']):'start';
@@ -61,12 +61,20 @@ if (mysql_num_rows($result)) {
     }
 }
 
+// Get the total number of flights
+$query = "SELECT name, start, end, utc, flightId, COUNT(latitude) as points " .
+         "FROM pilot, flight, point " .
+         "WHERE flightId = flight.id AND pilotId = pilot.id GROUP BY flightId " .
+         "HAVING points > 5 ";
+$result = mysql_query($query)  or die('Query error: ' . mysql_error());
+$tracks['count'] = mysql_num_rows($result);
+
 // List flights having more than 5 points
 $query = "SELECT name, start, end, utc, flightId, COUNT(latitude) as points " .
          "FROM pilot, flight, point " .
          "WHERE flightId = flight.id AND pilotId = pilot.id GROUP BY flightId " .
          "HAVING points > 5 " .
-         "ORDER BY $sort $dir LIMIT $start," . ($end - $start + 1);
+         "ORDER BY $sort $dir LIMIT $start, $limit";
 $result = mysql_query($query)  or die('Query error: ' . mysql_error());
 
 $tracks['tracks'] = array();

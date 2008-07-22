@@ -29,12 +29,20 @@ header('Content-type: text/plain; charset=ISO-8859-1');
 header('Cache-Control: no-cache, must-revalidate');
 header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
 
-$lat = isset($_GET['lat'])?floatval($_GET['lat']):44;
-$lon = isset($_GET['lon'])?floatval($_GET['lon']):6;
+$lat = isset($_GET['lat'])?floatval($_GET['lat']):44.0;
+$lon = isset($_GET['lon'])?floatval($_GET['lon']):6.0;
 
 echo getMetar($lat, $lon);
 
 if (($dept = getFrenchAreaCode($lat, $lon)) > 0) {
+    if (count($stationIds = getFrenchWeatherStations($dept))) {
+      foreach($stationIds as $id) {
+         echo getFrenchWeatherStationWeather($id);
+      }
+    }
+
+    echo "\n";
+
     echo getFrenchWeather($dept);
 }
 
@@ -97,6 +105,66 @@ function getFrenchWeather($dept) {
     curl_close($ch);
 
     return "MeteoFrance:\n $data";
+}
+
+function getFrenchWeatherStations($dept) {
+    if ($dept < 10) $dept = "0" . $dept;
+    $url = "http://www.balisemeteo.com/wap/bd_depart.php?dept=$dept";
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_FAILONERROR, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    $data = curl_exec($ch);
+    curl_close($ch);
+
+    $nb = preg_match_all("/idBalise=(\d+)/mi", $data, $matches);
+
+    for ($i = 0; $i < $nb; $i++) {
+        $stationIds[] = $matches[1][$i];
+    }
+
+    return $stationIds;
+}
+
+function getFrenchWeatherStationWeather($id) {
+    if ($dept < 10) $dept = "0" . $dept;
+    $url = "http://www.balisemeteo.com/wap/bd_balise.php?idBalise=$id";
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_FAILONERROR, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    $data = curl_exec($ch);
+    curl_close($ch);
+
+    $weather = "";
+    // Remove leading and trailing spaces
+    $data = preg_replace_callback("/^[\t ]*(.*)$/mi", create_function('$matches', 'return $matches[1];'), $data);
+    $data = preg_replace_callback("/^(.*?)[\t ]*$/mi", create_function('$matches', 'return $matches[1];'), $data);
+    // Remove newlines
+    $data = str_replace("\n", "", $data);
+    // Add newlines
+    $data = str_replace("<br/>", "\n", $data);
+    $data = str_replace("\n\n", "\n", $data);
+    // Remove markup
+    $data = str_replace("<u>", "", $data);
+    $data = str_replace("</u>", "", $data);
+    if (preg_match("|<em>(.*?)</em>|i", $data, $match)) {
+        $weather = "* $match[1] ($id):\n";
+        // Get observation time
+        if (preg_match("|([\d/]+ - [\d:]+)|", $data, $match)) {
+            $weather .= "$match[1]\n";
+        }
+        // Get observations
+        if (preg_match("|<p>(.*?)</p>|si", $data, $match)) {
+            $weather .= $match[1];
+        }
+    }
+
+    return $weather;
 }
 
 ?>

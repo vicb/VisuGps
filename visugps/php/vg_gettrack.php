@@ -244,6 +244,20 @@ function generate_kmz_track($jsonTrack) {
     $track = @json_decode($jsonTrack, true);
     if (!isset($track['nbTrackPt']) || $track['nbTrackPt'] < 5) exit;
 
+    $zip = new zipfile();
+    $plain = generate_kml_track($jsonTrack);
+    $altitude = generate_colored_track($jsonTrack, 'elev', 'm', $minAlti, $maxAlti);
+    $vario = generate_colored_track($jsonTrack, 'vario', 'm/s', $minVario, $maxVario);
+    $speed = generate_colored_track($jsonTrack, 'speed', 'km/h', $minSpeed, $maxSpeed);
+
+    $description = "Created by VisuGps [www.victorb.fr]<br/><br/>\n" .
+                   "<table width=300><tr><td align='left'>$minAlti</td><td align='right'>${maxAlti}m</td></tr>\n" .
+                   "<tr><td colspan=2><img src='scale.png' height=30 width=300></td></tr>\n" .
+                   "<tr><td align='left'>$minSpeed</td><td align='right'>${maxSpeed}km/h</td></tr>\n" .
+                   "<tr><td colspan=2><img src='scale.png' height=30 width=300></td></tr>\n" .
+                   "<tr><td align='left'>$minVario</td><td align='right'>${maxVario}m/s</td></tr>\n" .
+                   "<tr><td colspan=2><img src='scale.png' height=30 width=300></td></tr>\n";
+
     $file = sprintf("<?xml version='1.0' encoding='UTF-8'?>\n" .
                     "<kml xmlns='http://earth.google.com/kml/2.2'>\n" .
                     "    <Document>\n" .
@@ -258,7 +272,7 @@ function generate_kmz_track($jsonTrack) {
                     "        <open>1</open>\n" .
                     "        <visibility>1</visibility>\n" .
                     "        <description>\n" .
-                    "        Created by VisuGps [www.victorb.fr]\n" .
+                    "            <![CDATA[%s]]>\n" .
                     "        </description>\n" .
                     "        <Style id='tracks'>\n" .
                     "            <ListStyle>\n" .
@@ -291,18 +305,49 @@ function generate_kmz_track($jsonTrack) {
                     "            <Link><href>vario.kml</href></Link>\n" .
                     "        </NetworkLink>\n" .
                     "    </Document>\n" .
-                    "</kml>", $track['pilot'], 
+                    "</kml>", $track['pilot'],
                     $track['lon'][0],
-                    $track['lat'][0]);
+                    $track['lat'][0],
+                    $description);
 
-    $zip = new zipfile();
-    $zip->addFile($file, "doc.kml");
-    $zip->addFile(generate_kml_track($jsonTrack), "plain.kml");
-    $zip->addFile(generate_colored_track($jsonTrack, 'elev', 'm'), "altitude.kml");
-    $zip->addFile(generate_colored_track($jsonTrack, 'vario', 'm/s'), "vario.kml");
-    $zip->addFile(generate_colored_track($jsonTrack, 'speed', 'km/h'), "speed.kml");
+    $zip->addFile($file, "main.kml");
+    $zip->addFile(create_scale_image(300, 30), "scale.png");
+    $zip->addFile($plain, "plain.kml");
+    $zip->addFile($altitude, "altitude.kml");
+    $zip->addFile($vario, "vario.kml");
+    $zip->addFile($speed, "speed.kml");
 
     return $zip->file();
+}
+
+function create_scale_image($width, $height) {
+    $im = imagecreatetruecolor($width, $height);
+    $k = imagecolorallocate($im, 255, 255, 255);
+    imagefill($im, 0, 0, $k);
+    for ($x = 0; $x < $width; $x++) {
+        $color = value2color($x, 0, $width - 1);
+        $b = hexdec(substr($color, 0, 2));
+        $v = hexdec(substr($color, 2, 2));
+        $r = hexdec(substr($color, 4, 2));
+        $k = imagecolorallocate($im, $r, $v, $b);
+        imageline($im, $x, 0, $x, $height - 1, $k);
+    }
+    $png = imagepng2string($im);
+    imagedestroy($im);
+    return $png;
+}
+
+function imagepng2string($image) {
+    $contents = ob_get_contents();
+    if ($contents !== false) ob_clean(); 
+    else ob_start();
+    imagepng($image);
+    $data = ob_get_contents();
+    if ($contents !== false) {
+        ob_clean();
+        echo $contents;
+    } else ob_end_clean();
+    return $data;
 }
 
 /*
@@ -336,11 +381,10 @@ Track format:
         nbChartPt - number of points in elev, elevGnd, speed, vario
         nbChartLbl - number of labels (time.labels)
 */
-function generate_colored_track($jsonTrack, $idxSerie, $unit) {
+function generate_colored_track($jsonTrack, $idxSerie, $unit, &$minValue, &$maxValue) {
     $track = @json_decode($jsonTrack, true);
 
-    $minValue = 20000;
-    $maxValue = -20000;
+    $maxValue = $minValue = $track[$idxSerie][0];
 
     for ($i = 0; $i < count($track[$idxSerie]); $i++) {
         $minValue = min($minValue, $track[$idxSerie][$i]);

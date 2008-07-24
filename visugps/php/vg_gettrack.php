@@ -179,9 +179,7 @@ function generate_kml_track($jsonTrack) {
                          $track['elev'][$i * ($track['nbChartPt'] - 1) / ($track['nbTrackPt'] - 1) ]);
     }
     
-    $file = rtrim($file, "\n");
-
-    $file .= sprintf("\n        </coordinates>\n" .
+    $file .= sprintf("        </coordinates>\n" .
                      "    </LineString>\n" .
                      "</Placemark>\n" .
                      "<Placemark>\n" .
@@ -470,8 +468,6 @@ function generate_igc_track($jsonTrack) {
     $track = @json_decode($jsonTrack, true);
     if (!isset($track['nbTrackPt']) || $track['nbTrackPt'] < 5) exit;
 
-
-
     $file = sprintf("AXXXXXX\n" .
                     "HFDTE%02d%02d%02d\n" .
                     "HFPLTPILOT:%s\n" .
@@ -498,7 +494,6 @@ function generate_igc_track($jsonTrack) {
     }
 
     return $file;
-
 }
 
 /*
@@ -517,28 +512,17 @@ function value2color($value, $min, $max) {
     $Mm = $max - $min;
     $xm = $value - $min;
 
-    if ($min * $max < 0) {
-        if ($min == 0) $min = 1;
-        if ($max == 0) $max = 1;
-        $value *= 1.25;
-        if ($value > $max) $value = $max;
-        if ($value < $min) $value = $min;
-        if ($value >= 0)
-            $k = sprintf("%02X", 0xFF * (1 - $value / $max)) . "00FF";
-        else
-            $k = "FF00" . sprintf("%02X", 0xFF * (1 - $value / $min)) ;
-    } else {
-      if ($Mm == 0) $Mm = 1;
-      if ($xm >= 2 * $Mm / 3)
-          $k = '00' . sprintf("%02X",0xFF*3*(1 - $xm / $Mm)) . 'FF';
-      elseif ($xm >= $Mm/2)
-          $k = '00FF' . sprintf("%02X", 0xFF * (6 * $xm / $Mm - 3));
-      elseif ($xm >= $Mm/3)
-          $k = sprintf("%02X", 0xFF * (3 - 6 * $xm / $Mm)) . 'FF00';
-      else
-          $k = 'FF' . sprintf("%02X", 0xFF * 3 * $xm / $Mm) . '00';
-    }
-    return $k;
+    if ($Mm == 0) $Mm = 1;
+    if ($xm >= 2 * $Mm / 3)
+        $k = '00' . sprintf("%02X",0xFF*3*(1 - $xm / $Mm)) . 'FF';
+    elseif ($xm >= $Mm/2)
+        $k = '00FF' . sprintf("%02X", 0xFF * (6 * $xm / $Mm - 3));
+    elseif ($xm >= $Mm/3)
+        $k = sprintf("%02X", 0xFF * (3 - 6 * $xm / $Mm)) . 'FF00';
+    else
+        $k = 'FF' . sprintf("%02X", 0xFF * 3 * $xm / $Mm) . '00';
+
+   return $k;
 }
 
 ?>

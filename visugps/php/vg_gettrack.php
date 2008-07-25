@@ -320,7 +320,19 @@ function generate_kmz_track($jsonTrack) {
     return $zip->file();
 }
 
-function create_scale_image($width, $height) {
+
+/*
+Function: create_scale_image
+        Create an image representing the scale
+
+Arguments:
+        $width - image width
+        $height - image height
+
+Returns:
+        The scale image as a string
+
+*/function create_scale_image($width, $height) {
     $im = imagecreatetruecolor($width, $height);
     $k = imagecolorallocate($im, 255, 255, 255);
     imagefill($im, 0, 0, $k);
@@ -337,6 +349,17 @@ function create_scale_image($width, $height) {
     return $png;
 }
 
+/*
+Function: imagepng2string
+        Convert a PNG image to its string representation
+
+Arguments:
+        $image - PNG image
+
+Returns:
+        The image as a string
+
+*/
 function imagepng2string($image) {
     $contents = ob_get_contents();
     if ($contents !== false) ob_clean(); 

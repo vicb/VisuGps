@@ -406,9 +406,9 @@ function generate_colored_track($jsonTrack, $idxSerie, $unit, &$minValue, &$maxV
                     $track['lon'][0],
                     $track['lat'][0]);
 
-    $point = 0;
-    while(1) {
-        if ($point >= $track['nbTrackPt']) break;
+    $point = 1;
+    $lastColor = value2color($track[$idxSerie][0], $minValue, $maxValue);
+    do {
         $chartIndex = $point * ($track['nbChartPt'] - 1) / ($track['nbTrackPt'] - 1);
         $file .= sprintf("<Placemark>\n" .
                  "    <visibility>1</visibility>\n" .
@@ -430,25 +430,35 @@ function generate_colored_track($jsonTrack, $idxSerie, $unit, &$minValue, &$maxV
                  $track['time']['sec'][$chartIndex],
                  $track[$idxSerie][$chartIndex],
                  $unit,
-                 value2color($track[$idxSerie][$chartIndex], $minValue, $maxValue),
+                 $lastColor,
                  $track['date']['year'],
                  $track['date']['month'],
                  $track['date']['day'],
                  $track['time']['hour'][$chartIndex],
                  $track['time']['min'][$chartIndex],
                  $track['time']['sec'][$chartIndex]);
-        for ($i = 0; $i < 5; $i++) {
-            if (($point + $i) == $track['nbTrackPt']) break;
+
+        $file .= sprintf("        %010.6f, %010.6f, %05d\n",
+                         $track['lon'][$point - 1],
+                         $track['lat'][$point - 1],
+                         $track['elev'][($point - 1) * ($track['nbChartPt'] - 1) / ($track['nbTrackPt'] - 1) ]);
+
+        while (1) {
+            $chartIndex = $point * ($track['nbChartPt'] - 1) / ($track['nbTrackPt'] - 1);
             $file .= sprintf("        %010.6f, %010.6f, %05d\n",
-                             $track['lon'][$point + $i],
-                             $track['lat'][$point + $i],
-                             $track['elev'][($point + $i) * ($track['nbChartPt'] - 1) / ($track['nbTrackPt'] - 1) ]);
+                             $track['lon'][$point],
+                             $track['lat'][$point],
+                             $track['elev'][$chartIndex]);
+            $color = value2color($track[$idxSerie][$chartIndex], $minValue, $maxValue);
+            $point++;
+            if ($color != $lastColor) break;
+            if ($point >= $track['nbTrackPt']) break;
         }
-        $point += 4;
+        $lastColor = $color;
         $file .= "        </coordinates>\n" .
                  "    </LineString>\n" .
                  "</Placemark>\n";
-    }
+    } while ($point < $track['nbTrackPt']);
 
     $file .= sprintf("<Placemark>\n" .
                      "    <name>Deco</name>\n" .

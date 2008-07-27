@@ -99,8 +99,12 @@ if (mysql_num_rows($result)) {
                 $track['start']['location'] = getNearbyPlace($takeoff->latitude, $takeoff->longitude);
                 if ($row->utc) {
                     // Convert UTC to local time
-                    $timeZone = new DateTimeZone(getTimeZone($takeoff->latitude, $takeoff->longitude));
-                    $timeOffset = timezone_offset_get($timeZone, new DateTime($track['start']['time']));
+                    try {
+                        $timeZone = new DateTimeZone(getTimeZone($takeoff->latitude, $takeoff->longitude));
+                        $timeOffset = timezone_offset_get($timeZone, new DateTime($track['start']['time']));
+                    } catch (Exception $e) {        // Will be caught
+                        $timeOffset = 0;
+                    }
                     $startTime = mysql2timestamp($track['start']['time']) + $timeOffset;
                     $track['start']['time'] = date("Y-m-d H:i:s", $startTime);
                     $endTime = mysql2timestamp($track['end']['time']) + $timeOffset;
@@ -135,7 +139,7 @@ function getNearbyPlace($lat, $lon) {
     curl_setopt($ch, CURLOPT_FAILONERROR, true);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 5);
     $data = curl_exec($ch);
     curl_close($ch);
     $data = json_decode($data)->geonames[0];
@@ -162,7 +166,7 @@ function getTimeZone($lat, $lon) {
     curl_setopt($ch, CURLOPT_FAILONERROR, true);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 5);
     $data = curl_exec($ch);
     curl_close($ch);
     return json_decode($data)->timezoneId;

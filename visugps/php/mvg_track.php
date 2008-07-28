@@ -50,24 +50,27 @@ if (isset($_POST['start'])) {
 }
 
 // Get the current flight id
-$query = "SELECT MAX(id) AS id FROM flight WHERE pilotId = '$pilotId'";
+$query = "SELECT start, end, id FROM flight WHERE pilotId = '$pilotId' ORDER BY id DESC LIMIT 0, 1";
 $result = mysql_query($query) or die('Query error: ' . mysql_error());
 if (mysql_num_rows($result) == 1) {
     $flight = mysql_fetch_object($result);
     $flightId = $flight->id;
+    $flightNeedDate = !isset($flight->start);
+    if (isset($flight->end)) {
+        // This is a previous flight (start has not been received for the current flight)
+        // Create a new flight
+        $query = "INSERT INTO flight (pilotId, start, end, utc) VALUES ($pilotId, NULL, NULL, $utc)";
+        mysql_query($query) or die('Query error: ' . mysql_error());
+        $flightId = mysql_insert_id();
+        $flightNeedDate = true;
+    }
 } else {
-    exit;
+    $query = "INSERT INTO flight (pilotId, start, end, utc) VALUES ($pilotId, NULL, NULL, $utc)";
+    mysql_query($query) or die('Query error: ' . mysql_error());
+    $flightId = mysql_insert_id();
+    $flightNeedDate = true;
 }
 
-// Should the start date be updated for that flight ?
-$query = "SELECT start AS date FROM flight WHERE id = '$flightId'";
-$result = mysql_query($query) or die('Query error: '. mysql_error());
-if (mysql_num_rows($result) == 1) {
-    $flight = mysql_fetch_object($result);
-    $flightNeedDate = !isset($flight->date);
-} else {
-    exit;
-}
 
 // Insert the points in the database
 if (isset($_POST['gps'])) {

@@ -22,6 +22,8 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 package fr.victorb.mobile.vgps.ui;
 
+import fr.victorb.mobile.utils.GpsUtil;
+import fr.victorb.mobile.vgps.Constant;
 import fr.victorb.mobile.vgps.config.Configuration;
 import fr.victorb.mobile.vgps.controller.Controller;
 import javax.microedition.lcdui.Choice;
@@ -37,6 +39,7 @@ public class OptionMenu extends Form implements CommandListener {
     private TextField idTxt;
     private ChoiceGroup logChoice;
     private ChoiceGroup sendChoice;
+    private ChoiceGroup gpsChoice;
     private Controller controller;
     
     private Command cmdOk = new Command("Ok", Command.OK, 1);
@@ -50,6 +53,12 @@ public class OptionMenu extends Form implements CommandListener {
         append(logChoice = new ChoiceGroup("Log Interval (sec)", Choice.EXCLUSIVE, new String[] {"5", "10", "60", "600"}, null));
         append(sendChoice = new ChoiceGroup("Track Interval (min)", Choice.EXCLUSIVE, new String[] {"5", "10", "30", "60"}, null));       
 
+//#if USE_INTERNAL_GPS        
+//#         if (GpsUtil.hasInternalGps()) {
+//#             append(gpsChoice = new ChoiceGroup("Use internal Gps", Choice.EXCLUSIVE, new String[]{"yes", "no"}, null));
+//#         }
+//#endif        
+        
         addCommand(cmdOk);
         addCommand(cmdCancel);
         
@@ -86,6 +95,17 @@ public class OptionMenu extends Form implements CommandListener {
             default:
                 sendChoice.setSelectedIndex(3, true);
         }
+
+//#if USE_INTERNAL_GPS        
+//#         if (GpsUtil.hasInternalGps()) {
+//#             if (cfg.getUseInternalGps()) {
+//#                 gpsChoice.setSelectedIndex(0, true);
+//#             } else {
+//#                 gpsChoice.setSelectedIndex(1, true);
+//#             }
+//#         }
+//#endif
+        
     }
 
     public void commandAction(Command command, Displayable arg1) {
@@ -119,8 +139,20 @@ public class OptionMenu extends Form implements CommandListener {
                 default:
                     cfg.setSendInterval(60);
             } 
-            
-            controller.saveConfig();    
+
+//#if USE_INTERNAL_GPS            
+//#             if (GpsUtil.hasInternalGps()) {
+//#                 if (gpsChoice.getSelectedIndex() == 0) {
+//#                     cfg.setUseInternalGps(true);
+//#                     controller.setGpsName(Constant.INTERNALGPS);
+//#                 } else {
+//#                     cfg.setUseInternalGps(false);
+//#                     controller.setGpsName(controller.configuration.getGpsName());
+//#                     
+//#                 }            
+//#             }
+//#endif
+            controller.saveConfig();              
         }        
         controller.showMainMenu();
     }

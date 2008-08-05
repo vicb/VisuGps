@@ -54,7 +54,7 @@ public class Weather extends Localize {
             deleteAll();
             append(new StringItem("", "Retrieving weather info..."));
             String url = Constant.WEATHERURL + 
-                         "?lat=" +  Converter.degMinToDeg(position.latitude) + 
+                         "?lat=" + Converter.degMinToDeg(position.latitude) + 
                          "&lon=" + Converter.degMinToDeg(position.longitude);
             try {
                 connection = (HttpConnection)Connector.open(url, Connector.READ);

@@ -25,6 +25,7 @@ package fr.victorb.mobile.vgps.ui;
 //#if USE_INTERNAL_GPS
 //# import fr.victorb.mobile.utils.GpsUtil;
 //#endif
+import fr.victorb.mobile.vgps.Constant;
 import fr.victorb.mobile.vgps.controller.Controller;
 import fr.victorb.mobile.vgps.controller.RecordState;
 import fr.victorb.mobile.vgps.gps.GpsListener;
@@ -98,7 +99,7 @@ public class MainMenu extends List implements CommandListener, GpsListener {
             switch (getSelectedIndex()) {
                 case 0:
 //#if USE_INTERNAL_GPS
-//#                     if (!GpsUtil.hasInternalGps() && controller.getRecordState() == RecordState.STOP) {
+//#                     if (controller.getRecordState() == RecordState.STOP && !controller.configuration.getUseInternalGps()) {
 //#                         controller.searchDevice();
 //#                     }
 //#else

@@ -38,7 +38,6 @@ import javax.microedition.midlet.MIDlet;
 import fr.victorb.mobile.vgps.ui.Weather;
 //#if USE_INTERNAL_GPS
 //# import fr.victorb.mobile.vgps.gps.InternalGps;
-//# import fr.victorb.mobile.utils.GpsUtil;
 //#endif
 import fr.victorb.mobile.vgps.Constant;
 import fr.victorb.mobile.vgps.ui.Sites;
@@ -56,9 +55,9 @@ public class Controller implements BluetoothFinderListener {
       
     private int recordState = RecordState.STOP;
     
-    private Gps gps;
-    private GpsRecorder recorder;
-    private GpsSender sender;
+    private Gps gps = null;
+    private GpsRecorder recorder = null;
+    private GpsSender sender = null;
     
     private MainMenu menu;
     private OptionMenu options = null;
@@ -86,18 +85,7 @@ public class Controller implements BluetoothFinderListener {
      * Initialize the controller
      */
     private void init() {
-        menu = new MainMenu();
-//#if USE_INTERNAL_GPS
-//#         if (GpsUtil.hasInternalGps()) {
-//#             gps = new InternalGps();
-//#         } else {
-//#             gps = new BluetoothGps();    
-//#         }                
-//#else
-        gps = new BluetoothGps();    
-//#endif
-        recorder = new GpsRecorder(gps);
-        sender = new GpsSender(recorder);        
+        menu = new MainMenu();       
     }
     
     public void start(MIDlet midlet) {        
@@ -114,8 +102,8 @@ public class Controller implements BluetoothFinderListener {
         }    
         
 //#if USE_INTERNAL_GPS
-//#         if (GpsUtil.hasInternalGps()) {
-//#             menu.setGpsName("Internal Gps");
+//#         if (configuration.getUseInternalGps()) {
+//#             menu.setGpsName(Constant.INTERNALGPS);
 //#         } else {
 //#             menu.setGpsName(configuration.getGpsName());
 //#         }
@@ -137,6 +125,17 @@ public class Controller implements BluetoothFinderListener {
      * @return GPS currently in use
      */
     public Gps getGps() {
+        if (recordState == RecordState.STOP) {
+//#if USE_INTERNAL_GPS
+//#             if (configuration.getUseInternalGps()) {
+//#                 gps = new InternalGps();
+//#             } else {
+//#                 gps = new BluetoothGps();    
+//#             }                
+//#else
+        gps = new BluetoothGps();    
+//#endif            
+        }
         return gps;
     }
     
@@ -151,6 +150,17 @@ public class Controller implements BluetoothFinderListener {
      * Start recording and sending position
      */
     public void startRecording() {
+//#if USE_INTERNAL_GPS
+//#         if (configuration.getUseInternalGps()) {
+//#             gps = new InternalGps();
+//#         } else {
+//#             gps = new BluetoothGps();    
+//#         }                
+//#else
+        gps = new BluetoothGps();    
+//#endif
+        recorder = new GpsRecorder(gps);
+        sender = new GpsSender(recorder);         
         gps.start(configuration.getGpsUrl());                       
         recorder.start();
         sender.start(); 
@@ -164,7 +174,10 @@ public class Controller implements BluetoothFinderListener {
         sender.stop();
         recorder.stop();                        
         gps.stop();                        
-        recordState = RecordState.STOP;        
+        recordState = RecordState.STOP;  
+        gps = null;
+        recorder = null;
+        sender = null;
     }
     
     /** 
@@ -184,12 +197,10 @@ public class Controller implements BluetoothFinderListener {
      */
     public void deviceSearchCompleted(int status, String deviceName, String deviceUrl) {
         if (status == BluetoothFinderListener.DEVICE_FOUND) {
-            if (!deviceUrl.equals(configuration.getGpsUrl())) {
-                configuration.setGpsUrl(deviceUrl);
-                configuration.setGpsName(deviceName);
-                menu.setGpsName(deviceName);
-                saveConfig();
-            }                        
+            configuration.setGpsUrl(deviceUrl);
+            configuration.setGpsName(deviceName);
+            menu.setGpsName(deviceName);
+            saveConfig();
         }
         showMainMenu();
     }
@@ -235,6 +246,10 @@ public class Controller implements BluetoothFinderListener {
     
     public String getVersion() {
         return Constant.VERSION;        
+    }
+    
+    public void setGpsName(String value) {
+        menu.setGpsName(value);
     }
     
     public void viewImage(String url) {

@@ -39,6 +39,9 @@ import fr.victorb.mobile.vgps.ui.Weather;
 //#if USE_INTERNAL_GPS
 //# import fr.victorb.mobile.vgps.gps.InternalGps;
 //#endif
+//#if DEBUG
+//# import fr.victorb.mobile.vgps.ui.Debug;
+//#endif
 import fr.victorb.mobile.vgps.Constant;
 import fr.victorb.mobile.vgps.ui.Sites;
 import fr.victorb.mobile.vgps.ui.WhereAmI;
@@ -64,6 +67,9 @@ public class Controller implements BluetoothFinderListener {
     private Weather weather = null;
     private Sites sites = null;
     private WhereAmI whereAmI = null;
+//#if DEBUG
+//#     private Debug debug;
+//#endif    
     
     /** Creates a new instance of Controller */
     private Controller() {
@@ -85,6 +91,7 @@ public class Controller implements BluetoothFinderListener {
      * Initialize the controller
      */
     private void init() {
+        debug = new Debug();
         menu = new MainMenu();       
     }
     
@@ -197,6 +204,13 @@ public class Controller implements BluetoothFinderListener {
      */
     public void deviceSearchCompleted(int status, String deviceName, String deviceUrl) {
         if (status == BluetoothFinderListener.DEVICE_FOUND) {
+            int index;
+            logAppend("Full URL: " + deviceUrl);
+            if ((index = deviceUrl.indexOf(";")) > 0) {
+                // Have to strip the end of the string to enable N95 to connect to the GPS
+                deviceUrl = deviceUrl.substring(0, index);
+            }
+            logAppend("Used URL:" + deviceUrl);
             configuration.setGpsUrl(deviceUrl);
             configuration.setGpsName(deviceName);
             menu.setGpsName(deviceName);
@@ -274,4 +288,21 @@ public class Controller implements BluetoothFinderListener {
     public void restoreDisplay() {
         display.setCurrent(savedDisplay);
     }    
+    
+    public void logAppend(String value) {
+//#if DEBUG
+//#         debug.append(value);
+//#endif        
+    }
+
+    public void logClear() {
+//#if DEBUG
+//#         debug.clear();
+//#endif        
+    }
+    
+    public void showDebug() {
+        display.setCurrent(debug);
+    }
+    
 }

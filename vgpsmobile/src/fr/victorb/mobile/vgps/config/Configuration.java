@@ -31,7 +31,7 @@ import java.io.IOException;
 public class Configuration implements Serializable {
     static private final int CFGVERSION = 2;
     private String gpsName = "BlueGPS";
-    private String gpsUrl = "btspp://000A3A25DF6B:1;authenticate=false;encrypt=false;master=true";   
+    private String gpsUrl = "btspp://000A3A25DF6B:1";   
     private String pilotId = "";
     private short logInterval = 10;
     private short sendInterval = 10;

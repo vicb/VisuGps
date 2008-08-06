@@ -23,6 +23,7 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 package fr.victorb.mobile.vgps.gps;
 
 import fr.victorb.mobile.utils.Split;
+import fr.victorb.mobile.vgps.controller.Controller;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.microedition.io.Connector;
@@ -80,9 +81,12 @@ public class BluetoothGps extends Gps implements Runnable {
         String string;
         
         try {            
+            Controller.getController().logAppend("Connecting: " + url);
             gpsStream = Connector.openInputStream(url);    
             connected = true;
+            Controller.getController().logAppend("Connected");
         } catch (IOException ex) { 
+            Controller.getController().logAppend("Connection error: " + ex.getMessage());
             connected = false;
         }
                

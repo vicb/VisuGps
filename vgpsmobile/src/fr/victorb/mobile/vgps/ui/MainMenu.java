@@ -70,6 +70,13 @@ public class MainMenu extends List implements CommandListener, GpsListener {
         } catch (IOException ex) {
         }
         
+//#if DEBUG
+//#         append("Debug", null);
+//#endif        
+        
+        controller.logAppend(controller.configuration.getGpsName());
+        controller.logAppend(controller.configuration.getGpsUrl());
+                
         setCommandListener(this);        
     }
 
@@ -155,6 +162,8 @@ public class MainMenu extends List implements CommandListener, GpsListener {
                     }catch (IOException ex) {
                     }
                     break;
+                case 9:
+                    controller.showDebug();
             }
         } else if (command == cmdExit) {
             controller.exit();

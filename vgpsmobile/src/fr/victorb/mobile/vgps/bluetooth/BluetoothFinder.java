@@ -23,6 +23,7 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 package fr.victorb.mobile.vgps.bluetooth;
 
+import fr.victorb.mobile.vgps.controller.Controller;
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -33,7 +34,6 @@ import javax.bluetooth.DiscoveryListener;
 import javax.bluetooth.LocalDevice;
 import javax.bluetooth.RemoteDevice;
 import javax.bluetooth.ServiceRecord;
-import javax.bluetooth.UUID;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Displayable;
@@ -52,14 +52,10 @@ public class BluetoothFinder extends List  implements DiscoveryListener, Command
     private LocalDevice localDevice;
     private DiscoveryAgent discoveryAgent;
     
-    private UUID serviceId[];
     private int searchedDeviceIdx;
-    private int currentServiceSearch;
-    private boolean serviceFound;
 
     private static final int STATE_STOP = 0;
     private static final int STATE_SEARCHING_DEVICE  = 1;
-    private static final int STATE_SEARCHING_SERVICE = 2;
     private static final int STATE_CANCEL = 3;
     
     private volatile int state;
@@ -85,9 +81,8 @@ public class BluetoothFinder extends List  implements DiscoveryListener, Command
 
     /**
      * Start searching for bluetooth devices
-     * @param serviceId serviceId to look for
      */
-    public void startSearch(UUID serviceId[]) {
+    public void startSearch() {
         if (state != STATE_STOP) {
             listener.deviceSearchCompleted(BluetoothFinderListener.SEARCH_ONGOING, null, null);
             return;
@@ -98,7 +93,7 @@ public class BluetoothFinder extends List  implements DiscoveryListener, Command
             deleteAll();
             allDevices.removeAllElements();
             allDevicesAddress.removeAllElements();
-            this.serviceId = serviceId;
+            matchedDevices.removeAllElements();
             try {
                 localDevice = LocalDevice.getLocalDevice();
                 discoveryAgent = localDevice.getDiscoveryAgent();
@@ -119,10 +114,6 @@ public class BluetoothFinder extends List  implements DiscoveryListener, Command
                 discoveryAgent.cancelInquiry(this);
                 state = STATE_CANCEL;
                 break;
-            case (STATE_SEARCHING_SERVICE) :
-                discoveryAgent.cancelServiceSearch(currentServiceSearch);
-                state = STATE_CANCEL;
-                break;
             default:
                 break;
         }
@@ -138,6 +129,15 @@ public class BluetoothFinder extends List  implements DiscoveryListener, Command
         if (allDevicesAddress.indexOf(address) == -1) {
             allDevices.addElement(remoteDevice);   
             allDevicesAddress.addElement(address);
+            String name;
+            try {
+                name = remoteDevice.getFriendlyName(false);
+            } catch (Exception e) {
+                name = address;
+            }
+            Controller.getController().logAppend("Found Device: " + name);
+            matchedDevices.addElement(new MatchedDevice(name, "btspp://" + address + ":1"));
+            append(name, null);
         }
     }
 
@@ -146,69 +146,9 @@ public class BluetoothFinder extends List  implements DiscoveryListener, Command
      * @param i
      */
     public void inquiryCompleted(int i) {
-        switch (state) {
-            case STATE_SEARCHING_DEVICE:                
-                matchedDevices.removeAllElements();
-                if (allDevices.size() > 0) {
-                    state = STATE_SEARCHING_SERVICE;
-                    searchedDeviceIdx = 0;
-                    searchServices();
-                } else {
-                    state = STATE_STOP;
-                }
-                break;
-            default:               
-                state = STATE_STOP;                
-                break;
-
-        }   
+        state = STATE_STOP;
     }    
     
-    /**
-     * Append devices to the list when requested service has been found
-     * @param i
-     * @param serviceRecord
-     */
-    public void servicesDiscovered(int i, ServiceRecord[] serviceRecord) {
-        if (serviceFound == false) {
-            // This is the first call to this function for the searched device
-            serviceFound = true;
-            // Get the remote device name and address
-            RemoteDevice device = (RemoteDevice)allDevices.elementAt(searchedDeviceIdx);
-            String name, address = device.getBluetoothAddress();            
-            try {
-                name = device.getFriendlyName(false);
-            } catch (IOException ex) {
-                name = address;
-            }
-            append(name, null);
-            // Add the device to the list of matched devices
-            matchedDevices.addElement(new MatchedDevice(name,
-                serviceRecord[0].getConnectionURL(ServiceRecord.NOAUTHENTICATE_NOENCRYPT, true),
-                searchedDeviceIdx));            
-        }    
-    }
-
-    /**
-     * Search services for remaining devices
-     * @param i
-     * @param i0
-     */
-    public void serviceSearchCompleted(int i, int i0) {
-        switch (state) {
-            case STATE_SEARCHING_SERVICE:
-                if (++searchedDeviceIdx < allDevices.size()) {
-                    searchServices();
-                } else {
-                    state = STATE_STOP;
-                }
-                break;                
-            default:
-                state = STATE_STOP;
-                break;
-        }
-    }
-
     /**
      * Handle user inputs
      * @param command
@@ -232,27 +172,12 @@ public class BluetoothFinder extends List  implements DiscoveryListener, Command
     private class MatchedDevice  {
         public String name;
         public String url;
-        public int idx;
 
-        public MatchedDevice(String name, String url, int idx) {
+        public MatchedDevice(String name, String url) {
             this.name = name;
             this.url = url;
-            this.idx = idx;
         }
     }
-
-    private void searchServices() {       
-        try {                             
-            serviceFound = false;
-            currentServiceSearch = discoveryAgent.searchServices(null, serviceId, (RemoteDevice)allDevices.elementAt(searchedDeviceIdx), this);                                                            
-        } catch (Exception e) {
-            if (++searchedDeviceIdx < allDevices.size()) {
-                searchServices();
-            } else {
-                state = STATE_STOP;
-            }
-        }       
-    }   
 
     /**
      * Update list title according to the search state
@@ -267,7 +192,6 @@ public class BluetoothFinder extends List  implements DiscoveryListener, Command
             }
             switch (state) {
                 case STATE_SEARCHING_DEVICE:
-                case STATE_SEARCHING_SERVICE:
                     setTitle(title.substring(0, progress));                    
                     break;
                 case STATE_STOP:
@@ -276,7 +200,13 @@ public class BluetoothFinder extends List  implements DiscoveryListener, Command
                     break;
             }
         }                
-
     }
-    
+
+    public void servicesDiscovered(int arg0, ServiceRecord[] arg1) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void serviceSearchCompleted(int arg0, int arg1) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

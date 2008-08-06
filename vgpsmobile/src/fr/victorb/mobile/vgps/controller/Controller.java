@@ -193,7 +193,7 @@ public class Controller implements BluetoothFinderListener {
     public void searchDevice() {
         BluetoothFinder btFinder = new BluetoothFinder(this);
         display.setCurrent(btFinder);
-        btFinder.startSearch(new UUID[] {new UUID(0x1101)});        
+        btFinder.startSearch();        
     }
     
     /**

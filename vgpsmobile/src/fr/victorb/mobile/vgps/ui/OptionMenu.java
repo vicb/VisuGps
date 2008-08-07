@@ -40,10 +40,13 @@ public class OptionMenu extends Form implements CommandListener {
     private ChoiceGroup logChoice;
     private ChoiceGroup sendChoice;
     private ChoiceGroup gpsChoice;
+    private ChoiceGroup autoChoice;
     private Controller controller;
     
     private Command cmdOk = new Command("Ok", Command.OK, 1);
     private Command cmdCancel = new Command("Cancel", Command.CANCEL, 1);
+    private boolean[] useInternalGps = new boolean[] {true};
+    private boolean[] useAutoMode = new boolean[] {true};
     
     public OptionMenu() {
         super("Options");
@@ -55,9 +58,11 @@ public class OptionMenu extends Form implements CommandListener {
 
 //#if USE_INTERNAL_GPS        
 //#         if (GpsUtil.hasInternalGps()) {
-//#             append(gpsChoice = new ChoiceGroup("Use internal Gps", Choice.EXCLUSIVE, new String[]{"yes", "no"}, null));
+//#             append(gpsChoice = new ChoiceGroup("Gps", Choice.MULTIPLE, new String[]{"Use internal Gps"}, null));
 //#         }
 //#endif        
+        
+        append(autoChoice = new ChoiceGroup("Start", Choice.MULTIPLE, new String[] {"Use automatic mode"}, null));
         
         addCommand(cmdOk);
         addCommand(cmdCancel);
@@ -98,13 +103,13 @@ public class OptionMenu extends Form implements CommandListener {
 
 //#if USE_INTERNAL_GPS        
 //#         if (GpsUtil.hasInternalGps()) {
-//#             if (cfg.getUseInternalGps()) {
-//#                 gpsChoice.setSelectedIndex(0, true);
-//#             } else {
-//#                 gpsChoice.setSelectedIndex(1, true);
-//#             }
+//#             useInternalGps[0] = cfg.getUseInternalGps();
+//#             gpsChoice.setSelectedFlags(useInternalGps);
 //#         }
 //#endif
+           
+        useAutoMode[0] = cfg.getUseAutoMode();
+        autoChoice.setSelectedFlags(useAutoMode);
         
     }
 
@@ -142,16 +147,20 @@ public class OptionMenu extends Form implements CommandListener {
 
 //#if USE_INTERNAL_GPS            
 //#             if (GpsUtil.hasInternalGps()) {
-//#                 if (gpsChoice.getSelectedIndex() == 0) {
+//#                 gpsChoice.getSelectedFlags(useInternalGps);
+//#                 if (useInternalGps[0]) {
 //#                     cfg.setUseInternalGps(true);
 //#                     controller.setGpsName(Constant.INTERNALGPS);
 //#                 } else {
 //#                     cfg.setUseInternalGps(false);
-//#                     controller.setGpsName(controller.configuration.getGpsName());
-//#                     
+//#                     controller.setGpsName(controller.configuration.getGpsName());                    
 //#                 }            
 //#             }
 //#endif
+
+            autoChoice.getSelectedFlags(useAutoMode);
+            cfg.setUseAutoMode(useAutoMode[0]);
+            
             controller.saveConfig();              
         }        
         controller.showMainMenu();

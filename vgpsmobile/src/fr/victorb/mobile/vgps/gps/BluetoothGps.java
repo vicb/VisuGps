@@ -127,8 +127,8 @@ public class BluetoothGps extends Gps implements Runnable {
                         position.latitude = Float.parseFloat(split.next()) * (split.next().toUpperCase().equals("N")?1:-1) / 100;
                         position.longitude = Float.parseFloat(split.next()) * (split.next().toUpperCase().equals("E")?1:-1) / 100;
                         position.elevation = elevation;                    
-                        split.next();           // speed    
-                        split.next();           // degrees
+                        position.speed = Float.parseFloat(split.next()) * 1.852f;  // speed (knots -> km/h)    
+                        split.next();                                              // heading 
                         string = split.next();
                         position.date.day = (byte)Integer.parseInt(string.substring(0, 2));
                         position.date.month = (byte)Integer.parseInt(string.substring(2, 4));

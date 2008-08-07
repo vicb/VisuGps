@@ -28,6 +28,10 @@ public class Time {
     public byte minute;
     public byte second;
     
+    public int getTimestamp() {
+        return hour * 3600 + minute * 60 + second;
+    }
+    
     /**
      * @return A copy of the Time object
      */

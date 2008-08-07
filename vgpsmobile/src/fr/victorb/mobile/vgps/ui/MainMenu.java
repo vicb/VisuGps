@@ -127,11 +127,11 @@ public class MainMenu extends List implements CommandListener, GpsListener {
                 case 2:
                     try {
                         if (controller.getRecordState() == RecordState.STOP) {
-                            controller.startRecording();
+                            controller.requestStart();
                             set(2, "Stop", Image.createImage(this.getClass().getResourceAsStream("/res/start.png")));
                             controller.getGps().addFixValidListener(this);
                         } else {
-                            controller.stopRecording();
+                            controller.requestStop();
                             set(2, "Start", Image.createImage(this.getClass().getResourceAsStream("/res/start.png")));
                             controller.getGps().removeFixValidListner(this);                  
                         }

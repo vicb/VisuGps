@@ -23,7 +23,7 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 package fr.victorb.mobile.vgps;
 
 public class Constant {
-    public static final String VERSION = "v1.5.0";
+    public static final String VERSION = "v1.6.0b";
     
     public static final String LOGURL = "http://www.victorb.fr/visugps/php/mvg_track.php";
     public static final String WEATHERURL = "http://www.victorb.fr/visugps/php/mvg_weather.php";
@@ -33,4 +33,7 @@ public class Constant {
     public static final String GMAPKEY = "ABQIAAAAJPvmQMZVrrV3inIwT2t4RBQf-JSUIEMNUNF63gcoYgskNGvaZRQmUvzGcFUdj4nlylxP8SK4sRKYsg";
     
     public static final String INTERNALGPS = "Internal Gps";
+    
+    public static final int AUTOSTARTSPEED = 20;
+    public static final int AUTOSTARTTIME = 20;
 }

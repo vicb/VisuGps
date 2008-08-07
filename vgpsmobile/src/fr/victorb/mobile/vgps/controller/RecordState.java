@@ -23,6 +23,8 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 package fr.victorb.mobile.vgps.controller;
 
 public class RecordState {
-    public static final int START = 0;
-    public static final int STOP = 1;
+    public static final int START_REQUEST = 0;
+    public static final int START_PENDING = 1;
+    public static final int STARTED = 2;
+    public static final int STOP = 3;
 }

@@ -29,6 +29,7 @@ public class GpsPosition {
         public float latitude;
         public float longitude;
         public int elevation;
+        public float speed;
         public Time time = new Time();
         public Date date = new Date();
         
@@ -37,8 +38,9 @@ public class GpsPosition {
             clone.latitude = latitude;
             clone.longitude = longitude;
             clone.elevation = elevation;
+            clone.speed = speed;
             clone.time = time.clone();
-            clone.date = date.clone();
+            clone.date = date.clone();            
             return clone;            
         }
 }

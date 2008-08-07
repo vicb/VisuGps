@@ -35,9 +35,10 @@ package fr.victorb.mobile.vgps.gps;
 //# import fr.victorb.mobile.utils.Converter;
 //# 
 //# public class InternalGps extends Gps implements LocationListener {
-//#     LocationProvider provider = null;
-//#     Controller controller;
-//#     GpsPosition position = new GpsPosition();
+//#     private LocationProvider provider = null;
+//#     private Controller controller;
+//#     private GpsPosition position = new GpsPosition();
+//#     private long previousTs = 0;
 //# 
 //#     public InternalGps() {
 //#         try {
@@ -67,6 +68,8 @@ package fr.victorb.mobile.vgps.gps;
 //#     }
 //#     
 //#     public void locationUpdated(LocationProvider provider, Location location) {
+//#         // Prevent the same location to be broadcasted more than once
+//#         if (location.getTimestamp() == previousTs) return;
 //#         updatefixValid(location.isValid());
 //#         QualifiedCoordinates coordinates = location.getQualifiedCoordinates();
 //#         synchronized (position) {
@@ -81,8 +84,10 @@ package fr.victorb.mobile.vgps.gps;
 //#             position.date.day = (byte)calendar.get(Calendar.DAY_OF_MONTH);
 //#             position.date.month = (byte)(calendar.get(Calendar.MONTH) + 1);
 //#             position.date.year = (byte)(calendar.get(Calendar.YEAR) - 2000);
+//#             position.speed = location.getSpeed() * 3.6f;
 //#         }
-//#         updatePosition(position);         
+//#         updatePosition(position);   
+//#         previousTs = location.getTimestamp();
 //#     }
 //#     
 //#     public GpsPosition getPosition() {

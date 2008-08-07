@@ -36,6 +36,7 @@ public class Configuration implements Serializable {
     private short logInterval = 10;
     private short sendInterval = 10;
     private boolean useInternalGps = false;
+    private boolean useAutoMode = false;
     
     /** Creates a new instance of Configuration */
     public Configuration() {
@@ -89,6 +90,14 @@ public class Configuration implements Serializable {
         useInternalGps = value;        
     }
     
+    public boolean getUseAutoMode() {
+        return useAutoMode;
+    }
+    
+    public void setUseAutoMode(boolean value) {
+        useAutoMode = value;
+    }
+    
     public void serialize(DataOutputStream data) throws IOException {
         data.writeInt(Configuration.CFGVERSION);
         data.writeUTF(gpsName);
@@ -97,6 +106,7 @@ public class Configuration implements Serializable {
         data.writeShort(logInterval);
         data.writeShort(sendInterval);
         data.writeBoolean(useInternalGps);
+        data.writeBoolean(useAutoMode);
     }
        
     public void unserialize(DataInputStream data) throws IOException, RmsSerializeException {
@@ -109,6 +119,7 @@ public class Configuration implements Serializable {
             logInterval = data.readShort();
             sendInterval = data.readShort();
             useInternalGps = data.readBoolean();
+            useAutoMode = data.readBoolean();
     }
 
 }

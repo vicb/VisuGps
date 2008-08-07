@@ -22,6 +22,7 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 package fr.victorb.mobile.vgps.controller;
 
+import fr.victorb.mobile.vgps.gps.GpsPosition;
 import fr.victorb.mobile.vgps.ui.MainMenu;
 import fr.victorb.mobile.vgps.bluetooth.BluetoothFinder;
 import fr.victorb.mobile.vgps.bluetooth.BluetoothFinderListener;
@@ -32,7 +33,6 @@ import fr.victorb.mobile.vgps.rmsfile.RmsFile;
 import fr.victorb.mobile.vgps.ui.ImageViewer;
 import fr.victorb.mobile.vgps.ui.MapViewer;
 import fr.victorb.mobile.vgps.ui.OptionMenu;
-import javax.bluetooth.UUID;
 import javax.microedition.lcdui.Display;
 import javax.microedition.midlet.MIDlet;
 import fr.victorb.mobile.vgps.ui.Weather;
@@ -43,11 +43,12 @@ import fr.victorb.mobile.vgps.ui.Weather;
 //# import fr.victorb.mobile.vgps.ui.Debug;
 //#endif
 import fr.victorb.mobile.vgps.Constant;
+import fr.victorb.mobile.vgps.gps.GpsListener;
 import fr.victorb.mobile.vgps.ui.Sites;
 import fr.victorb.mobile.vgps.ui.WhereAmI;
 import javax.microedition.lcdui.Displayable;
 
-public class Controller implements BluetoothFinderListener {    
+public class Controller implements BluetoothFinderListener, GpsListener {    
     private static Controller controller;
     private Display display;
     private Displayable savedDisplay;
@@ -66,10 +67,12 @@ public class Controller implements BluetoothFinderListener {
     private OptionMenu options = null;
     private Weather weather = null;
     private Sites sites = null;
-    private WhereAmI whereAmI = null;
+    private WhereAmI whereAmI = null;        
 //#if DEBUG
 //#     private Debug debug;
 //#endif    
+    
+    private int previousTs = 0;
     
     /** Creates a new instance of Controller */
     private Controller() {
@@ -153,10 +156,7 @@ public class Controller implements BluetoothFinderListener {
         return recordState;
     }
     
-    /**
-     * Start recording and sending position
-     */
-    public void startRecording() {
+    public void requestStart() {
 //#if USE_INTERNAL_GPS
 //#         if (configuration.getUseInternalGps()) {
 //#             gps = new InternalGps();
@@ -166,23 +166,36 @@ public class Controller implements BluetoothFinderListener {
 //#else
         gps = new BluetoothGps();    
 //#endif
+    gps.start(configuration.getGpsUrl());                       
+    recordState = RecordState.START_REQUEST;
+    gps.addPositionListener(this);
+    }
+   
+    
+    /**
+     * Start recording and sending position
+     */
+    public void startRecording() {
         recorder = new GpsRecorder(gps);
         sender = new GpsSender(recorder);         
-        gps.start(configuration.getGpsUrl());                       
+        
         recorder.start();
         sender.start(); 
-        recordState = RecordState.START;
     }
     
+    public void requestStop() {
+        if (recordState == RecordState.STARTED) stopRecording();        
+        gps.stop();
+        gps = null;
+        recordState = RecordState.STOP;  
+    }
+        
     /**
      * Stop recording and sending position
      */
     public void stopRecording() {
         sender.stop();
-        recorder.stop();                        
-        gps.stop();                        
-        recordState = RecordState.STOP;  
-        gps = null;
+        recorder.stop();                                
         recorder = null;
         sender = null;
     }
@@ -303,6 +316,39 @@ public class Controller implements BluetoothFinderListener {
     
     public void showDebug() {
         display.setCurrent(debug);
+    }
+
+    public void gpsPositionUpdated(GpsPosition position) {
+        switch (recordState) {
+            case RecordState.START_REQUEST:
+                if (!configuration.getUseAutoMode()) {
+                    // Start immediatly when autostart is not used
+                    recordState = RecordState.STARTED;
+                    startRecording();
+                } else {
+                    previousTs = position.time.getTimestamp();
+                    recordState = RecordState.START_PENDING;
+                }
+                break;
+            case RecordState.START_PENDING:
+                if (position.speed > Constant.AUTOSTARTSPEED) {
+                    if ((position.time.getTimestamp() - previousTs) > Constant.AUTOSTARTTIME) {
+                        // Start recording after the speed has been high enough for some time
+                        recordState = RecordState.STARTED;
+                        startRecording();                        
+                    }
+                } else {
+                    previousTs = position.time.getTimestamp();
+                }               
+                break;
+            case RecordState.STARTED:
+                gps.removePositionListener(this);
+                break;
+        }
+
+    }
+
+    public void gpsFixValidUpdated(boolean valid) {
     }
     
 }

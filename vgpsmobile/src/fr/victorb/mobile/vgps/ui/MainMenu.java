@@ -25,7 +25,6 @@ package fr.victorb.mobile.vgps.ui;
 //#if USE_INTERNAL_GPS
 //# import fr.victorb.mobile.utils.GpsUtil;
 //#endif
-import fr.victorb.mobile.vgps.Constant;
 import fr.victorb.mobile.vgps.controller.Controller;
 import fr.victorb.mobile.vgps.controller.RecordState;
 import fr.victorb.mobile.vgps.gps.GpsListener;

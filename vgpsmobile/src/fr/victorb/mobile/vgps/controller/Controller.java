@@ -360,9 +360,9 @@ public class Controller implements BluetoothFinderListener, GpsListener {
                             } catch (Exception e) {
                             }
                             gps.removePositionListener(this);
-                        } else {
-                            previousTs = position.time.getTimestamp();
                         }
+                    } else {
+                        previousTs = position.time.getTimestamp();
                     }
                 }
                 break;

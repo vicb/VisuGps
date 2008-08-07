@@ -40,13 +40,13 @@ public class OptionMenu extends Form implements CommandListener {
     private ChoiceGroup logChoice;
     private ChoiceGroup sendChoice;
     private ChoiceGroup gpsChoice;
-    private ChoiceGroup autoChoice;
+    private ChoiceGroup autoModeChoice;
     private Controller controller;
     
     private Command cmdOk = new Command("Ok", Command.OK, 1);
     private Command cmdCancel = new Command("Cancel", Command.CANCEL, 1);
     private boolean[] useInternalGps = new boolean[] {true};
-    private boolean[] useAutoMode = new boolean[] {true};
+    private boolean[] useAutoMode = new boolean[] {true, true};
     
     public OptionMenu() {
         super("Options");
@@ -62,7 +62,7 @@ public class OptionMenu extends Form implements CommandListener {
 //#         }
 //#endif        
         
-        append(autoChoice = new ChoiceGroup("Start", Choice.MULTIPLE, new String[] {"Use automatic mode"}, null));
+        append(autoModeChoice = new ChoiceGroup("Automatic mode", Choice.MULTIPLE, new String[] {"Use auto start", "Use auto stop"}, null));
         
         addCommand(cmdOk);
         addCommand(cmdCancel);
@@ -108,8 +108,9 @@ public class OptionMenu extends Form implements CommandListener {
 //#         }
 //#endif
            
-        useAutoMode[0] = cfg.getUseAutoMode();
-        autoChoice.setSelectedFlags(useAutoMode);
+        useAutoMode[0] = cfg.getUseAutoStart();
+        useAutoMode[1] = cfg.getUseAutoStop();
+        autoModeChoice.setSelectedFlags(useAutoMode);
         
     }
 
@@ -158,8 +159,9 @@ public class OptionMenu extends Form implements CommandListener {
 //#             }
 //#endif
 
-            autoChoice.getSelectedFlags(useAutoMode);
-            cfg.setUseAutoMode(useAutoMode[0]);
+            autoModeChoice.getSelectedFlags(useAutoMode);
+            cfg.setUseAutoStart(useAutoMode[0]);
+            cfg.setUseAutoStop(useAutoMode[1]);
             
             controller.saveConfig();              
         }        

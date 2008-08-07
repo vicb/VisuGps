@@ -131,9 +131,7 @@ public class MainMenu extends List implements CommandListener, GpsListener {
                             set(2, "Stop", Image.createImage(this.getClass().getResourceAsStream("/res/start.png")));
                             controller.getGps().addFixValidListener(this);
                         } else {
-                            controller.requestStop();
-                            set(2, "Start", Image.createImage(this.getClass().getResourceAsStream("/res/start.png")));
-                            controller.getGps().removeFixValidListner(this);                  
+                            requestStop();
                         }
                     } catch (IOException ex) {
                     }                            
@@ -187,6 +185,12 @@ public class MainMenu extends List implements CommandListener, GpsListener {
         } else {
             set(3, "Fix invalid", imgInvalid);
         }
+    }
+    
+    public void requestStop() throws IOException {
+        controller.requestStop();
+        set(2, "Start", Image.createImage(this.getClass().getResourceAsStream("/res/start.png")));
+        controller.getGps().removeFixValidListner(this);                 
     }
    
 }

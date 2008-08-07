@@ -325,8 +325,8 @@ public class Controller implements BluetoothFinderListener, GpsListener {
     public void gpsPositionUpdated(GpsPosition position) {
         switch (recordState) {
             case RecordState.START_REQUEST:
-                if (!configuration.getUseAutoMode()) {
-                    // Start immediatly when autostart is not used
+                if (!configuration.getUseAutoStart()) {
+                    // Start immediatly when autgetUseAutoStartused
                     recordState = RecordState.STARTED;
                     logAppend("STARTED");
                     startRecording();
@@ -349,7 +349,22 @@ public class Controller implements BluetoothFinderListener, GpsListener {
                 }               
                 break;
             case RecordState.STARTED:
-                gps.removePositionListener(this);
+                if (!configuration.getUseAutoStop()) {
+                    gps.removePositionListener(this);
+                } else {
+                    if (position.speed < Constant.AUTOSTOPSPEED) {
+                        if (position.time.getTimestamp() - previousTs > Constant.AUTOSTOPTIME) {
+                            try {
+                                // Simulate the selection of the Stop menu
+                                menu.requestStop();
+                            } catch (Exception e) {
+                            }
+                            gps.removePositionListener(this);
+                        } else {
+                            previousTs = position.time.getTimestamp();
+                        }
+                    }
+                }
                 break;
         }
 

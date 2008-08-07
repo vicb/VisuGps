@@ -101,7 +101,7 @@ function getFrenchWeather($dept) {
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-    $data = curl_exec($ch);
+    $data = stripAccentedChar(curl_exec($ch));
     curl_close($ch);
 
     return "MeteoFrance:\n $data";
@@ -165,6 +165,13 @@ function getFrenchWeatherStationWeather($id) {
     }
 
     return $weather;
+}
+
+function stripAccentedChar($msg) {
+    // from http://www.randomsequence.com/articles/removing-accented-utf-8-characters-with-php/
+    $search = explode(",","ç,æ,œ,á,é,í,ó,ú,à,è,ì,ò,ù,ä,ë,ï,ö,ü,ÿ,â,ê,î,ô,û,å,e,i,ø,u");
+    $replace = explode(",","c,ae,oe,a,e,i,o,u,a,e,i,o,u,a,e,i,o,u,y,a,e,i,o,u,a,e,i,o,u");
+    return str_replace($search, $replace, $msg);
 }
 
 ?>

@@ -22,6 +22,7 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 package fr.victorb.mobile.vgps.controller;
 
+import fr.victorb.mobile.utils.GpsUtil;
 import fr.victorb.mobile.vgps.gps.GpsPosition;
 import fr.victorb.mobile.vgps.ui.MainMenu;
 import fr.victorb.mobile.vgps.bluetooth.BluetoothFinder;
@@ -169,6 +170,8 @@ public class Controller implements BluetoothFinderListener, GpsListener {
     gps.start(configuration.getGpsUrl());                       
     recordState = RecordState.START_REQUEST;
     gps.addPositionListener(this);
+    logAppend("START_REQUEST");
+    GpsUtil.requestNetworkPermission();
     }
    
     
@@ -188,6 +191,7 @@ public class Controller implements BluetoothFinderListener, GpsListener {
         gps.stop();
         gps = null;
         recordState = RecordState.STOP;  
+        logAppend("STOP");
     }
         
     /**
@@ -324,10 +328,12 @@ public class Controller implements BluetoothFinderListener, GpsListener {
                 if (!configuration.getUseAutoMode()) {
                     // Start immediatly when autostart is not used
                     recordState = RecordState.STARTED;
+                    logAppend("STARTED");
                     startRecording();
                 } else {
                     previousTs = position.time.getTimestamp();
                     recordState = RecordState.START_PENDING;
+                    logAppend("START_PENDING");
                 }
                 break;
             case RecordState.START_PENDING:
@@ -335,7 +341,8 @@ public class Controller implements BluetoothFinderListener, GpsListener {
                     if ((position.time.getTimestamp() - previousTs) > Constant.AUTOSTARTTIME) {
                         // Start recording after the speed has been high enough for some time
                         recordState = RecordState.STARTED;
-                        startRecording();                        
+                        startRecording();             
+                        logAppend("STARTED");
                     }
                 } else {
                     previousTs = position.time.getTimestamp();

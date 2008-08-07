@@ -153,8 +153,8 @@ public class MainMenu extends List implements CommandListener, GpsListener {
                 case 8:
                     try {
                         Alert alert = new Alert("VGpsMobile", controller.getVersion() + 
-                                                "\nby Victor Berchet\nwww.victorb.fr\n\n" + 
-                                                "METAR by geonames.org\n" +
+                                                " - by Victor Berchet - www.victorb.fr - " + 
+                                                "METAR by geonames.org - " +
                                                 "Flying sites by paraglidingearth.com", 
                                                 Image.createImage(this.getClass().getResourceAsStream("/res/icon_big.png")), null);
                         alert.setTimeout(Alert.FOREVER);

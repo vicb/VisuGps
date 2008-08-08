@@ -90,7 +90,7 @@ var VisuGps = new Class({
 
             // Create the map, add standard controls and keyboard handler
             this.map = new google.maps.Map2(map);
-            this.map.setCenter(new google.maps.LatLng(46.73986, 2.17529), 5, G_HYBRID_MAP);
+            this.map.setCenter(new google.maps.LatLng(46.73986, 2.17529), 5, G_PHYSICAL_MAP);
             this.map.addMapType(G_PHYSICAL_MAP);
             this.map.addMapType(G_SATELLITE_3D_MAP);
             this.map.addControl(new google.maps.MapTypeControl());
@@ -199,6 +199,7 @@ var VisuGps = new Class({
 
             // Add event handlers
             google.maps.Event.addListener(this.map, 'moveend', this._displayTrack.bind(this));
+            google.maps.Event.addListener(this.map, 'maptypechanged', this._mapTypeChanged.bind(this));
             window.addEvent('resize', this._resize.bind(this));
 
             this.mapTitle = [this.track.date.day, this.track.date.month, this.track.date.year].join('/');
@@ -222,6 +223,8 @@ var VisuGps = new Class({
             $('vgps-anim').getParent().setStyle('height', h);
 
             this._initGraph();
+            
+            this.map.getEarthInstance(this._gePluginInit.bind(this));
 
             // Remove the top most overlay from the map
             if (load) {
@@ -235,6 +238,55 @@ var VisuGps = new Class({
             google.maps.Event.addListener(this.map, 'singlerightclick', this._rightClick.bind(this));
         }
         
+    },
+    /*
+    Property: _gePluginInit
+            Initialize GE plugin (add 3D track)
+
+    Arguments:
+            ge - GEPlugin object
+
+    
+    */
+    _gePluginInit : function(ge) {
+        if (!$defined(this.track.kmlUrl)) {
+            var lineString;
+            lineString = ge.createLineString('');
+            var lineStringPlacemark = ge.createPlacemark('');
+            lineStringPlacemark.setGeometry(lineString);
+            lineString.setTessellate(false);
+            var text = '';
+            for (var i = 0; i < this.track.nbTrackPt; i ++) {
+                lineString.getCoordinates().pushLatLngAlt(this.track.lat[i],
+                                                          this.track.lon[i],
+                                                          this.track.elev[(i * (this.track.nbChartPt - 1) / (this.track.nbTrackPt - 1)).round()]);
+            }
+            ge.getFeatures().appendChild(lineStringPlacemark);
+            lineString.setAltitudeMode(ge.ALTITUDE_ABSOLUTE);
+            
+            if (!lineStringPlacemark.getStyleSelector()) {
+                lineStringPlacemark.setStyleSelector(ge.createStyle(''));
+            }
+            var lineStyle = lineStringPlacemark.getStyleSelector().getLineStyle();
+            lineStyle.setWidth(1);
+            lineStyle.getColor().set('ff0000ff');
+        }
+    },
+     /*
+    Property: _mapTypeChanged
+            Trigerred when map type is changed.
+            2D track is removed when switching to GE plugin.
+    */
+    _mapTypeChanged : function() {
+        var type = this.map.getCurrentMapType();
+        
+        if (type == G_SATELLITE_3D_MAP) {
+            if (this.path) {
+                this.map.removeOverlay(this.path);
+            }
+        } else {
+            this._displayTrack();
+        }
     },
     /*
     Property: downloadTrack

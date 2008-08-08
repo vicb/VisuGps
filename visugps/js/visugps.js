@@ -598,7 +598,7 @@ var VisuGps = new Class({
             Display the track.
     */
     _displayTrack : function() {
-        if (this.points.length < 5) return;
+        if (this.points.length < 5 || this.map.getCurrentMapType() == G_SATELLITE_3D_MAP) return;
         var path = new google.maps.Polyline(this._getReducedTrack(), "#ff0000", 1, 1, {'clickable' : false});
         // Remove the click listener from existing track
         if (this.path) {

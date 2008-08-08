@@ -266,6 +266,8 @@ var VisuGps = new Class({
             ge.getFeatures().appendChild(lineStringPlacemark);
             lineString.setAltitudeMode(ge.ALTITUDE_ABSOLUTE);
             
+            google.earth.addEventListener(ge.getWindow(), "mousedown", this._leftClick3d.bind(this));
+
             if (!lineStringPlacemark.getStyleSelector()) {
                 lineStringPlacemark.setStyleSelector(ge.createStyle(''));
             }
@@ -298,6 +300,17 @@ var VisuGps = new Class({
             placemark.setGeometry(this.marker3d);
             this.marker3d.setAltitudeMode(ge.ALTITUDE_ABSOLUTE);
         }
+    },
+    /*
+    Property: _leftClick3d (INTERNAL)
+            - Move the marker to the track point closest to the mouse click or
+
+    Arguments:
+            kmlEvent: Event description
+    */
+    _leftClick3d : function(kmlEvent) {
+        var point = new google.maps.LatLng(kmlEvent.getLatitude(), kmlEvent.getLongitude());
+        this._leftClick(null, point);
     },
      /*
     Property: _mapTypeChanged
@@ -521,6 +534,11 @@ var VisuGps = new Class({
                         }
                     }
                     this.marker.setPoint(this.points[bestIdx]);
+                    if (this.marker3d) {
+                        this.marker3d.setLatLngAlt(this.track.lat[bestIdx],
+                                                   this.track.lon[bestIdx],
+                                                   this.track.elev[(bestIdx * (this.track.nbChartPt - 1) / (this.track.nbTrackPt - 1)).round()]);
+                    }
                     var pos = (1000 * bestIdx / this.track.nbTrackPt).toInt();
                     this.charts.setCursor(pos);
                     this._showInfo(pos);

@@ -70,6 +70,7 @@ var VisuGps = new Class({
         this.points = [];
         this.charts = null;
         this.marker = {};
+        this.marker3d = null;
         this.path = null;
         this.timer = null;
         this.infoCtrl = {};
@@ -250,6 +251,7 @@ var VisuGps = new Class({
     */
     _gePluginInit : function(ge) {
         if (!$defined(this.track.kmlUrl)) {
+            // Create the 3d track
             var lineString;
             lineString = ge.createLineString('');
             var lineStringPlacemark = ge.createPlacemark('');
@@ -270,6 +272,31 @@ var VisuGps = new Class({
             var lineStyle = lineStringPlacemark.getStyleSelector().getLineStyle();
             lineStyle.setWidth(1);
             lineStyle.getColor().set('ff0000ff');
+            // Create the 3d marker
+            var placemark = ge.createPlacemark('Pilot');
+            ge.getFeatures().appendChild(placemark);
+            var normal = ge.createIcon('');
+            normal.setHref('http://maps.google.com/mapfiles/kml/paddle/red-circle.png');
+            var iconNormal = ge.createStyle('');
+            iconNormal.getIconStyle().setIcon(normal);
+            iconNormal.getIconStyle().getHotSpot().set(.5, ge.UNITS_FRACTION, 0, ge.UNITS_FRACTION);
+            var highlight = ge.createIcon('');
+            highlight.setHref('http://maps.google.com/mapfiles/kml/paddle/red-circle.png');
+            var iconHighlight = ge.createStyle('');
+            iconHighlight.getIconStyle().setIcon(highlight);
+            iconHighlight.getIconStyle().getHotSpot().set(.5, ge.UNITS_FRACTION, 0, ge.UNITS_FRACTION);
+            var styleMap = ge.createStyleMap('');
+            styleMap.setNormalStyle(iconNormal);
+            styleMap.setHighlightStyle(iconHighlight);
+            placemark.setStyleSelector(styleMap);
+
+            // Create point
+            this.marker3d = ge.createPoint('');
+            this.marker3d.setLatLngAlt(this.track.lat[0],
+                                       this.track.lon[0],
+                                       this.track.elev[0]);
+            placemark.setGeometry(this.marker3d);
+            this.marker3d.setAltitudeMode(ge.ALTITUDE_ABSOLUTE);
         }
     },
      /*
@@ -278,9 +305,7 @@ var VisuGps = new Class({
             2D track is removed when switching to GE plugin.
     */
     _mapTypeChanged : function() {
-        var type = this.map.getCurrentMapType();
-        
-        if (type == G_SATELLITE_3D_MAP) {
+        if (this.map.getCurrentMapType() == G_SATELLITE_3D_MAP) {
             if (this.path) {
                 this.map.removeOverlay(this.path);
             }
@@ -616,9 +641,19 @@ var VisuGps = new Class({
         center = $pick(center, false);
         var idx = (pos * (this.track.nbTrackPt - 1) / 1000).toInt();
         this.marker.setPoint(this.points[idx]);
+        if (this.marker3d) {
+            this.marker3d.setLatLngAlt(this.track.lat[idx],
+                                       this.track.lon[idx],
+                                       this.track.elev[(idx * (this.track.nbChartPt - 1) / (this.track.nbTrackPt - 1)).round()]);
+        }
         this._showInfo(pos);
         if (center) {
             this.map.panTo(this.points[idx]);
+        }
+        if (this.map.getCurrentMapType() == G_SATELLITE_3D_MAP) {
+            this.marker.hide();
+        } else {
+            this.marker.show();
         }
     },
     /*

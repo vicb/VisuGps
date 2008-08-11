@@ -80,6 +80,7 @@ var VisuGps = new Class({
         this.animPos = 0;
         this.animDelay = {'min':1, 'max':120, 'val': 60};
         this.mapTitle = 'VisuGps';
+        this.ge = null;
 
         this.distPts = {};
         this.distState = 0;
@@ -241,7 +242,7 @@ var VisuGps = new Class({
         
     },
     /*
-    Property: _gePluginInit
+    Property: _gePluginInit (INTERNAL)
             Initialize GE plugin (add 3D track)
 
     Arguments:
@@ -251,6 +252,7 @@ var VisuGps = new Class({
     */
     _gePluginInit : function(ge) {
         if (!$defined(this.track.kmlUrl)) {
+            this.ge = ge;
             // Create the 3d track
             var lineString;
             lineString = ge.createLineString('');
@@ -261,7 +263,7 @@ var VisuGps = new Class({
             for (var i = 0; i < this.track.nbTrackPt; i ++) {
                 lineString.getCoordinates().pushLatLngAlt(this.track.lat[i],
                                                           this.track.lon[i],
-                                                          this.track.elev[(i * (this.track.nbChartPt - 1) / (this.track.nbTrackPt - 1)).round()]);
+                                                          this._getTrackElevation(i));
             }
             ge.getFeatures().appendChild(lineStringPlacemark);
             lineString.setAltitudeMode(ge.ALTITUDE_ABSOLUTE);
@@ -313,7 +315,7 @@ var VisuGps = new Class({
         this._leftClick(null, point);
     },
      /*
-    Property: _mapTypeChanged
+    Property: _mapTypeChanged (INTERNAL)
             Trigerred when map type is changed.
             2D track is removed when switching to GE plugin.
     */
@@ -325,6 +327,23 @@ var VisuGps = new Class({
         } else {
             this._displayTrack();
         }
+    },
+     /*
+    Property: _getTrackElevation (INTERNAL)
+            Return interpolated elevation (elevation data are less accurate than position data)
+            
+    Arguments:
+            index: index (0 ... nbTrackPt - 1)
+            
+    Returns:
+            interpolated track elevation
+    */
+    _getTrackElevation : function(index) {
+        var index = index * (this.track.nbChartPt - 1) / (this.track.nbTrackPt - 1);
+        var i = index.round();
+        var j = i + 1;
+        if (j >= this.track.nbChartPt) j = this.track.nbChartPt - 1;
+        return this.track.elev[i] + (index - i) * (this.track.elev[j] - this.track.elev[i]);
     },
     /*
     Property: downloadTrack
@@ -537,7 +556,7 @@ var VisuGps = new Class({
                     if (this.marker3d) {
                         this.marker3d.setLatLngAlt(this.track.lat[bestIdx],
                                                    this.track.lon[bestIdx],
-                                                   this.track.elev[(bestIdx * (this.track.nbChartPt - 1) / (this.track.nbTrackPt - 1)).round()]);
+                                                   this._getTrackElevation(bestIdx));
                     }
                     var pos = (1000 * bestIdx / this.track.nbTrackPt).toInt();
                     this.charts.setCursor(pos);
@@ -662,11 +681,20 @@ var VisuGps = new Class({
         if (this.marker3d) {
             this.marker3d.setLatLngAlt(this.track.lat[idx],
                                        this.track.lon[idx],
-                                       this.track.elev[(idx * (this.track.nbChartPt - 1) / (this.track.nbTrackPt - 1)).round()]);
+                                       this._getTrackElevation(idx));
         }
-        this._showInfo(pos);
-        if (center) {
-            this.map.panTo(this.points[idx]);
+        if (this.map.getCurrentMapType() == G_SATELLITE_3D_MAP) {
+            if (center) {
+                var lookAt = this.ge.getView().copyAsLookAt(this.ge.ALTITUDE_ABSOLUTE);
+                lookAt.setLatitude(this.track.lat[idx]);
+                lookAt.setLongitude(this.track.lon[idx]);
+                this.ge.getView().setAbstractView(lookAt);
+            }
+        } else {
+            this._showInfo(pos);
+            if (center) {
+                this.map.panTo(this.points[idx]);
+            }
         }
         if (this.map.getCurrentMapType() == G_SATELLITE_3D_MAP) {
             this.marker.hide();

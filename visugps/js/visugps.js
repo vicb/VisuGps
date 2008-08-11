@@ -71,6 +71,8 @@ var VisuGps = new Class({
         this.charts = null;
         this.marker = {};
         this.marker3d = null;
+        this.model3d = null;
+        this.orientation = null;
         this.path = null;
         this.timer = null;
         this.infoCtrl = {};
@@ -279,33 +281,61 @@ var VisuGps = new Class({
             // Create the 3d marker
             var placemark = ge.createPlacemark('Pilot');
             ge.getFeatures().appendChild(placemark);
-            var normal = ge.createIcon('');
-            normal.setHref('http://maps.google.com/mapfiles/kml/paddle/red-circle.png');
-            var iconNormal = ge.createStyle('');
-            iconNormal.getIconStyle().setIcon(normal);
-            iconNormal.getIconStyle().getHotSpot().set(.5, ge.UNITS_FRACTION, 0, ge.UNITS_FRACTION);
-            var highlight = ge.createIcon('');
-            highlight.setHref('http://maps.google.com/mapfiles/kml/paddle/red-circle.png');
-            var iconHighlight = ge.createStyle('');
-            iconHighlight.getIconStyle().setIcon(highlight);
-            iconHighlight.getIconStyle().getHotSpot().set(.5, ge.UNITS_FRACTION, 0, ge.UNITS_FRACTION);
-            var styleMap = ge.createStyleMap('');
-            styleMap.setNormalStyle(iconNormal);
-            styleMap.setHighlightStyle(iconHighlight);
-            placemark.setStyleSelector(styleMap);
-
-            // Create point
-            this.marker3d = ge.createPoint('');
-            this.marker3d.setLatLngAlt(this.track.lat[0],
-                                       this.track.lon[0],
-                                       this.track.elev[0]);
-            placemark.setGeometry(this.marker3d);
-            this.marker3d.setAltitudeMode(ge.ALTITUDE_ABSOLUTE);
+            this.model3d = ge.createModel('');
+            var link = ge.createLink('');
+            link.setHref('http://victorb.fr/visugps/img/paraglider.dae');
+            this.model3d.setLink(link);
+            placemark.setGeometry(this.model3d);
+            this.marker3d = ge.createLocation('');
+            this.model3d.setLocation(this.marker3d);
+            this.orientation = ge.createOrientation('');
+            this.model3d.setOrientation(this.orientation);
+            var scale = ge.createScale('');
+            scale.set(50, 50, 50);
+            this.model3d.setScale(scale);
+            this.model3d.setAltitudeMode(ge.ALTITUDE_ABSOLUTE);
+            this._set3dPosition(0);
         }
     },
     /*
+    Property: _set3dPosition (INTERNAL)
+            - Move the 3d marker on the track
+
+    Arguments:
+            index: 3d marker position (0 ... NbTrackPoint)
+    */
+    _set3dPosition : function(index) {
+        // Set the marker position
+        this.marker3d.setLatLngAlt(this.track.lat[index],
+                                   this.track.lon[index],
+                                   this._getTrackElevation(index));
+        // Set the marker heading
+        var i = index + 1;
+        if (i >= this.track.nbTrackPt) j = this.track.nbTrackPt - 1;
+        var angle;
+        var deltaLat = this.track.lat[i] - this.track.lat[index];
+        var deltaLon = this.track.lon[i] - this.track.lon[index];
+        if (deltaLon == 0) {
+          angle = deltaLat > 0?Math.PI / 2: 3 * Math.PI / 2;
+        } else {
+          angle = Math.atan(deltaLat / deltaLon);
+          if (deltaLon < 0) {
+              angle = Math.PI + angle;
+          }
+        }
+        // Convert angle (radian) to heading (degree, 0deg = North)
+        angle = angle * 180 / Math.PI;
+        angle = 90 - angle;
+        // Apply model origin (255deg)
+        angle = angle + 255;
+        if (angle < 0) angle += 360;
+        if (angle > 360) angle -= 360;
+        this.orientation.setHeading(angle);
+    },
+
+    /*
     Property: _leftClick3d (INTERNAL)
-            - Move the marker to the track point closest to the mouse click or
+            - Move the marker to the track point closest to the mouse click
 
     Arguments:
             kmlEvent: Event description
@@ -339,7 +369,7 @@ var VisuGps = new Class({
             interpolated track elevation
     */
     _getTrackElevation : function(index) {
-        var index = index * (this.track.nbChartPt - 1) / (this.track.nbTrackPt - 1);
+        index = index * (this.track.nbChartPt - 1) / (this.track.nbTrackPt - 1);
         var i = index.round();
         var j = i + 1;
         if (j >= this.track.nbChartPt) j = this.track.nbChartPt - 1;
@@ -554,9 +584,7 @@ var VisuGps = new Class({
                     }
                     this.marker.setPoint(this.points[bestIdx]);
                     if (this.marker3d) {
-                        this.marker3d.setLatLngAlt(this.track.lat[bestIdx],
-                                                   this.track.lon[bestIdx],
-                                                   this._getTrackElevation(bestIdx));
+                        this._set3dPosition(bestIdx);
                     }
                     var pos = (1000 * bestIdx / this.track.nbTrackPt).toInt();
                     this.charts.setCursor(pos);
@@ -679,9 +707,7 @@ var VisuGps = new Class({
         var idx = (pos * (this.track.nbTrackPt - 1) / 1000).toInt();
         this.marker.setPoint(this.points[idx]);
         if (this.marker3d) {
-            this.marker3d.setLatLngAlt(this.track.lat[idx],
-                                       this.track.lon[idx],
-                                       this._getTrackElevation(idx));
+            this._set3dPosition(idx);
         }
         if (this.map.getCurrentMapType() == G_SATELLITE_3D_MAP) {
             if (center) {

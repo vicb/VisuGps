@@ -19,10 +19,10 @@ Events:
 */
 
 var SliderProgress = new Class({
-
+    Implements: [Events, Options],
     options: {
-        onChange: Class.empty,
-        onComplete: Class.empty,
+        onChange: $empty,
+        onComplete: $empty,
         mode: 'horizontal',
         steps: 100,
         color: '#f00',
@@ -58,7 +58,7 @@ var SliderProgress = new Class({
                                                    'float' : 'left',
                                                    'background' : opt.color,
                                                    'opacity' : opt.opacity}
-                                      }).injectInside(this.element);
+                                      }).inject(this.element);
 
         this.value = 0;
 
@@ -111,7 +111,7 @@ var SliderProgress = new Class({
     },
 
     _toStep: function(position){
-        return Math.round(position / this.dim[this.valStyle] * this.options.steps);
+        return (position / this.dim[this.valStyle] * this.options.steps).round();
     },
 
     _toPosition: function(value){
@@ -143,5 +143,3 @@ var SliderProgress = new Class({
     }
 
 });
-
-SliderProgress.implement(new Events, new Options);

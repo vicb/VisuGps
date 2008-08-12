@@ -53,7 +53,7 @@ var CanvasChartPainter = new Class({
 
         this.canvas = new Element('canvas', {'styles' : { 'width' : this.w,
                                                           'height' : this.h}
-                                            }).injectInside(el);
+                                            }).inject(el);
         this.canvas.width  = this.w;
         this.canvas.height = this.h;
 
@@ -84,13 +84,12 @@ var CanvasChartPainter = new Class({
                                      'class' : 'legend'
                                     });
     
-        list = new Element('ul').injectInside(legend.injectInside(this.el));
+        list = new Element('ul').inject(legend.inject(this.el));
     
         series.each(function(serie) {
             new Element('span', {'styles' : {'color' : 'black'}})
                 .appendText(serie.label)
-                .injectInside(new Element('li', {'styles': {'color' : serie.color}})
-                                  .injectInside(list));
+                .inject(new Element('li', {'styles': {'color' : serie.color}}).inject(list));
         });
     
         this.legend = legend.setStyle('top', this.charty + (this.charth - legend.offsetHeight ) / 2);
@@ -108,7 +107,7 @@ var CanvasChartPainter = new Class({
         var yLblIn = (labelPos.y.toLowerCase() == 'in');
     
         /* Calculate step size and rounding precision */
-        var multiplier = Math.pow(10, precision);
+        var multiplier = (10).pow(precision);
         var step = this.range / (ygd - 1);
     
         /* Create container */
@@ -116,7 +115,7 @@ var CanvasChartPainter = new Class({
                                                    'left' : yLblIn?10:0,
                                                    'top' : 0,
                                                    'textAlign' : 'right'}
-                                      }).injectInside(this.el);
+                                      }).inject(this.el);
     
         /* Draw labels and points */
         this.ctx.fillStyle = 'black';
@@ -124,22 +123,22 @@ var CanvasChartPainter = new Class({
         var items = [];
         for (n = 0, i = this.ymax; (i > this.ymin) && (n < ygd - 1); i -= step, n++) {
             item = new Element('span')
-                       .setText(parseInt(i * multiplier) / multiplier)
-                       .injectInside(axis);
+                       .set('text', parseInt(i * multiplier) / multiplier)
+                       .inject(axis);
             items.push([i, item]);
-            w = Math.max(w, item.offsetWidth);
+            w = (w).max(item.offsetWidth);
         }
     
         /* Draw last label and point (lower left corner of chart) */
         item = new Element('span')
-                   .setText(this.ymin)
-                   .injectInside(axis);
+                   .set('text', this.ymin)
+                   .inject(axis);
         items.push([this.ymin, item]);
-        w = Math.max(w, item.offsetWidth);
+        w = (w).max(item.offsetWidth);
     
         /* Recalculate chart width and position based on labels and legend */
         var lblWidth = yLblIn?5:w + 5;
-        var lblHeight = xLblIn?Math.max(item.offsetHeight / 2, 5):item.offsetHeight + 5;
+        var lblHeight = xLblIn?(item.offsetHeight / 2).max(5):item.offsetHeight + 5;
         this.chartx = lblWidth;
         this.charty = item.offsetHeight / 2;
         this.charth = this.h - (lblHeight + this.charty);
@@ -176,7 +175,7 @@ var CanvasChartPainter = new Class({
         var xLblIn = (labelPos.x.toLowerCase() == 'in');
 
         /* Calculate offset, step size and rounding precision */
-        var multiplier = Math.pow(10, precision);
+        var multiplier = (10).pow(precision);
         var n = this.chartw / (xgd - 1);
     
         /* Create container */
@@ -184,21 +183,20 @@ var CanvasChartPainter = new Class({
                                               'left' : 0,
                                               'top' : this.charty + this.charth + 5,
                                               'width' : this.w }
-                                  }).injectInside(this.el);
+                                  }).inject(this.el);
     
         /* Draw labels and points */
         this.ctx.fillStyle = 'black';
         for (i = 0; i < xgd; i++) {
             item = new Element('span')
-                       .setText(labels[i])
-                       .injectInside(axis);
+                       .set('text', labels[i])
+                       .inject(axis);
             x = this.chartx + (n * i);
             tx = x - (item.offsetWidth / 2);
-            tx = Math.max(tx, this.chartx);
-            tx = Math.min(tx, this.chartx + this.chartw - item.offsetWidth)
+            tx = tx.limit(this.chartx, this.chartx + this.chartw - item.offsetWidth);
             item.setStyles({'position' : 'absolute',
                             'left' : tx,
-                            'top' : '0px'});
+                            'top' : 0});
             this.ctx.fillRect(x, this.charty + this.charth, 1, 5);
         }
     
@@ -209,8 +207,8 @@ var CanvasChartPainter = new Class({
 
     drawAxis : function() {
         this.ctx.fillStyle = 'black';
-        this.ctx.fillRect(this.chartx, this.charty, 1, this.charth-1);
-        this.ctx.fillRect(this.chartx, this.charty + this.charth - 1, this.chartw+1, 1);
+        this.ctx.fillRect(this.chartx, this.charty, 1, this.charth - 1);
+        this.ctx.fillRect(this.chartx, this.charty + this.charth - 1, this.chartw + 1, 1);
     },
 
     drawBackground : function() {
@@ -242,7 +240,7 @@ var CanvasChartPainter = new Class({
     
         /* Determine distance between points and offset */
         var n = this.range / this.charth;
-        var yoffset = (this.ymin / n);
+        var yoffset = this.ymin / n;
 
         var len = values.length;
         if (len) {
@@ -321,8 +319,8 @@ var CanvasChartPainter = new Class({
                 this.ctx.beginPath();
                 this.ctx.moveTo(x, this.charty + this.charth-1);
                 this.ctx.lineTo(x, y );
-                this.ctx.lineTo(x+width, y);
-                this.ctx.lineTo(x+width, this.charty + this.charth-1);
+                this.ctx.lineTo(x + width, y);
+                this.ctx.lineTo(x + width, this.charty + this.charth - 1);
                 this.ctx.closePath();
                 this.ctx.fill();
     

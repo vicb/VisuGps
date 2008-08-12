@@ -38,6 +38,7 @@ Class: Chart
         Draw line, area, stacked and bar charts.
 */
 var Chart = new Class({
+    Implements : Options,
     options : {
         xGridDensity : 0,
         yGridDensity : 0,
@@ -167,7 +168,7 @@ var Chart = new Class({
         for (i = series.length - 2; i >= 0; i--) {
             o  = series[i].values;
             o2 = series[i+1].values;
-            len = Math.max(o2.length, o.length);
+            len = o2.length.max(o.length);
             for (j = 0; j < len; j++) {
                 if ((o[j]) && (!o2[j])) { continue; }
                 if ((!o[j]) && (o2[j])) { o[j] = o2[j]; }
@@ -181,11 +182,11 @@ var Chart = new Class({
 
         /* Determine maximum number of values, ymin and ymax */
         series.each(function(serie) {
-            xlen = Math.max(xlen, serie.values.length);
+            xlen = xlen.max(serie.values.length);
             for (i = serie.values.length - 1; i >= 0; i--) {
                 o = serie.values[i];
-                ymin = Math.min(ymin, o);
-                ymax = Math.max(ymax, o);
+                ymin = ymin.min(o);
+                ymax = ymax.max(o);
             }
         });
         if (ymin == ymax) {
@@ -278,5 +279,3 @@ var Chart = new Class({
     }
 
 });
-
-Chart.implement(new Options);

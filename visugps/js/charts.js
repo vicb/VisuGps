@@ -33,12 +33,13 @@ Class: Charts
        Overlap multiple charts with programmable opacity and z-order
 */
 var Charts = new Class({
+    Implements: [Events, Options],
     options: {
         cursor : true,
         keySupport : true,
-        onMouseMove: Class.empty,
-        onMouseDown: Class.empty,
-        onMouseWheel: Class.empty
+        onMouseMove: $empty,
+        onMouseDown: $empty,
+        onMouseWheel: $empty
     },
     /*
     Property: initialize
@@ -70,7 +71,7 @@ var Charts = new Class({
                                                               'z-index' : 80,
                                                               'visibility' : 'hidden'}
                                                 }
-                                        ).injectInside($(div))
+                                        ).inject($(div))
                                          .addEvents({'mousedown' : this._down.bindWithEvent(this),
                                                      'mousewheel' : this._wheel.bindWithEvent(this)});
         }
@@ -81,18 +82,20 @@ var Charts = new Class({
 
         if (this.options.keySupport) document.addEvent('keydown', this._move.bindWithEvent(this));
 
-        function stopEvent(event) {(new Event(event)).stop()};
+        function stopEvent(event, notOnSort) {
+          new Event(event).stop();
+        };
+        
+        this.sliderPanel = new Element('div', {'events': {'mousedown' : stopEvent,
+                                                          'mousewheel' : stopEvent},
+                                               'id' : 'vgps-sliderPanel'
+                                              }).inject($(div));
 
-        this.sliders = new Element('ul', {'styles': {'position' : 'absolute',
-                                                     'top' : 0,
-                                                     'right' : 0,
-                                                     'width': '13ex',                                                     
-                                                     'background':'#FFC',
-                                                     'border': '1px solid #333'},
-                                          'events': {'mousemove' : stopEvent,
-                                                     'mousedown' : stopEvent,
-                                                     'mousewheel' : stopEvent}
-                                         }).injectInside($(div));
+        var handle = new Element('div', {'id' : 'sliderPanel-handle'}).inject(this.sliderPanel);
+        this.sliders = new Element('div').inject(this.sliderPanel);
+        
+        this.sliderPanel.makeDraggable({'handle': handle, 'container' : this.chartDiv});
+                                              
     },
     /*
     Property: draw
@@ -104,15 +107,16 @@ var Charts = new Class({
                 chart.draw();
             });
             if (!this.sortable) {
-              function setZOrder() {
+              function stopSort() {
                     var order = this.sortable.serialize();
                     order.each(function(item, index) {
-                        $('div-sld-' + item).setStyle('z-index', 20 - index);
+                        $(item.replace('slider', 'chart')).setStyle('z-index', 20 - index);
                     });
                 };
 
-              this.sortable = new Sortables(this.sliders, {'handles': '.vgps-legend',
-                                                           'onComplete': setZOrder.bind(this)
+              this.sortable = new Sortables(this.sliders, {'handle': '.handle',
+                                                           'onComplete': stopSort.bind(this),
+                                                           'constrain': this.sliders
                                                           });
             }
             if (this.options.cursor) {
@@ -144,23 +148,28 @@ var Charts = new Class({
             div.setStyle('opacity', opacity / 100);
         }
 
-        var id = 'sld-' + this.charts.length;
+        var idNum = this.charts.length;
 
         var div = new Element('div', {'class': 'chart vgps-chart',
                                       'styles' : {'opacity' : opacity},
-                                      'id' : 'div-' + id})
-                             .injectTop(this.chartDiv);
+                                      'id' : 'chart-' + idNum})
+                             .inject(this.chartDiv, 'top');
                              
         var chart = new Chart(div, $pick(options, {}));
 
         this.charts.push(chart);
-
-        var slider = new Element('li').setHTML('<div id="' + id + '" class="vgps-slider"></div>' +
-                                               '<span class="vgps-legend">' + label + '</span>')
-                                      .injectInside(this.sliders);
-
-        new SliderProgress(id, {'color': color,
-                                'onChange': setOpacity}).set(opacity * 100);
+        
+        new Element('table', {'id': 'slider-' + idNum}).adopt(
+            new Element('tbody').adopt(
+                new Element('tr').adopt(
+                    [new Element('td', {'class': 'handle',
+                                                 'id': 'hanlde-' + idNum,
+                                                 'html': label}),
+                     new Element('td', {'class': 'bar',
+                                        'id': 'bar-' + idNum})]))).inject(this.sliders);
+                                        
+        new SliderProgress($('bar-' + idNum), {'color': color,
+                                               'onChange': setOpacity}).set(opacity * 100);
 
         return chart;
     },
@@ -175,7 +184,7 @@ var Charts = new Class({
         if (this.options.cursor && this.charts.length) {
             var dim = this.charts[0].getCoordinates();
             this.position = pos = pos.limit(0, 1000);
-            var left = dim.left + this.chartDiv.getLeft();
+            var left = dim.left + this.chartDiv.getPosition().x;
             var x = (pos * dim.width / 1000) + left;
             this.cursorDiv.setStyle('left', x);
             this.showCursor();
@@ -220,10 +229,9 @@ var Charts = new Class({
                 offset = event.shift?10 * offset:offset;
                 pos += offset;
             } else {
-                event.stop();
                 var x = event.page.x;
                 var dim = this.charts[0].getCoordinates();
-                var left = dim.left + this.chartDiv.getLeft();
+                var left = dim.left + this.chartDiv.getPosition().x;
                 x = x < left?left:x;
                 x = x > (left + dim.width)?left + dim.width:x;
                 pos = (1000 * (x - left) / dim.width).toInt();
@@ -248,5 +256,3 @@ var Charts = new Class({
         this.fireEvent('onMouseWheel', [this.position, event.wheel]);
     }
 });
-
-Charts.implement(new Events, new Options);

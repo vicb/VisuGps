@@ -6,7 +6,7 @@
 }
 
 .vgps-info p {
- margin:1 px;
+ margin: 1px;
 }
 
 #vgps-anim {
@@ -29,7 +29,7 @@
  background: #eee;
  height: 100%;
  width: 6ex;
- border: 0 solid #555;
+ border: 1px solid #555;
 }
 
 /* Charts */
@@ -49,33 +49,48 @@
  left:0;
 }
 
-.vgps-slider {
+/* Sliders */
+
+#vgps-sliderPanel {
+ width: 12ex;
+ z-index: 100;
+ font: 10px Verdana, Arial, sans-serif;
+ padding: 0;
+ margin: 0;
+ position: absolute;
+ top: 2px;
+ right: 2px;
+ background: #FFC;
+ border: 1px solid #333;
+}
+
+#sliderPanel-handle {
+ height: 8px;
+ width: 100%;
+ margin: 0;
+ margin-bottom: 3px;
+ border-bottom: 1px solid #333;
+ padding: 0;
+ background: #CC9;
+ cursor: move;
+}
+
+#vgps-sliderPanel table {
+  border-spacing: 1px;
+}
+
+#vgps-sliderPanel .bar {
  background: #eee;
  height: 2ex;
  width: 6ex;
- border: 0px solid #555;
- margin: 2px;
- margin-right: 3px;
- float: right;
+ border: 1px solid #555;
+ margin: 0;
+ padding: 0;
 }
 
-.vgps-legend {
- float: right;
+#vgps-sliderPanel .handle {
  font-weight: bold;
  cursor: move;
- width: 3ex;
+ width: 4ex;
  margin-right: 1ex;
-}
-
-ul, li {
- text-align:left;
- font:10px Verdana, Arial, sans-serif;
- list-style:none;
- padding:0;
- margin:0;
- z-index: 100;
-}
-
-li {
- clear:both;
 }

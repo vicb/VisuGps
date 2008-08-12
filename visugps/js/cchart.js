@@ -33,12 +33,14 @@ Class: CChart
         Extend the Chart class <http://webfx.eae.net/dhtml/chart/chart.html>
         by ading a moving cursor
 */
-var CChart = Chart.extend({
+var CChart = new Class({
+    Extends: Chart,
+    Implements: Events,
     options: {
         cursor : true,
-        onMouseMove: Class.empty,
-        onMouseDown: Class.empty,
-        onMouseWheel: Class.empty
+        onMouseMove: $empty,
+        onMouseDown: $empty,
+        onMouseWheel: $empty
     },
     /*
     Property: initialize
@@ -65,7 +67,7 @@ var CChart = Chart.extend({
                                                               'z-index' : 50,
                                                               'visibility' : 'hidden'}
                                                 }
-                                        ).injectInside($(div))
+                                        ).inject($(div))
                                          .addEvents({'mousedown' : this._down.bindWithEvent(this),
                                                      'mousewheel' : this._wheel.bindWithEvent(this)});
         }
@@ -97,7 +99,7 @@ var CChart = Chart.extend({
     setCursor: function(pos) {
         if (this.options.cursor) {
             var dim = this.getCoordinates();
-            var left = dim.left + this.chartDiv.getLeft();
+            var left = dim.left + this.chartDiv.getPosition().x;
             var x = (pos * dim.width / 1000) + left;
             this.cursorDiv.setStyle('left', x);
             this.showCursor();
@@ -136,7 +138,7 @@ var CChart = Chart.extend({
         event.stop();
         var x = event.page.x;
         var dim = this.getCoordinates();
-        var left = dim.left + this.chartDiv.getLeft();
+        var left = dim.left + this.chartDiv.getPosition().x;
         x = x < left?left:x;
         x = x > (left + dim.width)?left + dim.width:x;
         this.position = (1000 * (x - left) / dim.width).toInt();
@@ -158,5 +160,3 @@ var CChart = Chart.extend({
         this.fireEvent('onMouseWheel', [this.position, event.wheel]);
     }
 });
-
-CChart.implement(new Events);

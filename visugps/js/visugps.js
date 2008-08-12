@@ -31,6 +31,7 @@ Class: VisuGps
         Display a GPS track on top of Google Maps
 */
 var VisuGps = new Class({
+    Implements: Options,
     options: {
         mapDiv : 'map',
         chartDiv : 'vgps-chartcont',
@@ -93,10 +94,12 @@ var VisuGps = new Class({
             if (!map) return;
 
             // Create the map, add standard controls and keyboard handler
-            this.map = new google.maps.Map2(map);
+            this.map = new google.maps.Map2(map, {mapTypes: [G_PHYSICAL_MAP,
+                                                             G_HYBRID_MAP,
+                                                             G_SATELLITE_MAP,
+                                                             G_NORMAL_MAP,
+                                                             G_SATELLITE_3D_MAP]});
             this.map.setCenter(new google.maps.LatLng(46.73986, 2.17529), 5, G_PHYSICAL_MAP);
-            this.map.addMapType(G_PHYSICAL_MAP);
-            this.map.addMapType(G_SATELLITE_3D_MAP);
             this.map.addControl(new google.maps.MapTypeControl());
             this.map.addControl(new google.maps.LargeMapControl());
             this.map.addControl(new google.maps.ScaleControl());
@@ -141,7 +144,7 @@ var VisuGps = new Class({
         
         if ($defined(track.error)) {
             if (load) {
-                load.setHTML(track.error);
+                load.set('html', track.error);
                 new Fx.Styles(load, {transition: Fx.Transitions.linear}).start({'opacity': 0.9, 'background-color': '#ff2222'});
             }
             return;
@@ -158,12 +161,12 @@ var VisuGps = new Class({
                                                      me.map.addOverlay(kml);
                                                      // Remove the top most overlay from the map
                                                      if (load) {
-                                                         load.effect('opacity', {onComplete: function(){load.remove();}}).start(1, 0);
+                                                         load.fade('out');
                                                      }
                                                      // Print a warning for limited support
-                                                     $(me.options.chartDiv).setHTML('<p style="text-align:center;margin:20px;font:10px Verdana, Arial, sans-serif;">' +
-                                                                                    '<b>No graph available for KML files</b>' +
-                                                                                    '</p>');
+                                                     $(me.options.chartDiv).set('html', '<p style="text-align:center;margin:20px;font:10px Verdana, Arial, sans-serif;">' +
+                                                                                        '<b>No graph available for KML files</b>' +
+                                                                                        '</p>');
                                                  }
                                              });
         } else {
@@ -232,7 +235,7 @@ var VisuGps = new Class({
 
             // Remove the top most overlay from the map
             if (load) {
-                load.effect('opacity', {onComplete: function(){load.remove();}}).start(1, 0);
+                load.fade('out');
             }
         }
 
@@ -386,7 +389,8 @@ var VisuGps = new Class({
             setTrack method.
     */
     downloadTrack : function(url) {
-        new Json.Remote('php/vg_proxy.php?track=' + url, {onComplete: this.setTrack.bind(this)}).send();
+        new Request.JSON({'url' : 'php/vg_proxy.php?track=' + url,
+                          onSuccess: this.setTrack.bind(this)}).send();
     },
     /*
     Property: toggleAnim (INTERNAL)
@@ -501,9 +505,9 @@ var VisuGps = new Class({
         var dist = this.distLine.getLength();
         var legend;
         if (dist < 1000) {
-            legend = (Math.round(dist * 100) / 100) + ' m';
+            legend = dist.round(2) + ' m';
         } else {
-            legend = (Math.round(dist / 10) / 100) + ' km';
+            legend = (dist / 1000).round(2) + ' km';
         }
 
         if (this.options.measureCfd) {
@@ -546,7 +550,7 @@ var VisuGps = new Class({
             default:
           }
           if (type !== null) {
-              legend += '<br/>' + type + ' ' + (Math.round(coef * dist / 10) / 100) + ' pts';
+              legend += '<br/>' + type + ' ' + (coef * dist / 1000).round(2) + ' pts';
           }
         }
 
@@ -684,8 +688,8 @@ var VisuGps = new Class({
         for (var i = this.points.length - 1; i >= 0; i--) {
             point = this.points[i];
             if (scrollBuffer.contains(point) &&
-               ((Math.abs(point.lat() - lastLat) > minStepLat) ||
-                (Math.abs(point.lng() - lastLng) > minStepLng))) {
+               (((point.lat() - lastLat).abs() > minStepLat) ||
+                ((point.lng() - lastLng).abs() > minStepLng))) {
                 shortTrack.unshift(point);
                 lastLat = point.lat();
                 lastLng = point.lng();
@@ -763,14 +767,14 @@ var VisuGps = new Class({
     */
     _showInfo : function(pos) {
         var idx = (pos * (this.track.nbChartPt - 1) / 1000).toInt();
-        this.nfo.setHTML(this.track.elev[idx] + 'm [hV]<br/>' +
-                         this.track.elevGnd[idx] + 'm [hS]<br/>' +
-                         Math.max(0, (this.track.elev[idx] - this.track.elevGnd[idx])) + 'm [hR]<br/>' +
-                         this.track.vario[idx] + 'm/s [Vz]<br/>' +
-                         this.track.speed[idx] + 'km/h [Vx]<br/>' +
-                         this._NbToStrW(this.track.time.hour[idx],2) + ':' +
-                         this._NbToStrW(this.track.time.min[idx], 2) + ':' +
-                         this._NbToStrW(this.track.time.sec[idx], 2) + '[Th]');
+        this.nfo.set('html',this.track.elev[idx] + 'm [hV]<br/>' +
+                            this.track.elevGnd[idx] + 'm [hS]<br/>' +
+                            (0).max((this.track.elev[idx] - this.track.elevGnd[idx])) + 'm [hR]<br/>' +
+                            this.track.vario[idx] + 'm/s [Vz]<br/>' +
+                            this.track.speed[idx] + 'km/h [Vx]<br/>' +
+                            this._NbToStrW(this.track.time.hour[idx],2) + ':' +
+                            this._NbToStrW(this.track.time.min[idx], 2) + ':' +
+                            this._NbToStrW(this.track.time.sec[idx], 2) + '[Th]');
     },
     /*
     Property: _createTitleControl (INTERNAL)
@@ -797,8 +801,8 @@ var VisuGps = new Class({
                                                        'background':'#FFFFCC',
                                                        'text-align':'right',
                                                        'opacity': '0.9'}
-                                  }).setHTML(this.title)
-                                    .injectInside(map.getContainer());
+                                  }).set('html', this.title)
+                                    .inject(map.getContainer());
             return this.div;
         }
 
@@ -808,7 +812,7 @@ var VisuGps = new Class({
 
         TitleControl.prototype.setText = function(title) {
             this.title = title;
-            this.div.setHTML(title);
+            this.div.set('html', title);
         }
 
         this.titleCtrl = new TitleControl(title);
@@ -834,11 +838,11 @@ var VisuGps = new Class({
                                                       'opacity':'0.9',
                                                       'text-align':'right',
                                                       'font' : '10px Verdana, Arial, sans-serif'}
-                                }).setHTML('<p class="vgps-info"><strong>...iNfO</strong></p>' +
-                                           '<p class="vgps-info" id="vgps-nfofield"></p>' +
-                                           '<div id="vgps-anim"><div id="vgps-play"></div></div>' +
-                                           '</div>')
-                                  .injectInside(map.getContainer());
+                                }).set('html', '<p class="vgps-info"><strong>...iNfO</strong></p>' +
+                                               '<p class="vgps-info" id="vgps-nfofield"></p>' +
+                                               '<div id="vgps-anim"><div id="vgps-play"></div></div>' +
+                                               '</div>')
+                                  .inject(map.getContainer());
 
             // Add the animation control
             $('vgps-play').addEvent('mousedown', function(event) {(new Event(event)).stop();});
@@ -899,21 +903,21 @@ var VisuGps = new Class({
           EuclideanProjection.prototype=new google.maps.Projection();
 
           EuclideanProjection.prototype.fromLatLngToPixel=function(point, zoom){
-            var size = Math.pow(2, zoom) * 256;
-            var x = Math.round((point.lng() + 180) * size /360);
-            var y = Math.round((90 - point.lat()) * size / 180);
-            return new GPoint(x, y)
+            var size = (2).pow(zoom) * 256;
+            var x = (point.lng() + 180) * size /360;
+            var y = (90 - point.lat()) * size / 180;
+            return new GPoint(x.round(), y.round());
           }
 
           EuclideanProjection.prototype.fromPixelToLatLng=function(point, zoom, unbounded){
-            var size = Math.pow(2, zoom) * 256;
+            var size = (2).pow(zoom) * 256;
             var lng = point.x * 360 / size - 180;
             var lat = 90 - (point.y * 180 / size);
             return new GLatLng(lat, lng, unbounded);
           }
 
           EuclideanProjection.prototype.tileCheckRange=function(tile, zoom, unbounded){
-              var size = Math.pow(2, zoom);
+              var size = (2).pow(zoom);
               if (tile.y < 0 || tile.y >= size) return false;
               if (tile.x < 0 || tile.x >= size) {
                   tile.x %= size;
@@ -923,7 +927,7 @@ var VisuGps = new Class({
           }
 
           EuclideanProjection.prototype.getWrapWidth=function(zoom) {
-              return Math.pow(2, zoom) * 256;
+              return (2).pow(zoom) * 256;
           }
 
           function getDayNumber(day, month, year) {
@@ -978,5 +982,3 @@ var VisuGps = new Class({
     }
 
 });
-
-VisuGps.implement(new Options);

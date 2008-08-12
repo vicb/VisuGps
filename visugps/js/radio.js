@@ -29,8 +29,9 @@ Class: RadioBtn
         Provide radio button for MooTools
 */
 var RadioBtn = new Class({
+    Implements: [Options, Events],
     options: {
-        onSelect: Class.empty,
+        onSelect: $empty,
         classSelect: "btn-selected",
         initBtn: 0
     },
@@ -80,5 +81,3 @@ var RadioBtn = new Class({
         }
     }
 });
-
-RadioBtn.implement(new Events, new Options);

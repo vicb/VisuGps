@@ -84,6 +84,8 @@ var VisuGps = new Class({
         this.animDelay = {'min':1, 'max':120, 'val': 60};
         this.mapTitle = 'VisuGps';
         this.ge = null;
+        this.iFrameShim = false;
+
 
         this.distPts = {};
         this.distState = 0;
@@ -356,8 +358,41 @@ var VisuGps = new Class({
         if (this.map.getCurrentMapType() == G_SATELLITE_3D_MAP) {
             if (this.path) {
                 this.map.removeOverlay(this.path);
+            // Create iframe shims to view custom controls
+            new IFrame({src: 'javascript:false',
+                        'frameborder': 0,
+                        'scrolling': 'no',
+                        styles: {
+                            width: '100%',
+                            height: '100%',
+                            border: '0',
+                            position: 'absolute',
+                            font: '1px',
+                            top: 0,
+                            left: 0,
+                            zIndex: -10000
+                        }}).inject(this.titleCtrl.div);
+            new IFrame({src: 'javascript:false',
+                        'frameborder': 0,
+                        'scrolling': 'no',
+                        styles: {
+                            width: '100%',
+                            height: '100%',
+                            border: '0',
+                            position: 'absolute',
+                            font: '1px',
+                            top: 0,
+                            left: 0,
+                            zIndex: -10000
+                        }}).inject(this.infoCtrl.div);
+            this.iFrameShim = true;
             }
         } else {
+            if (this.iFrameShim) {
+                this.titleCtrl.div.getFirst('iframe').dispose();
+                this.infoCtrl.div.getFirst('iframe').dispose();
+                this.iFrameShim = false;
+            }
             this._displayTrack();
         }
     },
@@ -714,7 +749,7 @@ var VisuGps = new Class({
             this._set3dPosition(idx);
         }
         if (this.map.getCurrentMapType() == G_SATELLITE_3D_MAP) {
-            if (center) {
+            if (center || (this.animTimer != null)) {
                 var lookAt = this.ge.getView().copyAsLookAt(this.ge.ALTITUDE_ABSOLUTE);
                 lookAt.setLatitude(this.track.lat[idx]);
                 lookAt.setLongitude(this.track.lon[idx]);
@@ -799,8 +834,7 @@ var VisuGps = new Class({
                                                        'font':'10px Verdana, Arial, sans-serif',
                                                        'marginBottom':'3px',
                                                        'background':'#FFFFCC',
-                                                       'text-align':'right',
-                                                       'opacity': '0.9'}
+                                                       'text-align':'right'}
                                   }).set('html', this.title)
                                     .inject(map.getContainer());
             return this.div;
@@ -824,25 +858,28 @@ var VisuGps = new Class({
     Note:   The control is not added to the map by this function
     */
     _createInfoControl : function() {
-        function InfoControl() {}
+        function InfoControl() {
+            this.div = null;
+        }
         var me = this;
 
         InfoControl.prototype = new google.maps.Control();
 
         InfoControl.prototype.selectable = function(){return false;}
         InfoControl.prototype.initialize = function(map) {
-            var div = new Element('div', {'styles' : {'border': '1px inset #555555',
-                                                      'padding': '2px',
-                                                      'margin':'1px',
-                                                      'background':'#FFFFCC',
-                                                      'opacity':'0.9',
-                                                      'text-align':'right',
-                                                      'font' : '10px Verdana, Arial, sans-serif'}
-                                }).set('html', '<p class="vgps-info"><strong>...iNfO</strong></p>' +
-                                               '<p class="vgps-info" id="vgps-nfofield"></p>' +
-                                               '<div id="vgps-anim"><div id="vgps-play"></div></div>' +
-                                               '</div>')
-                                  .inject(map.getContainer());
+            this.div = new Element('div', {'styles' : {'border': '1px inset #555555',
+                                                       'padding': '2px',
+                                                       'margin':'1px',
+                                                       'background':'#FFFFCC',
+                                                       'text-align':'right',
+                                                       'font' : '10px Verdana, Arial, sans-serif'}
+                                 }).set('html', '<p class="vgps-info"><strong>...iNfO</strong></p>' +
+                                                '<p class="vgps-info" id="vgps-nfofield"></p>' +
+                                                '<div id="vgps-anim"><div id="vgps-play"></div></div>' +
+                                                '</div>')
+                                   .inject(map.getContainer());
+
+
 
             // Add the animation control
             $('vgps-play').addEvent('mousedown', function(event) {(new Event(event)).stop();});
@@ -851,7 +888,7 @@ var VisuGps = new Class({
                                              'onChange' : me._setAnimDelay.bind(me)}).set(50);
 
 
-            return div;
+            return this.div;
         }
 
         InfoControl.prototype.getDefaultPosition = function() {

@@ -319,7 +319,9 @@ public class Controller implements BluetoothFinderListener, GpsListener {
     }
     
     public void showDebug() {
-        display.setCurrent(debug);
+//#if DEBUG        
+//#         display.setCurrent(debug);
+//#endif        
     }
 
     public void gpsPositionUpdated(GpsPosition position) {

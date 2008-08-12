@@ -24,7 +24,6 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 package fr.victorb.mobile.vgps.bluetooth;
 
 import fr.victorb.mobile.vgps.controller.Controller;
-import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
@@ -203,10 +202,8 @@ public class BluetoothFinder extends List  implements DiscoveryListener, Command
     }
 
     public void servicesDiscovered(int arg0, ServiceRecord[] arg1) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public void serviceSearchCompleted(int arg0, int arg1) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

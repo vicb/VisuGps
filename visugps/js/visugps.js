@@ -756,11 +756,11 @@ var VisuGps = new Class({
                 this.ge.getView().setAbstractView(lookAt);
             }
         } else {
-            this._showInfo(pos);
             if (center) {
                 this.map.panTo(this.points[idx]);
             }
         }
+        this._showInfo(pos);
         if (this.map.getCurrentMapType() == G_SATELLITE_3D_MAP) {
             this.marker.hide();
         } else {

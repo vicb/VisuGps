@@ -288,6 +288,7 @@ var VisuGps = new Class({
             $('ignwrap').setStyle('left', 0);
             $(this.options.mapDiv).setStyle('left', -5000);
             this.mapSwitcher.set('html', 'ign');
+            this._resize();
         } else {
             $('ignwrap').setStyle('left', -5000);
             $(this.options.mapDiv).setStyle('left', 0);

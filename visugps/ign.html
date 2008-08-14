@@ -1,17 +1,34 @@
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
 <head>
   <title>IGN</title>
-  <script src="http://api.ign.fr/api?v=1.0beta2&key=349948410667880710&instance=map"></script>
+  <script src="http://api.ign.fr/api?v=1.0beta&key=349948410667880710&instance=map"></script>
 
   <script type="text/javascript">
 
-    var kMap;
-    var olMap;
+    var kMap = null;
+    var olMap = null;
     var marker = null;
-    var markerLayer;
+    var markerLayer = null;
 
     function initGeoportalMap() {
-        kMap = window.parent.kMap;
+        OpenLayers.Control.Click = OpenLayers.Class(OpenLayers.Control, {
+            defaultHandlerOptions: {
+                'single': true,
+                'double': false,
+                'pixelTolerance': 0,
+                'stopSingle': false,
+                'stopDouble': false
+            },
+
+            initialize: function(callback, options) {
+                this.handlerOptions = OpenLayers.Util.extend({}, this.defaultHandlerOptions);
+                OpenLayers.Control.prototype.initialize.apply(this, arguments);
+                this.handler = new OpenLayers.Handler.Click(this, {'click': callback}, this.handlerOptions);
+            }
+        });
+
+        kMap = parent.kMap;
 
         geoportalLoadmap('igndiv', 'normal', 'FXX');
         if(map.allowedGeoportalLayers){
@@ -20,7 +37,7 @@
 
         olMap = map.getMap();
         kMap.initIgnMap(setTrack, setMarker, setCenter, zoom, reSize);
-        
+
         var click = new OpenLayers.Control.Click(onClick);
         olMap.addControl(click);
         click.activate();
@@ -77,22 +94,6 @@
         }
     }
 
-    OpenLayers.Control.Click = OpenLayers.Class(OpenLayers.Control, {
-        defaultHandlerOptions: {
-            'single': true,
-            'double': false,
-            'pixelTolerance': 0,
-            'stopSingle': false,
-            'stopDouble': false
-        },
-
-        initialize: function(callback, options) {
-            this.handlerOptions = OpenLayers.Util.extend({}, this.defaultHandlerOptions);
-            OpenLayers.Control.prototype.initialize.apply(this, arguments);
-            this.handler = new OpenLayers.Handler.Click(this, {'click': callback}, this.handlerOptions);
-        }
-    });
-
     function onClick(event) {
         var lonlat = olMap.getLonLatFromViewPortPx(event.xy);
         lonlat.transform(olMap.getProjection(), map.displayProjection);
@@ -101,6 +102,7 @@
     
     function reSize(w, h) {
         map.setSize(w, h);
+        $('igndiv').style.height = h + "px";
     }
 
 
@@ -108,6 +110,6 @@
 </head>
 
 <body>
-  <div id='igndiv' style='width:600px;height:600px;'></div>
+  <div id='igndiv' style='width:100%;height:100%;'></div>
 </body>
 </html>

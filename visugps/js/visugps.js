@@ -86,6 +86,12 @@ var VisuGps = new Class({
         this.ge = null;
         this.iFrameShim = false;
 
+        this.mapSwitcher = null;
+        this.ignReady = false;
+        this.ignSetMarker = null;
+        this.ignSetCenter = null;
+        this.ignZoom = null;
+        this.ignResize = null;
 
         this.distPts = {};
         this.distState = 0;
@@ -234,7 +240,7 @@ var VisuGps = new Class({
             this._initGraph();
             
             this.map.getEarthInstance(this._gePluginInit.bind(this));
-
+            
             // Remove the top most overlay from the map
             if (load) {
                 load.fade('out');
@@ -248,6 +254,48 @@ var VisuGps = new Class({
         }
         
     },
+    
+    /*
+    Property: initIgnMap
+            Initialize IGN map
+    */
+    initIgnMap : function(ignSetTrack, ignSetMarker, ignSetCenter, ignZoom, ignResize) {
+        // TODO: Handle KML loading for IGN
+        this.ignReady = true;
+        ignSetTrack(this.track.lat, this.track.lon);
+        this.ignSetMarker = ignSetMarker;
+        this.ignSetCenter = ignSetCenter;
+        this.ignZoom = ignZoom;
+        this.ignResize = ignResize;
+        // Add the map switcher control
+        this.mapSwitcher = new Element('div', {'id' : 'vgps-mapSwitcher'}).inject(this.options.chartDiv, 'top');
+        this.mapSwitcher.set('html', 'google');
+        this.mapSwitcher.addEvent('click', this._switchMap.bind(this));
+    },
+    /*
+    Property: initIgnMap
+            Initialize IGN map
+    */
+    ignLeftClick : function(lat, lon) {
+        this._leftClick(null, new google.maps.LatLng(lat, lon));
+    },
+    /*
+    Property: initIgnMap
+            Initialize IGN map
+    */
+    _switchMap : function() {
+        if (this.mapSwitcher.get('html') == 'google') {
+            $('ignwrap').setStyle('left', 0);
+            $(this.options.mapDiv).setStyle('left', -5000);
+            this.mapSwitcher.set('html', 'ign');
+        } else {
+            $('ignwrap').setStyle('left', -5000);
+            $(this.options.mapDiv).setStyle('left', 0);
+            this.mapSwitcher.set('html', 'google');
+        }
+    },
+    
+    
     /*
     Property: _gePluginInit (INTERNAL)
             Initialize GE plugin (add 3D track)
@@ -625,6 +673,9 @@ var VisuGps = new Class({
                     if (this.marker3d) {
                         this._set3dPosition(bestIdx);
                     }
+                    if (this.ignSetMarker) {
+                        this.ignSetMarker(this.track.lat[bestIdx], this.track.lon[bestIdx]);
+                    }
                     var pos = (1000 * bestIdx / this.track.nbTrackPt).toInt();
                     this.charts.setCursor(pos);
                     this._showInfo(pos);
@@ -670,6 +721,10 @@ var VisuGps = new Class({
         this.charts.showCursor(false);
         if (this.timer) $clear(this.timer);
         this.timer = this._drawGraph.delay(100, this);
+        var size = $('ignwrap').getSize();
+        if (this.ignResize) {
+            this.ignResize(size.x, size.y);
+        }
     },
     /*
     Property: _drawGraph (INTERNAL)
@@ -760,6 +815,12 @@ var VisuGps = new Class({
                 this.map.panTo(this.points[idx]);
             }
         }
+        if (this.ignSetMarker) {
+            this.ignSetMarker(this.track.lat[idx], this.track.lon[idx]);
+            if (center) {
+                this.ignSetCenter(this.track.lat[idx], this.track.lon[idx]);
+            }
+        }
         this._showInfo(pos);
         if (this.map.getCurrentMapType() == G_SATELLITE_3D_MAP) {
             this.marker.hide();
@@ -788,8 +849,10 @@ var VisuGps = new Class({
     _showMarkerCenterZoom : function(pos, wheel) {
         if (wheel > 0) {
             this.map.zoomIn();
+            if (this.ignZoom) {this.ignZoom('in');}
         } else {
             this.map.zoomOut();
+            if (this.ignZoom) {this.ignZoom('out');}
         }
         this._showMarker(pos, true);
     },
@@ -943,7 +1006,7 @@ var VisuGps = new Class({
             var size = (2).pow(zoom) * 256;
             var x = (point.lng() + 180) * size /360;
             var y = (90 - point.lat()) * size / 180;
-            return new GPoint(x.round(), y.round());
+            return new google.maps.Point(x.round(), y.round());
           }
 
           EuclideanProjection.prototype.fromPixelToLatLng=function(point, zoom, unbounded){

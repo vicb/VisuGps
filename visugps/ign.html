@@ -1,0 +1,113 @@
+<html>
+<head>
+  <title>IGN</title>
+  <script src="http://api.ign.fr/api?v=1.0beta2&key=349948410667880710&instance=map"></script>
+
+  <script type="text/javascript">
+
+    var kMap;
+    var olMap;
+    var marker = null;
+    var markerLayer;
+
+    function initGeoportalMap() {
+        kMap = window.parent.kMap;
+
+        geoportalLoadmap('igndiv', 'normal', 'FXX');
+        if(map.allowedGeoportalLayers){
+          map.addGeoportalLayers(map.allowedGeoportalLayers);
+        }
+
+        olMap = map.getMap();
+        kMap.initIgnMap(setTrack, setMarker, setCenter, zoom, reSize);
+        
+        var click = new OpenLayers.Control.Click(onClick);
+        olMap.addControl(click);
+        click.activate();
+    }
+    
+    function setTrack(lat, lon) {
+        var trackLayer = new OpenLayers.Layer.Vector('Track');
+
+        var point = {};
+        var points = [];
+        for (var i = 0; i < lat.length; i++) {
+            point = new OpenLayers.Geometry.Point(lon[i], lat[i]);
+            point.transform(map.displayProjection, olMap.getProjection());
+            points.push(point);
+        }
+        var line = new OpenLayers.Geometry.LineString(points);
+        var style = OpenLayers.Feature.Vector.style.default;
+        style.strokeColor = '#ff0000';
+        var feature = new OpenLayers.Feature.Vector(line, {}, style);
+
+        trackLayer.addFeatures(feature);
+
+        markerLayer = new OpenLayers.Layer.Markers('Marker');
+        setMarker(lon[0], lat[0]);
+
+        olMap.addLayers([trackLayer, markerLayer]);
+
+        setCenter(lat[0], lon[0]);
+        olMap.zoomTo(9);
+        
+    }
+    
+    function setMarker(lat, lon) {
+        if (marker != null) {
+            markerLayer.removeMarker(marker);
+            marker.destroy();
+        }
+        var size = new OpenLayers.Size(20, 34);
+        var offset = new OpenLayers.Pixel(-(size.w / 2), -size.h);
+        var icon = new OpenLayers.Icon('./img/marker.gif', size, offset);
+        marker = new OpenLayers.Marker(new OpenLayers.LonLat(lon, lat).transform(map.displayProjection, olMap.getProjection()), icon);
+        markerLayer.addMarker(marker);
+    }
+    
+    function setCenter(lat, lon) {
+        map.setCenterAtLonLat(lon, lat, olMap.zoom);
+    }
+    
+    function zoom(direction) {
+         if (direction == 'in') {
+            olMap.zoomIn();
+        } else {
+            olMap.zoomOut();
+        }
+    }
+
+    OpenLayers.Control.Click = OpenLayers.Class(OpenLayers.Control, {
+        defaultHandlerOptions: {
+            'single': true,
+            'double': false,
+            'pixelTolerance': 0,
+            'stopSingle': false,
+            'stopDouble': false
+        },
+
+        initialize: function(callback, options) {
+            this.handlerOptions = OpenLayers.Util.extend({}, this.defaultHandlerOptions);
+            OpenLayers.Control.prototype.initialize.apply(this, arguments);
+            this.handler = new OpenLayers.Handler.Click(this, {'click': callback}, this.handlerOptions);
+        }
+    });
+
+    function onClick(event) {
+        var lonlat = olMap.getLonLatFromViewPortPx(event.xy);
+        lonlat.transform(olMap.getProjection(), map.displayProjection);
+        kMap.ignLeftClick(lonlat.lat, lonlat.lon);
+    }
+    
+    function reSize(w, h) {
+        map.setSize(w, h);
+    }
+
+
+  </script>
+</head>
+
+<body>
+  <div id='igndiv' style='width:600px;height:600px;'></div>
+</body>
+</html>

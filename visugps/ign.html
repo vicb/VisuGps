@@ -2,7 +2,16 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <title>IGN</title>
-  <script src="http://api.ign.fr/api?v=1.0beta2&key=349948410667880710&instance=map"></script>
+  
+  <script type="text/javascript">
+    if (location.href.indexOf('www.victorb.fr') < 0) {
+        document.write("<" + "script src='http://api.ign.fr/api?v=1.0beta2&key=3291489526243279092&instance=map'" +
+                       " type='text/javascript'></" + "script>");
+    } else {
+        document.write("<" + "script src='http://api.ign.fr/api?v=1.0beta2&key=349948410667880710&instance=map'" +
+                       " type='text/javascript'></" + "script>"); 
+    }
+  </script> 
 
   <script type="text/javascript">
     var kMap = null;

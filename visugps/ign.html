@@ -1,15 +1,16 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <title>IGN</title>
-  <script src="http://api.ign.fr/api?v=1.0beta&key=349948410667880710&instance=map"></script>
+  <script src="http://api.ign.fr/api?v=1.0beta2&key=349948410667880710&instance=map"></script>
 
   <script type="text/javascript">
-
     var kMap = null;
     var olMap = null;
     var marker = null;
     var markerLayer = null;
+    var trackLayer = null;
+    var displayProjection = null; 
 
     function initGeoportalMap() {
         OpenLayers.Control.Click = OpenLayers.Class(OpenLayers.Control, {
@@ -28,23 +29,26 @@
             }
         });
 
-        kMap = parent.kMap;
-
         geoportalLoadmap('igndiv', 'normal', 'FXX');
         if(map.allowedGeoportalLayers){
           map.addGeoportalLayers(map.allowedGeoportalLayers);
         }
+        
+        map.setInformationPanelVisibility(false);
 
         olMap = map.getMap();
-        kMap.initIgnMap(setTrack, setMarker, setCenter, zoom, reSize);
 
         var click = new OpenLayers.Control.Click(onClick);
         olMap.addControl(click);
-        click.activate();
+        click.activate();       
+        
+        kMap = parent.kMap;
+        kMap.initIgnMap();
+         
     }
     
     function setTrack(lat, lon) {
-        var trackLayer = new OpenLayers.Layer.Vector('Track');
+        trackLayer = new OpenLayers.Layer.Vector('Track');
 
         var point = {};
         var points = [];
@@ -54,10 +58,10 @@
             points.push(point);
         }
         var line = new OpenLayers.Geometry.LineString(points);
-        var style = OpenLayers.Feature.Vector.style.default;
+        var style = OpenLayers.Feature.Vector.style.temporary;
         style.strokeColor = '#ff0000';
         var feature = new OpenLayers.Feature.Vector(line, {}, style);
-
+        
         trackLayer.addFeatures(feature);
 
         markerLayer = new OpenLayers.Layer.Markers('Marker');
@@ -104,12 +108,18 @@
         map.setSize(w, h);
         $('igndiv').style.height = h + "px";
     }
-
+    
+    function destroy() {
+        if (marker != null) marker.destroy();
+        markerLayer.destroy();
+        trackLayer.destroy();
+        olMap.destroy();
+    }
 
   </script>
 </head>
 
-<body>
+<body style='width:100%;height:100%;margin:0'>
   <div id='igndiv' style='width:100%;height:100%;'></div>
 </body>
 </html>

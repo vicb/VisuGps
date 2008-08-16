@@ -87,11 +87,7 @@ var VisuGps = new Class({
         this.iFrameShim = false;
 
         this.mapSwitcher = null;
-        this.ignReady = false;
-        this.ignSetMarker = null;
-        this.ignSetCenter = null;
-        this.ignZoom = null;
-        this.ignResize = null;
+        this.ignMap = null;
 
         this.distPts = {};
         this.distState = 0;
@@ -123,6 +119,7 @@ var VisuGps = new Class({
     */
     clean : function() {
         google.maps.Unload();
+        frames.ign.destroy();
         if (this.charts) this.charts.clean();
         window.removeEvents('resize');
     },
@@ -239,6 +236,8 @@ var VisuGps = new Class({
 
             this._initGraph();
             
+            document.getElementById('ign').src = './ign.html';
+            
             this.map.getEarthInstance(this._gePluginInit.bind(this));
             
             // Remove the top most overlay from the map
@@ -259,36 +258,32 @@ var VisuGps = new Class({
     Property: initIgnMap
             Initialize IGN map
     */
-    initIgnMap : function(ignSetTrack, ignSetMarker, ignSetCenter, ignZoom, ignResize) {
-        // TODO: Handle KML loading for IGN
-        this.ignReady = true;
-        ignSetTrack(this.track.lat, this.track.lon);
-        this.ignSetMarker = ignSetMarker;
-        this.ignSetCenter = ignSetCenter;
-        this.ignZoom = ignZoom;
-        this.ignResize = ignResize;
+    initIgnMap : function() {
+        // TODO: Handle KML loading for IGN        
+        this.ignMap = frames.ign;
+        this.ignMap.setTrack(this.track.lat, this.track.lon);
         // Add the map switcher control
         this.mapSwitcher = new Element('div', {'id' : 'vgps-mapSwitcher'}).inject(this.options.chartDiv, 'top');
         this.mapSwitcher.set('html', 'google');
         this.mapSwitcher.addEvent('click', this._switchMap.bind(this));
     },
     /*
-    Property: initIgnMap
-            Initialize IGN map
+    Property: ignLeftClick
+            Called when a left click occurs on IGN map
     */
     ignLeftClick : function(lat, lon) {
         this._leftClick(null, new google.maps.LatLng(lat, lon));
     },
     /*
-    Property: initIgnMap
-            Initialize IGN map
+    Property: _switchMap
+            Switch between IGN anf Google maps
     */
     _switchMap : function() {
         if (this.mapSwitcher.get('html') == 'google') {
             $('ignwrap').setStyle('left', 0);
             $(this.options.mapDiv).setStyle('left', -5000);
             this.mapSwitcher.set('html', 'ign');
-            this._resize();
+            this._resize();            
         } else {
             $('ignwrap').setStyle('left', -5000);
             $(this.options.mapDiv).setStyle('left', 0);
@@ -674,8 +669,8 @@ var VisuGps = new Class({
                     if (this.marker3d) {
                         this._set3dPosition(bestIdx);
                     }
-                    if (this.ignSetMarker) {
-                        this.ignSetMarker(this.track.lat[bestIdx], this.track.lon[bestIdx]);
+                    if (this.ignMap != null) {
+                        this.ignMap.setMarker(this.track.lat[bestIdx], this.track.lon[bestIdx]);
                     }
                     var pos = (1000 * bestIdx / this.track.nbTrackPt).toInt();
                     this.charts.setCursor(pos);
@@ -723,8 +718,8 @@ var VisuGps = new Class({
         if (this.timer) $clear(this.timer);
         this.timer = this._drawGraph.delay(100, this);
         var size = $('ignwrap').getSize();
-        if (this.ignResize) {
-            this.ignResize(size.x, size.y);
+        if (this.ignMap != null) {
+            this.ignMap.reSize(size.x, size.y);
         }
     },
     /*
@@ -816,10 +811,10 @@ var VisuGps = new Class({
                 this.map.panTo(this.points[idx]);
             }
         }
-        if (this.ignSetMarker) {
-            this.ignSetMarker(this.track.lat[idx], this.track.lon[idx]);
+        if (this.ignMap != null) {
+            this.ignMap.setMarker(this.track.lat[idx], this.track.lon[idx]);
             if (center) {
-                this.ignSetCenter(this.track.lat[idx], this.track.lon[idx]);
+                this.ignMap.setCenter(this.track.lat[idx], this.track.lon[idx]);
             }
         }
         this._showInfo(pos);
@@ -850,10 +845,10 @@ var VisuGps = new Class({
     _showMarkerCenterZoom : function(pos, wheel) {
         if (wheel > 0) {
             this.map.zoomIn();
-            if (this.ignZoom) {this.ignZoom('in');}
+            if (this.ignMap != null) {this.ignMap.zoom('in');}
         } else {
             this.map.zoomOut();
-            if (this.ignZoom) {this.ignZoom('out');}
+            if (this.ignMap != null) {this.ignMap.zoom('out');}
         }
         this._showMarker(pos, true);
     },

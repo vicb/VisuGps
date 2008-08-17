@@ -122,7 +122,6 @@ package fr.victorb.visugps
             mapHolder.percentHeight = 75;
             mapHolder.percentWidth = 100;
             mapHolder.addEventListener(Event.RESIZE, doMapLayout);
-            map.addEventListener(MapMouseEvent.DOUBLE_CLICK, onRightClick);
             map.addEventListener(MapMouseEvent.CLICK, onLeftClick);            
             layout.addChild(mapHolder);
             
@@ -306,6 +305,10 @@ package fr.victorb.visugps
          * @param	event
          */
         private function onLeftClick(event:MapMouseEvent):void {
+			if (event.ctrlKey) {
+				onRightClick(event);
+				return;
+			}
             if (measureState == MeasureState.MEAS_ON) {
                 onMouseMove(event);
                 measurePoints.push(event.latLng);                

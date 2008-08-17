@@ -82,6 +82,14 @@
         olMap.zoomTo(9);
         
     }
+
+    function setTrackKml(proxy, url) {
+        map.setProxyUrl(proxy);
+        map.addLayer("KML",
+                     "Track",
+                     url);
+    }
+
     
     function setMarker(lat, lon) {
         if (marker != null) {

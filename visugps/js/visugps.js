@@ -236,8 +236,6 @@ var VisuGps = new Class({
 
             this._initGraph();
             
-            document.getElementById('ign').src = './ign.html';
-            
             this.map.getEarthInstance(this._gePluginInit.bind(this));
             
             // Remove the top most overlay from the map
@@ -245,6 +243,8 @@ var VisuGps = new Class({
                 load.fade('out');
             }
         }
+
+        document.getElementById('ign').src = './ign.html';
 
         // Add common event handlers
         google.maps.Event.addListener(this.map, 'click', this._leftClick.bind(this));
@@ -259,9 +259,12 @@ var VisuGps = new Class({
             Initialize IGN map
     */
     initIgnMap : function() {
-        // TODO: Handle KML loading for IGN        
         this.ignMap = frames.ign;
-        this.ignMap.setTrack(this.track.lat, this.track.lon);
+        if ($defined(this.track.kmlUrl)) {
+            this.ignMap.setTrackKml('php/vg_directproxy.php?url=', this.track.kmlUrl);
+        } else {
+            this.ignMap.setTrack(this.track.lat, this.track.lon);
+        }
         // Add the map switcher control
         this.mapSwitcher = new Element('div', {'id' : 'vgps-mapSwitcher'}).inject(this.options.chartDiv, 'top');
         this.mapSwitcher.set('html', 'google');

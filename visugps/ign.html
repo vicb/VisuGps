@@ -67,7 +67,7 @@
             points.push(point);
         }
         var line = new OpenLayers.Geometry.LineString(points);
-        var style = OpenLayers.Feature.Vector.style.temporary;
+        var style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
         style.strokeColor = '#ff0000';
         var feature = new OpenLayers.Feature.Vector(line, {}, style);
         

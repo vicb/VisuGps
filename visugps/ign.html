@@ -43,8 +43,6 @@
           map.addGeoportalLayers(map.allowedGeoportalLayers);
         }
         
-        map.setInformationPanelVisibility(false);
-
         olMap = map.getMap();
 
         var click = new OpenLayers.Control.Click(onClick);
@@ -124,12 +122,13 @@
     function reSize(w, h) {
         map.setSize(w, h);
         $('igndiv').style.height = h + "px";
+        map.mapDiv2.style.height = h - 50 + "px";
     }
     
     function destroy() {
         if (marker != null) marker.destroy();
-        markerLayer.destroy();
-        trackLayer.destroy();
+        if (markerLayer != null) markerLayer.destroy();
+        if (trackLayer != null) trackLayer.destroy();
         olMap.destroy();
     }
 

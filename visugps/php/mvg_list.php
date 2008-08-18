@@ -85,6 +85,7 @@ if (mysql_num_rows($result)) {
         $track['flightId'] = $row->flightId;
         $track['start']['time'] = $row->start;
         $track['end']['time'] = $row->end;
+        $track['live'] = ($row->end == NULL);
 
         $query = "SELECT latitude, longitude FROM point " .
                  "WHERE flightId = $row->flightId " .
@@ -107,7 +108,7 @@ if (mysql_num_rows($result)) {
                     }
                     $startTime = mysql2timestamp($track['start']['time']) + $timeOffset;
                     $track['start']['time'] = date("Y-m-d H:i:s", $startTime);
-                    if ($endTime != NULL) {
+                    if (!$track['live']) {
                         $endTime = mysql2timestamp($track['end']['time']) + $timeOffset;
                         $track['end']['time'] = date("Y-m-d H:i:s", $endTime);
                     }

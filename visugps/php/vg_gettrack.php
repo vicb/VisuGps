@@ -65,6 +65,14 @@ switch ($format) {
         header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
         echo generate_kmz_track($jsonTrack);
         break;
+
+    case 'test':
+        header('Content-type: text/plain; charset=ISO-8859-1');
+        header('Content-Disposition: attachment; filename="track.igc"');
+        header('Cache-Control: no-cache, must-revalidate');
+        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+        print_r(GetTaskFlights('bo'));
+        break;
     default:
         header('Content-type: text/plain; charset=ISO-8859-1');
         header('Content-Disposition: attachment; filename="track.igc"');

@@ -107,8 +107,10 @@ if (mysql_num_rows($result)) {
                     }
                     $startTime = mysql2timestamp($track['start']['time']) + $timeOffset;
                     $track['start']['time'] = date("Y-m-d H:i:s", $startTime);
-                    $endTime = mysql2timestamp($track['end']['time']) + $timeOffset;
-                    $track['end']['time'] = date("Y-m-d H:i:s", $endTime);
+                    if ($endTime != NULL) {
+                        $endTime = mysql2timestamp($track['end']['time']) + $timeOffset;
+                        $track['end']['time'] = date("Y-m-d H:i:s", $endTime);
+                    }
                 }
             }
         }
@@ -176,7 +178,8 @@ function mysql2timestamp($datetime){
        $val = explode(" ",$datetime);
        $date = explode("-",$val[0]);
        $time = explode(":",$val[1]);
-       return mktime($time[0],$time[1],$time[2],$date[1],$date[2],$date[0]);
+       return @mktime(intval($time[0]), intval($time[1]), intval($time[2]),
+                      intval($date[1]), intval($date[2]), intval($date[0]));
 }
 
 ?>

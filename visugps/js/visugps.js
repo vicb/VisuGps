@@ -293,8 +293,6 @@ var VisuGps = new Class({
             this.mapSwitcher.set('html', 'google');
         }
     },
-    
-    
     /*
     Property: _gePluginInit (INTERNAL)
             Initialize GE plugin (add 3D track)
@@ -872,6 +870,7 @@ var VisuGps = new Class({
                             this._NbToStrW(this.track.time.hour[idx],2) + ':' +
                             this._NbToStrW(this.track.time.min[idx], 2) + ':' +
                             this._NbToStrW(this.track.time.sec[idx], 2) + '[Th]');
+        if (this.ignMap) this.ignMap.setInfo(this.nfo.get('html'));
     },
     /*
     Property: _createTitleControl (INTERNAL)

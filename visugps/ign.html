@@ -3,6 +3,19 @@
 <head>
   <title>IGN</title>
   
+  <style type="text/css">
+    .gpControlInfo {
+    border: 1px inset #555555;
+    padding: 2px;
+    margin: 1px;
+    background: #FFFFCC;
+    text-align: right;
+    font : 10px Verdana, Arial, sans-serif;
+    top: 0px;
+    left: 50%;
+    }
+  </style>
+  
   <script type="text/javascript">
     if (location.href.indexOf('www.victorb.fr') < 0) {
         document.write("<" + "script src='http://api.ign.fr/api?v=1.0beta2&key=3291489526243279092&instance=map'" +
@@ -19,7 +32,8 @@
     var marker = null;
     var markerLayer = null;
     var trackLayer = null;
-    var displayProjection = null; 
+    var displayProjection = null;
+    var infoControl = null;
 
     function initGeoportalMap() {
         OpenLayers.Control.Click = OpenLayers.Class(OpenLayers.Control, {
@@ -37,6 +51,28 @@
                 this.handler = new OpenLayers.Handler.Click(this, {'click': callback}, this.handlerOptions);
             }
         });
+        
+        Geoportal.Control.Info = OpenLayers.Class(Geoportal.Control, {
+            initialize: function(options) {
+                this.options = options;
+                Geoportal.Control.prototype.initialize.apply(this, [options]);
+            },
+            destroy: function() {
+                this.div = null;
+            },
+            setText: function(text) {
+                this.div.innerHTML = text;
+            },
+            redraw: function() {
+                this.draw();
+            },
+            draw: function() {
+                Geoportal.Control.prototype.draw.apply(this);
+                return this.div;
+            },
+            CLASS_NAME: "Geoportal.Control.Info"
+        });
+
 
         geoportalLoadmap('igndiv', 'normal', 'FXX');
         if(map.allowedGeoportalLayers){
@@ -44,6 +80,8 @@
         }
         
         olMap = map.getMap();
+        
+        olMap.addControl(infoControl = new Geoportal.Control.Info());
 
         var click = new OpenLayers.Control.Click(onClick);
         olMap.addControl(click);
@@ -52,6 +90,10 @@
         kMap = parent.kMap;
         kMap.initIgnMap();
          
+    }
+    
+    function setInfo(text) {
+        infoControl.setText(text);
     }
     
     function setTrack(lat, lon) {

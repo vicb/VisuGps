@@ -66,12 +66,12 @@ switch ($format) {
         echo generate_kmz_track($jsonTrack);
         break;
 
-    case 'test':
+    case 'task':
         header('Content-type: text/plain; charset=ISO-8859-1');
         header('Content-Disposition: attachment; filename="track.igc"');
         header('Cache-Control: no-cache, must-revalidate');
         header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-        print_r(GetTaskFlights('bo'));
+        echo generate_kmz_track('bo', 10);
         break;
     default:
         header('Content-type: text/plain; charset=ISO-8859-1');
@@ -127,6 +127,7 @@ Function: generate_kml_track
 
 Arguments:
         jsonTrack - JSON encoded track
+        color - Track color
 
 Returns:
         KML file
@@ -150,7 +151,7 @@ Track format:
         nbChartPt - number of points in elev, elevGnd, speed, vario
         nbChartLbl - number of labels (time.labels)
 */
-function generate_kml_track($jsonTrack) {
+function generate_kml_track($jsonTrack, $color = "ff00ffff") {
     $track = @json_decode($jsonTrack, true);
     if (!isset($track['nbTrackPt']) || $track['nbTrackPt'] < 5) exit;
 
@@ -170,7 +171,7 @@ function generate_kml_track($jsonTrack) {
                     "    <open>1</open>\n" .
                     "    <Style>\n" .
                     "        <LineStyle>\n" .
-                    "            <color>ff00ffff</color>\n" .
+                    "            <color>$color</color>\n" .
                     "        </LineStyle>\n" .
                     "    </Style>\n" .
                     "    <LineString>\n" .
@@ -218,6 +219,41 @@ function generate_kml_track($jsonTrack) {
     return $file;
 }
 
+
+function generate_kml_task($task, $delay) {
+    $track = @json_decode($jsonTrack, true);
+    if (!isset($track['nbTrackPt']) || $track['nbTrackPt'] < 5) exit;
+
+    $lookAt = false;
+    $ids = GetTaskFlights($task);
+
+    $file = sprintf("<?xml version='1.0' encoding='UTF-8'?>\n" .
+                    "<kml xmlns='http://earth.google.com/kml/2.2'>\n" .
+                    "    <Document>\n" .
+                    "        <name><![CDATA[#NAME#]]></name>\n" .
+                    "        <LookAt>\n" .
+                    "           <longitude>#LOOK_LON#</longitude>\n" .
+                    "           <latitude>#LOOK_LAT#</latitude>\n" .
+                    "           <range>32000</range>\n" .
+                    "           <tilt>64</tilt>\n" .
+                    "           <heading>0</heading>\n" .
+                    "        </LookAt>\n" .
+                    "        <open>1</open>\n" .
+                    "        <visibility>1</visibility>\n" .
+                    "        <description>\n" .
+                    "            <![CDATA[#TASK#]]>\n" .
+                    "        </description>\n" .
+                    "        <NetworkLink>\n" .
+                    "            <open>0</open>\n" .
+                    "            <visibility>1</visibility>\n" .
+                    "            <name>Plain</name>\n" .
+                    "            <Link><href>plain.kml</href></Link>\n" .
+                    "        </NetworkLink>\n" .
+                    "    </Document>\n" .
+                    "</kml>";
+
+    return $file;
+}
 
 /*
 Function: generate_kmz_track
@@ -340,7 +376,8 @@ Arguments:
 Returns:
         The scale image as a string
 
-*/function create_scale_image($width, $height) {
+*/
+function create_scale_image($width, $height) {
     $im = imagecreatetruecolor($width, $height);
     $k = imagecolorallocate($im, 255, 255, 255);
     imagefill($im, 0, 0, $k);

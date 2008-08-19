@@ -57,15 +57,13 @@ function GetTaskFlights($pattern) {
     return $ids;
 }
 
-
-
-
 /*
 Function: GetDatabaseTrack
         Return a JSON encoded GPS track form VisuGpsLive database
 
 Arguments:
         trackId - id of the track into the database
+        delay - minimum age of fix to return (minute)
 
 Returns:
         JSON encoded track. See track format below
@@ -89,7 +87,7 @@ Track format:
         nbChartPt - number of points in elev, elevGnd, speed, vario
         nbChartLbl - number of labels (time.labels)
 */
-function GetDatabaseTrack($trackId) {
+function GetDatabaseTrack($trackId, $delay = 0) {
     $link = mysql_connect(dbHost, dbUser, dbPassword) or die ('Could not connect: ' . mysql_error());
     mysql_select_db(dbName) or die ('Database does not exist');
 
@@ -99,9 +97,11 @@ function GetDatabaseTrack($trackId) {
     if (mysql_num_rows($result) > 5) {
 
         // Get the pilot id when it exists otherwise exit
-        $query = "SELECT latitude, longitude, elevation, DATE_FORMAT(time, '%H') AS hour, " .
-                 "DATE_FORMAT(time, '%i') AS min, DATE_FORMAT(time, '%S') AS sec, time " .
-                 "FROM point WHERE flightId = $trackId ORDER BY time";
+        $query = "SELECT latitude, longitude, elevation, HOUR(time) AS hour, " .
+                 "MINUTE(time) AS min, SECOND(time) AS sec, time " .
+                 "FROM point WHERE flightId = $trackId " .
+                 ($delay > 0?"AND time < DATE_SUB(UTC_TIMESTAMP(), INTERVAL $delay MINUTE) ":"") .
+                 "ORDER BY time";
         $result = mysql_query($query) or die('Query error: ' . mysql_error());
         for ($i = 0; $i < mysql_num_rows($result); $i++) {
             $row = mysql_fetch_object($result);
@@ -116,9 +116,9 @@ function GetDatabaseTrack($trackId) {
         $track['date'] = array('day' => 0, 'month' => 0, 'year' => 0);
         $track['pilot'] = '';
 
-        $query = "SELECT DATE_FORMAT(start, '%d') as day,
-                         DATE_FORMAT(start, '%c') as month,
-                         DATE_FORMAT(start, '%Y') as year,
+        $query = "SELECT DAY(start) as day,
+                         MONTH(start) as month,
+                         YEAR(start) as year,
                          pilotId
                          FROM flight WHERE id = $trackId";
         $result = mysql_query($query) or die('Query error: ' . mysql_error());

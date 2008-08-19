@@ -194,7 +194,7 @@ function generate_kml_track($jsonTrack, $color = "ff00ffff") {
                      "    <name>Deco</name>\n" .
                      "    <Point>\n" .
                      "        <coordinates>\n" .
-                     "		      %010.6f, %010.6f, %05d\n" .
+                     "          %010.6f, %010.6f, %05d\n" .
                      "        </coordinates>\n" .
                      "    </Point>\n" .
                      "</Placemark>\n" .
@@ -202,7 +202,7 @@ function generate_kml_track($jsonTrack, $color = "ff00ffff") {
                      "    <name>Atterro</name>\n" .
                      "    <Point>\n" .
                      "        <coordinates>\n" .
-                     "		      %010.6f, %010.6f, %05d\n" .
+                     "          %010.6f, %010.6f, %05d\n" .
                      "        </coordinates>\n" .
                      "    </Point>\n" .
                      "</Placemark>\n" .
@@ -231,7 +231,7 @@ Arguments:
 Returns:
         KML file
 */
-function generate_kml_linestring($name, $track, $color) {
+function generate_kml_linestring($name, $track, $color, $width = 1) {
     $line = "<Placemark>\n" .
             "    <name>$name</name>\n" .
             "    <visibility>1</visibility>\n" .
@@ -239,6 +239,7 @@ function generate_kml_linestring($name, $track, $color) {
             "    <Style>\n" .
             "        <LineStyle>\n" .
             "            <color>$color</color>\n" .
+            "            <width>$width</width>\n" .
             "        </LineStyle>\n" .
             "    </Style>\n" .
             "    <LineString>\n" .
@@ -257,7 +258,23 @@ function generate_kml_linestring($name, $track, $color) {
              "</Placemark>\n";
 
     return $line;
+}
 
+
+function generate_kml_point($name, $lat, $lon, $elev) {
+    $point = sprintf("<Placemark>\n" .
+                     "    <name><![CDATA[$name]]></name>\n" .
+                     "    <Point>\n".
+                     "        <extrude>1</extrude>\n" .
+                     "        <altitudeMode>absolute</altitudeMode>\n" .
+                     "        <coordinates>\n" .
+                     "            %010.6f, %010.6f, %05d\n" .
+                     "        </coordinates>\n" .
+                     "    </Point>\n".
+                     "</Placemark>\n",
+                     $lon, $lat, $elev);
+
+    return $point;
 }
 
 /*
@@ -318,13 +335,14 @@ function generate_kml_task($task, $delay) {
                     
     $ids = GetTaskFlights($task);
     
-    $maxPilots = max(20, count($ids));
+    $maxPilots = max(5, count($ids));
     
     for ($i = 0; $i < count($ids); $i++) {
           $jsonTrack = GetDatabaseTrack($ids[$i], $delay);
           $track = @json_decode($jsonTrack, true);
           $color = 'FF' . value2color($i, 0, $maxPilots);
-          $file .= generate_kml_linestring($track['pilot'], $track, $color);
+          $file .= generate_kml_linestring($track['pilot'], $track, $color, 2);
+          $file .= generate_kml_point($track['pilot'], end($track['lat']), end($track['lon']), end($track['elev']));
     }
     
     $file .= "</Folder>\n" .
@@ -566,8 +584,8 @@ function generate_colored_track($jsonTrack, $idxSerie, $unit, &$minValue, &$maxV
                  "        </LineStyle>\n" .
                  "    </Style>\n" .
                  "    <TimeStamp>\n" .
-				 "        <when>%04d-%02d-%02dT%02d:%02d:%02d+00:00</when>\n".
-				 "    </TimeStamp>\n" .
+                 "        <when>%04d-%02d-%02dT%02d:%02d:%02d+00:00</when>\n".
+                 "    </TimeStamp>\n" .
                  "    <LineString>\n" .
                  "        <altitudeMode>absolute</altitudeMode>\n" .
                  "        <coordinates>\n",
@@ -610,7 +628,7 @@ function generate_colored_track($jsonTrack, $idxSerie, $unit, &$minValue, &$maxV
                      "    <name>Deco</name>\n" .
                      "    <Point>\n" .
                      "        <coordinates>\n" .
-                     "		      %010.6f, %010.6f, %05d\n" .
+                     "          %010.6f, %010.6f, %05d\n" .
                      "        </coordinates>\n" .
                      "    </Point>\n" .
                      "</Placemark>\n" .
@@ -618,7 +636,7 @@ function generate_colored_track($jsonTrack, $idxSerie, $unit, &$minValue, &$maxV
                      "    <name>Atterro</name>\n" .
                      "    <Point>\n" .
                      "        <coordinates>\n" .
-                     "		      %010.6f, %010.6f, %05d\n" .
+                     "          %010.6f, %010.6f, %05d\n" .
                      "        </coordinates>\n" .
                      "    </Point>\n" .
                      "</Placemark>\n" .

@@ -38,18 +38,29 @@ if (isset($_GET['format'])) {
 if (isset($_GET['track'])) {
     $jsonTrack = MakeTrack($_GET['track']);
 } else if (isset($_GET['trackid'])) {
-    $jsonTrack = GetDatabaseTrack(intval($_GET['trackid']));
+    if ($format != 'kmllive') {
+        // Do not generate the track for live formats
+        $jsonTrack = GetDatabaseTrack(intval($_GET['trackid']));
+    }
+} else if ($format == 'tasklive' || $format == 'task') {
+    $task = isset($_GET['task'])?$_GET['task']:'task';
+    $delay = isset($_GET['delay'])?intval($_GET['delay']):10;
 } else {
     exit;
 }
 
 switch ($format) {
     case 'kmllive':
+        if (isset($_GET['trackid'])) {
+            $trackId = $_GET['trackid'];
+        } else {
+            exit;
+        }
         header('Content-Type: application/vnd.google-earth.kml+xml kml; charset=utf8');
         header('Content-Disposition: attachment; filename="track.kml"');
         header('Cache-Control: no-cache, must-revalidate');
         header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-        echo generate_kmllive_track($jsonTrack);
+        echo generate_kmllive_track($trackId);
         break;
     case 'kml':
         header('Content-Type: application/vnd.google-earth.kml+xml kml; charset=utf8');
@@ -65,13 +76,19 @@ switch ($format) {
         header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
         echo generate_kmz_track($jsonTrack);
         break;
-
-    case 'task':
-        header('Content-type: text/plain; charset=ISO-8859-1');
-        header('Content-Disposition: attachment; filename="track.igc"');
+    case 'tasklive':
+        header('Content-Type: application/vnd.google-earth.kml+xml kml; charset=utf8');
+        header('Content-Disposition: attachment; filename="track.kml"');
         header('Cache-Control: no-cache, must-revalidate');
         header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-        echo generate_kmz_track('bo', 10);
+        echo generate_kml_tasklive($task, $delay);
+        break;
+    case 'task':
+        header('Content-Type: application/vnd.google-earth.kml+xml kml; charset=utf8');
+        header('Content-Disposition: attachment; filename="track.kml"');
+        header('Cache-Control: no-cache, must-revalidate');
+        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+        echo generate_kml_task($task, $delay);
         break;
     default:
         header('Content-type: text/plain; charset=ISO-8859-1');
@@ -82,15 +99,17 @@ switch ($format) {
     
 }
 
-function generate_kmllive_track($jsonTrack) {
-    $track = @json_decode($jsonTrack, true);
-    if (!isset($track['nbTrackPt']) || $track['nbTrackPt'] < 5) exit;
-    
-    if (isset($_GET['trackid'])) {
-        $trackId = $_GET['trackid'];
-    } else {
-        exit;
-    }
+/*
+Function: generate_kmllive_track
+        Generate a auto-refreshed kml file
+
+Arguments:
+        id - Track id
+
+Returns:
+        KML file
+*/
+function generate_kmllive_track($id) {
 
     $file= sprintf("<?xml version='1.0' encoding='UTF-8'?>\n" .
                    "<kml xmlns='http://earth.google.com/kml/2.2'>\n" .
@@ -115,10 +134,9 @@ function generate_kmllive_track($jsonTrack) {
                    "</kml>\n",
                    $track['pilot'],
                    "http://" . $_SERVER['SERVER_NAME'] . $_SERVER['PHP_SELF'],
-                   $trackId);
+                   $id);
                
     return $file;
-
 }
 
 /*
@@ -165,33 +183,14 @@ function generate_kml_track($jsonTrack, $color = "ff00ffff") {
                     "    <range>32000</range>\n" .
                     "    <tilt>64</tilt>\n" .
                     "    <heading>0</heading>\n" .
-                    "</LookAt>\n" .
-                    "<Placemark>\n" .
-                    "    <visibility>1</visibility>\n" .
-                    "    <open>1</open>\n" .
-                    "    <Style>\n" .
-                    "        <LineStyle>\n" .
-                    "            <color>$color</color>\n" .
-                    "        </LineStyle>\n" .
-                    "    </Style>\n" .
-                    "    <LineString>\n" .
-                    "        <altitudeMode>absolute</altitudeMode>\n" .
-                    "        <coordinates>\n",
+                    "</LookAt>\n",
                     $track['pilot'],
                     $track['lon'][0],
                     $track['lat'][0]);
+                    
+    $file .= generate_kml_linestring('Track', $track, $color);
 
-    for ($i = 0; $i < $track['nbTrackPt']; $i++) {
-        $file .= sprintf("        %010.6f, %010.6f, %05d\n",
-                         $track['lon'][$i],
-                         $track['lat'][$i],
-                         $track['elev'][$i * ($track['nbChartPt'] - 1) / ($track['nbTrackPt'] - 1) ]);
-    }
-    
-    $file .= sprintf("        </coordinates>\n" .
-                     "    </LineString>\n" .
-                     "</Placemark>\n" .
-                     "<Placemark>\n" .
+    $file .= sprintf("<Placemark>\n" .
                      "    <name>Deco</name>\n" .
                      "    <Point>\n" .
                      "        <coordinates>\n" .
@@ -220,37 +219,116 @@ function generate_kml_track($jsonTrack, $color = "ff00ffff") {
 }
 
 
+/*
+Function: generate_kml_linestring
+        Generate a linestring Placemark (KML format)
+
+Arguments:
+        name - Name of the linestring
+        track - GPS track
+        $color - Linestring color
+
+Returns:
+        KML file
+*/
+function generate_kml_linestring($name, $track, $color) {
+    $line = "<Placemark>\n" .
+            "    <name>$name</name>\n" .
+            "    <visibility>1</visibility>\n" .
+            "    <open>1</open>\n" .
+            "    <Style>\n" .
+            "        <LineStyle>\n" .
+            "            <color>$color</color>\n" .
+            "        </LineStyle>\n" .
+            "    </Style>\n" .
+            "    <LineString>\n" .
+            "        <altitudeMode>absolute</altitudeMode>\n" .
+            "        <coordinates>\n";
+
+    for ($i = 0; $i < $track['nbTrackPt']; $i++) {
+        $line .= sprintf("        %010.6f, %010.6f, %05d\n",
+                         $track['lon'][$i],
+                         $track['lat'][$i],
+                         $track['elev'][$i * ($track['nbChartPt'] - 1) / ($track['nbTrackPt'] - 1) ]);
+    }
+
+    $line .= "        </coordinates>\n" .
+             "    </LineString>\n" .
+             "</Placemark>\n";
+
+    return $line;
+
+}
+
+/*
+Function: generate_kml_tasklive
+        Generate a auto-refreshed kml file for a task
+
+Arguments:
+        task - Task name pattern
+        delay - Track delay in minutes
+
+Returns:
+        KML file
+*/
+function generate_kml_tasklive($task, $delay) {
+    $file= sprintf("<?xml version='1.0' encoding='UTF-8'?>\n" .
+                   "<kml xmlns='http://earth.google.com/kml/2.2'>\n" .
+                   "  <Folder>\n" .
+                   "    <name>GPS Live tracking</name>\n" .
+                   "    <visibility>1</visibility>\n" .
+                   "    <open>1</open>\n" .
+                   "    <NetworkLink>\n" .
+                   "      <name>Task</name>\n" .
+                   "      <visibility>1</visibility>\n" .
+                   "      <open>1</open>\n" .
+                   "      <refreshVisibility>0</refreshVisibility>\n" .
+                   "      <flyToView>0</flyToView>\n" .
+                   "      <Link>\n" .
+                   "        <href>%s</href>\n" .
+                   "        <httpQuery>delay=$delay&amp;format=task&amp;task=$task</httpQuery>\n" .
+                   "        <refreshMode>onInterval</refreshMode>\n" .
+                   "        <refreshInterval>5</refreshInterval>\n" .
+                   "      </Link>\n" .
+                   "    </NetworkLink>\n" .
+                   "  </Folder>\n" .
+                   "</kml>\n",
+                   "http://" . $_SERVER['SERVER_NAME'] . $_SERVER['PHP_SELF']);
+
+    return $file;
+}
+
+/*
+Function: generate_kml_task
+        Generate a kml file for a task with multiple pilots
+
+Arguments:
+        task - Task name pattern
+        delay - Track delay in minutes
+
+Returns:
+        KML file
+*/
+
 function generate_kml_task($task, $delay) {
-    $track = @json_decode($jsonTrack, true);
-    if (!isset($track['nbTrackPt']) || $track['nbTrackPt'] < 5) exit;
-
-    $lookAt = false;
+    $file = "<?xml version='1.0' encoding='UTF-8'?>\n" .
+            "<kml xmlns='http://earth.google.com/kml/2.2'>\n" .
+            "<Folder>\n" .
+            "<name>Pilots</name>\n";
+                    
     $ids = GetTaskFlights($task);
-
-    $file = sprintf("<?xml version='1.0' encoding='UTF-8'?>\n" .
-                    "<kml xmlns='http://earth.google.com/kml/2.2'>\n" .
-                    "    <Document>\n" .
-                    "        <name><![CDATA[#NAME#]]></name>\n" .
-                    "        <LookAt>\n" .
-                    "           <longitude>#LOOK_LON#</longitude>\n" .
-                    "           <latitude>#LOOK_LAT#</latitude>\n" .
-                    "           <range>32000</range>\n" .
-                    "           <tilt>64</tilt>\n" .
-                    "           <heading>0</heading>\n" .
-                    "        </LookAt>\n" .
-                    "        <open>1</open>\n" .
-                    "        <visibility>1</visibility>\n" .
-                    "        <description>\n" .
-                    "            <![CDATA[#TASK#]]>\n" .
-                    "        </description>\n" .
-                    "        <NetworkLink>\n" .
-                    "            <open>0</open>\n" .
-                    "            <visibility>1</visibility>\n" .
-                    "            <name>Plain</name>\n" .
-                    "            <Link><href>plain.kml</href></Link>\n" .
-                    "        </NetworkLink>\n" .
-                    "    </Document>\n" .
-                    "</kml>";
+    
+    $maxPilots = max(20, count($ids));
+    
+    for ($i = 0; $i < count($ids); $i++) {
+          $jsonTrack = GetDatabaseTrack($ids[$i], $delay);
+          $track = @json_decode($jsonTrack, true);
+          $color = 'FF' . value2color($i, 0, $maxPilots);
+          $file .= generate_kml_linestring($track['pilot'], $track, $color);
+    }
+    
+    $file .= "</Folder>\n" .
+             "</kml>";
 
     return $file;
 }

@@ -43,7 +43,7 @@ function GetTaskFlights($pattern) {
     $link = mysql_connect(dbHost, dbUser, dbPassword) or die ('Could not connect: ' . mysql_error());
     mysql_select_db(dbName) or die ('Database does not exist');
 
-    $query = "SELECT flightId " .
+    $query = "SELECT flightId, COUNT(latitude) as count " .
              "FROM pilot, flight, point " .
              "WHERE start > DATE_SUB(UTC_TIMESTAMP(), INTERVAL 12 HOUR) AND pseudo LIKE '$pattern%' " .
              "AND flightId = flight.id AND pilotID = pilot.id " .
@@ -51,7 +51,9 @@ function GetTaskFlights($pattern) {
     $result = mysql_query($query) or die('Query error: ' . mysql_error());
     for ($i = 0; $i < mysql_num_rows($result); $i++) {
         $row = mysql_fetch_object($result);
-        $ids[] = $row->flightId;
+        if ($row->count > 5) {
+            $ids[] = $row->flightId;
+        }
     }
 
     return $ids;

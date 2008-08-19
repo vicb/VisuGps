@@ -226,10 +226,10 @@ Function: generate_kml_linestring
 Arguments:
         name - Name of the linestring
         track - GPS track
-        $color - Linestring color
+        color - Linestring color
 
 Returns:
-        KML file
+        KML fragment
 */
 function generate_kml_linestring($name, $track, $color, $width = 1) {
     $line = "<Placemark>\n" .
@@ -250,7 +250,7 @@ function generate_kml_linestring($name, $track, $color, $width = 1) {
         $line .= sprintf("        %010.6f, %010.6f, %05d\n",
                          $track['lon'][$i],
                          $track['lat'][$i],
-                         $track['elev'][$i * ($track['nbChartPt'] - 1) / ($track['nbTrackPt'] - 1) ]);
+                         get_track_elevation($track, $i));
     }
 
     $line .= "        </coordinates>\n" .
@@ -260,7 +260,17 @@ function generate_kml_linestring($name, $track, $color, $width = 1) {
     return $line;
 }
 
+/*
+Function: generate_kml_point
+        Generate a point Placemark (KML format)
 
+Arguments:
+        name - Name of the point
+        lat, lon, elev - Coordinates of the point
+
+Returns:
+        KML fragment
+*/
 function generate_kml_point($name, $lat, $lon, $elev) {
     $point = sprintf("<Placemark>\n" .
                      "    <name><![CDATA[$name]]></name>\n" .
@@ -276,6 +286,27 @@ function generate_kml_point($name, $lat, $lon, $elev) {
 
     return $point;
 }
+
+
+/*
+Function: get_track_elevation
+        Interpolate altitude (there's more lat/lon than elevation data)
+
+Arguments:
+        track - GPS track
+        index - index of the point
+
+Returns:
+        Interpolated altitude
+*/
+function get_track_elevation($track, $index){
+        $index = $index * ($track['nbChartPt'] - 1) / ($track['nbTrackPt'] - 1);
+        $i = round($index);
+        $j = $i + 1;
+        if ($j >= $track['nbChartPt']) $j = $track['nbChartPt'] - 1;
+        return $track['elev'][$i] + ($index - $i) * ($track['elev'][$j] - $track['elev'][$i]);
+}
+
 
 /*
 Function: generate_kml_tasklive
@@ -605,7 +636,7 @@ function generate_colored_track($jsonTrack, $idxSerie, $unit, &$minValue, &$maxV
         $file .= sprintf("        %010.6f, %010.6f, %05d\n",
                          $track['lon'][$point - 1],
                          $track['lat'][$point - 1],
-                         $track['elev'][($point - 1) * ($track['nbChartPt'] - 1) / ($track['nbTrackPt'] - 1) ]);
+                         get_track_elevation($track, $point - 1));
 
         while (1) {
             $chartIndex = $point * ($track['nbChartPt'] - 1) / ($track['nbTrackPt'] - 1);

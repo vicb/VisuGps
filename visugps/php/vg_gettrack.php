@@ -277,6 +277,7 @@ function generate_kml_point($name, $lat, $lon, $elev) {
                      "    <name><![CDATA[$name]]></name>\n" .
                      "    <Point>\n".
                      "        <extrude>1</extrude>\n" .
+                     "        <styleUrl>#picon</styleUrl>\n" .
                      "        <altitudeMode>absolute</altitudeMode>\n" .
                      "        <coordinates>\n" .
                      "            %010.6f, %010.6f, %05d\n" .
@@ -363,6 +364,14 @@ function generate_kml_task($task, $delay) {
     $file = "<?xml version='1.0' encoding='UTF-8'?>\n" .
             "<kml xmlns='http://earth.google.com/kml/2.2'>\n" .
             "<Folder>\n" .
+            "<Style id='picon'>\n" .
+            "    <IconStyle>\n" .
+            "        <Icon>\n" .
+            "            <href>http://victorb.fr/visugps/img/picon.png</href>\n" .
+            "            <hotSpot x='50'  y='0' xunits='pixels' yunits='pixels'/>\n" .
+            "        </Icon>\n" .
+            "    </IconStyle>\n" .
+            "</Style>\n" .
             "<name>Pilots</name>\n";
                     
     $ids = GetTaskFlights($task);

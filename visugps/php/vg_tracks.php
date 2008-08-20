@@ -32,21 +32,23 @@ Function: GetTaskFlights
         Return the list of flight made during last 12 hours
 
 Arguments:
-        taskId - Pattern to match pilot IDs
+        pattern - Pattern to match pilot IDs
+        utcOffset - Offset to add to local time to get UTC time
 
 Returns:
         List of flight IDs
 */
-function GetTaskFlights($pattern) {
+function GetTaskFlights($pattern, $utcOffset = 0) {
     $ids = array();
 
     $link = mysql_connect(dbHost, dbUser, dbPassword) or die ('Could not connect: ' . mysql_error());
     mysql_select_db(dbName) or die ('Database does not exist');
 
+    // Get flights using UTC time
     $query = "SELECT flightId, COUNT(latitude) as count " .
              "FROM pilot, flight, point " .
              "WHERE start > DATE_SUB(UTC_TIMESTAMP(), INTERVAL 12 HOUR) AND pseudo LIKE '$pattern%' " .
-             "AND flightId = flight.id AND pilotID = pilot.id " .
+             "AND flightId = flight.id AND pilotID = pilot.id AND utc = 1 " .
              "GROUP BY flightId ORDER BY flightId ASC";
     $result = mysql_query($query) or die('Query error: ' . mysql_error());
     for ($i = 0; $i < mysql_num_rows($result); $i++) {
@@ -55,6 +57,21 @@ function GetTaskFlights($pattern) {
             $ids[] = $row->flightId;
         }
     }
+
+    // Get flights using local time
+    $query = "SELECT flightId, COUNT(latitude) as count " .
+             "FROM pilot, flight, point " .
+             "WHERE DATE_ADD(start, INTERVAL $utcOffset HOUR) > DATE_SUB(UTC_TIMESTAMP(), INTERVAL 12 HOUR) AND pseudo LIKE '$pattern%' " .
+             "AND flightId = flight.id AND pilotID = pilot.id AND utc = 0 " .
+             "GROUP BY flightId ORDER BY flightId ASC";
+    $result = mysql_query($query) or die('Query error: ' . mysql_error());
+    for ($i = 0; $i < mysql_num_rows($result); $i++) {
+        $row = mysql_fetch_object($result);
+        if ($row->count > 5) {
+            $ids[] = $row->flightId;
+        }
+    }
+
 
     return $ids;
 }
@@ -104,11 +121,11 @@ function GetDatabaseTrack($trackId, $delay = 0, $utcOffset = 0) {
                  "HOUR(time) AS hour, " .
                  "MINUTE(time) AS min, " .
                  "SECOND(time) AS sec, " .
-                 "time AS utcTime ".
+                 "time ".
                  "FROM point, flight " .
                  "WHERE flightId = $trackId " .
                  "AND flight.id = flightId AND utc = 1 " .  // UTC time
-                 ($delay > 0?"AND utcTime < DATE_SUB(UTC_TIMESTAMP(), INTERVAL $delay MINUTE) ":"") .
+                 ($delay > 0?"AND time < DATE_SUB(UTC_TIMESTAMP(), INTERVAL $delay MINUTE) ":"") .
                  "ORDER BY time";
         $result = mysql_query($query) or die('Query error: ' . mysql_error());
         for ($i = 0; $i < mysql_num_rows($result); $i++) {
@@ -125,11 +142,11 @@ function GetDatabaseTrack($trackId, $delay = 0, $utcOffset = 0) {
                  "HOUR(DATE_ADD(time, INTERVAL $utcOffset HOUR)) AS hour, " .
                  "MINUTE(DATE_ADD(time, INTERVAL $utcOffset HOUR)) AS min, " .
                  "SECOND(DATE_ADD(time, INTERVAL $utcOffset HOUR)) AS sec, " .
-                 "DATE_ADD(time, INTERVAL $utcOffset HOUR) AS utcTime ".
+                 "time " .
                  "FROM point, flight " .
                  "WHERE flightId = $trackId " .
                  "AND flight.id = flightId AND utc = 0 " .  // Local time
-                 ($delay > 0?"AND utcTime < DATE_SUB(UTC_TIMESTAMP(), INTERVAL $delay MINUTE) ":"") .
+                 ($delay > 0?"AND DATE_ADD(time, INTERVAL $utcOffset HOUR) < DATE_SUB(UTC_TIMESTAMP(), INTERVAL $delay MINUTE) ":"") .
                  "ORDER BY time";
         $result = mysql_query($query) or die('Query error: ' . mysql_error());
         for ($i = 0; $i < mysql_num_rows($result); $i++) {

@@ -82,14 +82,14 @@ switch ($format) {
         header('Content-Disposition: attachment; filename="track.kml"');
         header('Cache-Control: no-cache, must-revalidate');
         header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-        echo generate_kml_tasklive($task, $delay);
+        echo generate_kml_tasklive($task, $delay, $utcOffset);
         break;
     case 'task':
         header('Content-Type: application/vnd.google-earth.kml+xml kml; charset=utf8');
         header('Content-Disposition: attachment; filename="track.kml"');
         header('Cache-Control: no-cache, must-revalidate');
         header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-        echo generate_kml_task($task, $delay);
+        echo generate_kml_task($task, $delay, $utcOffset);
         break;
     default:
         header('Content-type: text/plain; charset=ISO-8859-1');
@@ -275,9 +275,9 @@ Returns:
 function generate_kml_point($name, $lat, $lon, $elev) {
     $point = sprintf("<Placemark>\n" .
                      "    <name><![CDATA[$name]]></name>\n" .
+                     "    <styleUrl>#picon</styleUrl>\n" .
                      "    <Point>\n".
                      "        <extrude>1</extrude>\n" .
-                     "        <styleUrl>#picon</styleUrl>\n" .
                      "        <altitudeMode>absolute</altitudeMode>\n" .
                      "        <coordinates>\n" .
                      "            %010.6f, %010.6f, %05d\n" .
@@ -317,11 +317,12 @@ Function: generate_kml_tasklive
 Arguments:
         task - Task name pattern
         delay - Track delay in minutes
+        utcOffset - Offset to add to local time to get UTC time
 
 Returns:
         KML file
 */
-function generate_kml_tasklive($task, $delay) {
+function generate_kml_tasklive($task, $delay, $utcOffset) {
     $file= sprintf("<?xml version='1.0' encoding='UTF-8'?>\n" .
                    "<kml xmlns='http://earth.google.com/kml/2.2'>\n" .
                    "  <Folder>\n" .
@@ -336,7 +337,7 @@ function generate_kml_tasklive($task, $delay) {
                    "      <flyToView>0</flyToView>\n" .
                    "      <Link>\n" .
                    "        <href>%s</href>\n" .
-                   "        <httpQuery>delay=$delay&amp;format=task&amp;task=$task</httpQuery>\n" .
+                   "        <httpQuery>delay=$delay&amp;format=task&amp;task=$task&amp;utc=$utcOffset</httpQuery>\n" .
                    "        <refreshMode>onInterval</refreshMode>\n" .
                    "        <refreshInterval>10</refreshInterval>\n" .
                    "      </Link>\n" .
@@ -355,12 +356,13 @@ Function: generate_kml_task
 Arguments:
         task - Task name pattern
         delay - Track delay in minutes
+        utcOffset - Offset to add to local time to get UTC time
 
 Returns:
         KML file
 */
 
-function generate_kml_task($task, $delay) {
+function generate_kml_task($task, $delay, $utcOffset) {
     $file = "<?xml version='1.0' encoding='UTF-8'?>\n" .
             "<kml xmlns='http://earth.google.com/kml/2.2'>\n" .
             "<Folder>\n" .
@@ -374,7 +376,7 @@ function generate_kml_task($task, $delay) {
             "</Style>\n" .
             "<name>Pilots</name>\n";
                     
-    $ids = GetTaskFlights($task);
+    $ids = GetTaskFlights($task, $utcOffset);
     
     $maxPilots = max(5, count($ids));
     

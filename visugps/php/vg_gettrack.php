@@ -45,6 +45,7 @@ if (isset($_GET['track'])) {
 } else if ($format == 'tasklive' || $format == 'task') {
     $task = isset($_GET['task'])?$_GET['task']:'task';
     $delay = isset($_GET['delay'])?intval($_GET['delay']):10;
+    $utcOffset = isset($_GET['utc'])?intval($_GET['utc']):0;
 } else {
     exit;
 }
@@ -336,7 +337,7 @@ function generate_kml_tasklive($task, $delay) {
                    "        <href>%s</href>\n" .
                    "        <httpQuery>delay=$delay&amp;format=task&amp;task=$task</httpQuery>\n" .
                    "        <refreshMode>onInterval</refreshMode>\n" .
-                   "        <refreshInterval>5</refreshInterval>\n" .
+                   "        <refreshInterval>10</refreshInterval>\n" .
                    "      </Link>\n" .
                    "    </NetworkLink>\n" .
                    "  </Folder>\n" .
@@ -369,7 +370,7 @@ function generate_kml_task($task, $delay) {
     $maxPilots = max(5, count($ids));
     
     for ($i = 0; $i < count($ids); $i++) {
-          $jsonTrack = GetDatabaseTrack($ids[$i], $delay);
+          $jsonTrack = GetDatabaseTrack($ids[$i], $delay, $utcOffset);
           $track = @json_decode($jsonTrack, true);
           $color = 'FF' . value2color($i, 0, $maxPilots);
           $file .= generate_kml_linestring($track['pilot'], $track, $color, 2);
@@ -643,7 +644,7 @@ function generate_colored_track($jsonTrack, $idxSerie, $unit, &$minValue, &$maxV
             $file .= sprintf("        %010.6f, %010.6f, %05d\n",
                              $track['lon'][$point],
                              $track['lat'][$point],
-                             $track['elev'][$chartIndex]);
+                             get_track_elevation($track, $point));
             $color = value2color($track[$idxSerie][$chartIndex], $minValue, $maxValue);
             $point++;
             if ($color != $lastColor) break;

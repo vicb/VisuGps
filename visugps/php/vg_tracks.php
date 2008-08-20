@@ -66,6 +66,7 @@ Function: GetDatabaseTrack
 Arguments:
         trackId - id of the track into the database
         delay - minimum age of fix to return (minute)
+        utcOffset - Offset to be added to convert local time to UTC
 
 Returns:
         JSON encoded track. See track format below
@@ -89,7 +90,7 @@ Track format:
         nbChartPt - number of points in elev, elevGnd, speed, vario
         nbChartLbl - number of labels (time.labels)
 */
-function GetDatabaseTrack($trackId, $delay = 0) {
+function GetDatabaseTrack($trackId, $delay = 0, $utcOffset = 0) {
     $link = mysql_connect(dbHost, dbUser, dbPassword) or die ('Could not connect: ' . mysql_error());
     mysql_select_db(dbName) or die ('Database does not exist');
 
@@ -98,11 +99,37 @@ function GetDatabaseTrack($trackId, $delay = 0) {
     $result = mysql_query($query) or die('Query error: ' . mysql_error());
     if (mysql_num_rows($result) > 5) {
 
-        // Get the pilot id when it exists otherwise exit
-        $query = "SELECT latitude, longitude, elevation, HOUR(time) AS hour, " .
-                 "MINUTE(time) AS min, SECOND(time) AS sec, time " .
-                 "FROM point WHERE flightId = $trackId " .
-                 ($delay > 0?"AND time < DATE_SUB(UTC_TIMESTAMP(), INTERVAL $delay MINUTE) ":"") .
+        // Get points from the track (using UTC time)
+        $query = "SELECT latitude, longitude, elevation, " .
+                 "HOUR(time) AS hour, " .
+                 "MINUTE(time) AS min, " .
+                 "SECOND(time) AS sec, " .
+                 "time AS utcTime ".
+                 "FROM point, flight " .
+                 "WHERE flightId = $trackId " .
+                 "AND flight.id = flightId AND utc = 1 " .  // UTC time
+                 ($delay > 0?"AND utcTime < DATE_SUB(UTC_TIMESTAMP(), INTERVAL $delay MINUTE) ":"") .
+                 "ORDER BY time";
+        $result = mysql_query($query) or die('Query error: ' . mysql_error());
+        for ($i = 0; $i < mysql_num_rows($result); $i++) {
+            $row = mysql_fetch_object($result);
+            $track['lat'][$i] = floatval($row->latitude);
+            $track['lon'][$i] = floatval($row->longitude);
+            $track['elev'][$i] = intval($row->elevation);
+            $track['time']['hour'][$i] = intval($row->hour);
+            $track['time']['min'][$i] = intval($row->min);
+            $track['time']['sec'][$i] = intval($row->sec);
+        }
+        // Get points from the track (using local time)
+        $query = "SELECT latitude, longitude, elevation, " .
+                 "HOUR(DATE_ADD(time, INTERVAL $utcOffset HOUR)) AS hour, " .
+                 "MINUTE(DATE_ADD(time, INTERVAL $utcOffset HOUR)) AS min, " .
+                 "SECOND(DATE_ADD(time, INTERVAL $utcOffset HOUR)) AS sec, " .
+                 "DATE_ADD(time, INTERVAL $utcOffset HOUR) AS utcTime ".
+                 "FROM point, flight " .
+                 "WHERE flightId = $trackId " .
+                 "AND flight.id = flightId AND utc = 0 " .  // Local time
+                 ($delay > 0?"AND utcTime < DATE_SUB(UTC_TIMESTAMP(), INTERVAL $delay MINUTE) ":"") .
                  "ORDER BY time";
         $result = mysql_query($query) or die('Query error: ' . mysql_error());
         for ($i = 0; $i < mysql_num_rows($result); $i++) {
@@ -234,6 +261,16 @@ function MakeTrack($url)
     }
 }
 
+/*
+Function: MakeJsonTrack
+        Convert a track to JSON format
+
+Arguments:
+        track - track as associative array.
+
+Return:
+        The track in JSON format
+*/
 function MakeJsonTrack($track) {
     $track['nbPt'] = $nbPts = count($track['lat']);
 

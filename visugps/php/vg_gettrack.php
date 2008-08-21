@@ -384,8 +384,10 @@ function generate_kml_task($task, $delay, $utcOffset) {
           $jsonTrack = GetDatabaseTrack($ids[$i], $delay, $utcOffset);
           $track = @json_decode($jsonTrack, true);
           $color = 'FF' . value2color($i, 0, $maxPilots);
-          $file .= generate_kml_linestring($track['pilot'], $track, $color, 2);
-          $file .= generate_kml_point($track['pilot'], end($track['lat']), end($track['lon']), end($track['elev']));
+          if (isset($track['nbTrackPt']) && $track['nbTrackPt'] > 5) {
+              $file .= generate_kml_linestring($track['pilot'], $track, $color, 2);
+              $file .= generate_kml_point($track['pilot'], end($track['lat']), end($track['lon']), end($track['elev']));
+          }
     }
     
     $file .= "</Folder>\n" .

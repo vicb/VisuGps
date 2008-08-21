@@ -47,6 +47,7 @@ import fr.victorb.mobile.vgps.Constant;
 import fr.victorb.mobile.vgps.gps.GpsListener;
 import fr.victorb.mobile.vgps.ui.Sites;
 import fr.victorb.mobile.vgps.ui.WhereAmI;
+import javax.microedition.lcdui.Alert;
 import javax.microedition.lcdui.Displayable;
 
 public class Controller implements BluetoothFinderListener, GpsListener {    
@@ -324,6 +325,14 @@ public class Controller implements BluetoothFinderListener, GpsListener {
 //#endif        
     }
 
+    public void testDataTransfer() {
+        boolean success = GpsUtil.testDataTransfer();
+        String msg = success?new String("Connexion successful"):new String("Connexion error!");
+        Alert alert = new Alert("Data Transfer", msg, null, null);
+        alert.setTimeout(Alert.FOREVER);
+        getDisplay().setCurrent(alert, menu);        
+    }
+    
     public void gpsPositionUpdated(GpsPosition position) {
         switch (recordState) {
             case RecordState.START_REQUEST:

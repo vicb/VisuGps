@@ -79,14 +79,15 @@ public class BluetoothGps extends Gps implements Runnable {
         char c;
         Split split;
         String string;
+        Controller controller = Controller.getController();
         
         try {            
-            Controller.getController().logAppend("Connecting: " + url);
+            controller.logAppend("Connecting: " + url);
             gpsStream = Connector.openInputStream(url);    
             connected = true;
-            Controller.getController().logAppend("Connected");
+            controller.logAppend("Connected");
         } catch (IOException ex) { 
-            Controller.getController().logAppend("Connection error: " + ex.getMessage());
+            controller.logAppend("Connection error: " + ex.getMessage());
             connected = false;
         }
                
@@ -135,6 +136,14 @@ public class BluetoothGps extends Gps implements Runnable {
                         position.date.year = (byte)Integer.parseInt(string.substring(4, 6));                    
                     }
                     updatePosition(position);
+                }                
+            } catch(IOException ex) {
+                // Conection error
+                controller.logAppend("Connection error, trying to reconnect in 10s");
+                try {
+                    Thread.sleep(10 * 1000);
+                    gpsStream = Connector.openInputStream(url);
+                } catch (Exception e) {                    
                 }                
             } catch (Exception ex) {
                 // Parsing exception

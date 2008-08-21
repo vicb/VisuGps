@@ -63,4 +63,35 @@ public class GpsUtil {
             }
         }
     }
+
+    public static boolean testDataTransfer() {
+        DataOutputStream stream = null;
+        HttpConnection connection = null;
+        byte data[] = new String("test=1").getBytes();
+        boolean success = false;
+        try {
+            connection = (HttpConnection)Connector.open(Constant.LOGURL, Connector.WRITE);
+            connection.setRequestMethod(HttpConnection.POST);
+            connection.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
+            connection.setRequestProperty("Content-Length", Integer.toString(data.length));
+            stream = connection.openDataOutputStream();            
+            stream.write(data, 0, data.length);
+            stream.close();
+            success = (connection.getResponseCode() == 200);
+        } catch (IOException e) {            
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (Exception e) {
+                }
+            }
+            try {
+                stream.close();
+            } catch (Exception e) {
+            }
+        }
+        return success;
+    }    
+    
 }

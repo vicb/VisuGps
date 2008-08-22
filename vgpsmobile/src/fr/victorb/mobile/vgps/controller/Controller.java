@@ -105,12 +105,13 @@ public class Controller implements BluetoothFinderListener, GpsListener {
             // Return from pause
         } else {
             this.midlet = midlet;
-            display = Display.getDisplay(midlet);
+            display = Display.getDisplay(midlet);            
             try {                
                 RmsFile.unserialize(CONFIG_FILE, configuration);
             } catch (Exception e) {
                 configuration = new Configuration();
-            }                      
+            }
+            createGps();
         }    
         
 //#if USE_INTERNAL_GPS
@@ -137,18 +138,25 @@ public class Controller implements BluetoothFinderListener, GpsListener {
      * @return GPS currently in use
      */
     public Gps getGps() {
-        if (recordState == RecordState.STOP) {
+        return gps;
+    }
+    
+    public void createGps() {
+        if (gps != null) {
+            // Stop the current GPS
+            gps.stop();
+            gps = null;
+        }
+        
 //#if USE_INTERNAL_GPS
-//#             if (configuration.getUseInternalGps()) {
-//#                 gps = new InternalGps();
-//#             } else {
-//#                 gps = new BluetoothGps();    
-//#             }                
+//#         if (configuration.getUseInternalGps()) {
+//#             gps = new InternalGps();
+//#         } else {
+//#             gps = new BluetoothGps();    
+//#         }                
 //#else
         gps = new BluetoothGps();    
-//#endif            
-        }
-        return gps;
+//#endif
     }
     
     /**
@@ -159,22 +167,12 @@ public class Controller implements BluetoothFinderListener, GpsListener {
     }
     
     public void requestStart() {
-//#if USE_INTERNAL_GPS
-//#         if (configuration.getUseInternalGps()) {
-//#             gps = new InternalGps();
-//#         } else {
-//#             gps = new BluetoothGps();    
-//#         }                
-//#else
-        gps = new BluetoothGps();    
-//#endif
-    gps.start(configuration.getGpsUrl());                       
-    recordState = RecordState.START_REQUEST;
-    gps.addPositionListener(this);
-    logAppend("START_REQUEST");
-    GpsUtil.requestNetworkPermission();
-    }
-   
+        gps.start(configuration.getGpsUrl());                       
+        recordState = RecordState.START_REQUEST;
+        gps.addPositionListener(this);
+        logAppend("START_REQUEST");
+        GpsUtil.requestNetworkPermission();
+    }   
     
     /**
      * Start recording and sending position
@@ -190,7 +188,6 @@ public class Controller implements BluetoothFinderListener, GpsListener {
     public void requestStop() {
         if (recordState == RecordState.STARTED) stopRecording();        
         gps.stop();
-        gps = null;
         recordState = RecordState.STOP;  
         logAppend("STOP");
     }

@@ -163,7 +163,8 @@ public class OptionMenu extends Form implements CommandListener {
             cfg.setUseAutoStart(useAutoMode[0]);
             cfg.setUseAutoStop(useAutoMode[1]);
             
-            controller.saveConfig();              
+            controller.saveConfig();
+            controller.createGps();
         }        
         controller.showMainMenu();
     }

@@ -38,8 +38,7 @@ public abstract class Localize extends Form implements CommandListener {
     
     public Localize(String title) {
         super(title);
-        controller = Controller.getController();
-        gps = controller.getGps();
+        controller = Controller.getController();        
         addCommand(cmdExit);
         setCommandListener(this);      
     }
@@ -55,6 +54,7 @@ public abstract class Localize extends Form implements CommandListener {
         
         public void run() {
             deleteAll();
+            gps = controller.getGps();
             append(new StringItem("", "Waiting for a valid GPS fix"));            
             if (controller.getRecordState() == RecordState.STOP) {
                 // Start the GPS to get the location

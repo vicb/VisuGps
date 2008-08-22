@@ -102,7 +102,7 @@ public class Controller implements BluetoothFinderListener, GpsListener {
     
     public void start(MIDlet midlet) {        
         if (paused) {
-            
+            // Return from pause
         } else {
             this.midlet = midlet;
             display = Display.getDisplay(midlet);
@@ -326,8 +326,8 @@ public class Controller implements BluetoothFinderListener, GpsListener {
     }
 
     public void testDataTransfer() {
-        boolean success = GpsUtil.testDataTransfer();
-        String msg = success?new String("Connexion successful"):new String("Connexion error!");
+        int status = GpsUtil.testDataTransfer();
+        String msg = (status  >= 0)?new String("Connection successful \nID=" + String.valueOf(status)):new String("Connection error!");
         Alert alert = new Alert("Data Transfer", msg, null, null);
         alert.setTimeout(Alert.FOREVER);
         getDisplay().setCurrent(alert, menu);        

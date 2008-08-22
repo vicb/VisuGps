@@ -23,7 +23,7 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 package fr.victorb.mobile.vgps;
 
 public class Constant {
-    public static final String VERSION = "v1.7.0b";
+    public static final String VERSION = "v1.7.1";
     
     public static final String LOGURL = "http://www.victorb.fr/visugps/php/mvg_track.php";
     public static final String WEATHERURL = "http://www.victorb.fr/visugps/php/mvg_weather.php";

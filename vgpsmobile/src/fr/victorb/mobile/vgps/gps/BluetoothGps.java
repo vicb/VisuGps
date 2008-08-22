@@ -139,9 +139,9 @@ public class BluetoothGps extends Gps implements Runnable {
                 }                
             } catch(IOException ex) {
                 // Conection error
-                controller.logAppend("Connection error, trying to reconnect in 10s");
+                controller.logAppend("Connection error, trying to reconnect in 1min");
                 try {
-                    Thread.sleep(10 * 1000);
+                    Thread.sleep(60 * 1000);
                     gpsStream = Connector.openInputStream(url);
                 } catch (Exception e) {                    
                 }                

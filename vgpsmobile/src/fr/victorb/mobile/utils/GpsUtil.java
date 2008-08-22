@@ -25,6 +25,7 @@ package fr.victorb.mobile.utils;
 import fr.victorb.mobile.vgps.Constant;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Random;
 import javax.microedition.io.Connector;
 import javax.microedition.io.HttpConnection;
 
@@ -64,11 +65,14 @@ public class GpsUtil {
         }
     }
 
-    public static boolean testDataTransfer() {
+    public static int testDataTransfer() {
         DataOutputStream stream = null;
         HttpConnection connection = null;
-        byte data[] = new String("test=1").getBytes();
-        boolean success = false;
+        Random random = new Random();
+        random.setSeed(System.currentTimeMillis());
+        int rand = random.nextInt(1000);
+        byte data[] = new String("test=1&id=" + String.valueOf(rand)).getBytes();
+        int status = -1;
         try {
             connection = (HttpConnection)Connector.open(Constant.LOGURL, Connector.WRITE);
             connection.setRequestMethod(HttpConnection.POST);
@@ -77,7 +81,9 @@ public class GpsUtil {
             stream = connection.openDataOutputStream();            
             stream.write(data, 0, data.length);
             stream.close();
-            success = (connection.getResponseCode() == 200);
+            if (connection.getResponseCode() == 200) {
+                status = rand;
+            }
         } catch (IOException e) {            
         } finally {
             if (connection != null) {
@@ -91,7 +97,7 @@ public class GpsUtil {
             } catch (Exception e) {
             }
         }
-        return success;
+        return status;
     }    
     
 }

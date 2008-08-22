@@ -83,6 +83,11 @@ public class GpsSender {
     private synchronized void sendData() {     
         recorder.appendRecords(positions);
         
+        if (positions.size() == 0 && state == STATE_ON) {
+            // Do not generate an HTTP request when there is no data to sent
+            return;
+        }
+        
         String postData = new String();
         DataOutputStream stream = null;
 

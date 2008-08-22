@@ -29,9 +29,18 @@ require('mvg_db.inc.php');
 // Keep going only if an id has been provided
 if (!isset($_POST['id'])) exit;
 $utc = isset($_POST['utc'])?1:0;
+$test = isset($_POST['test'])?true:false;
 
 $link = mysql_connect(dbHost, dbUser, dbPassword) or die ('Could not connect: ' . mysql_error());
 mysql_select_db(dbName) or die ('Database does not exist');
+
+// Is it only a connection test ?
+if ($test) {
+    $id = isset($_POST['id'])?intval($_POST['id']):0;
+    $insert = "INSERT INTO test (id, time) VALUES ($id, NOW())";
+    mysql_query($insert) or die ('Query error: ' . mysql_error());
+    exit();
+}
 
 // Get the pilot id when it exists otherwise exit
 $query = sprintf("SELECT id FROM pilot WHERE pseudo = '%s'", format_mysql($_POST['id']));

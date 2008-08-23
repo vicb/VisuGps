@@ -86,7 +86,7 @@ public abstract class Localize extends Form implements CommandListener {
             }
             gps.removeFixValidListner(helper);
             gps.removePositionListener(helper);            
-            controller.showMainMenu();
+            controller.showMoreMenu();
         }
     }
 }

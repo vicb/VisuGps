@@ -38,7 +38,6 @@ public class OptionMenu extends Form implements CommandListener {
     
     private TextField idTxt;
     private ChoiceGroup logChoice;
-    private ChoiceGroup sendChoice;
     private ChoiceGroup gpsChoice;
     private ChoiceGroup autoModeChoice;
     private Controller controller;
@@ -53,8 +52,7 @@ public class OptionMenu extends Form implements CommandListener {
         controller = Controller.getController();
         
         append(idTxt = new TextField("Pilot ID", controller.configuration.getPilotId(), 10, TextField.ANY));
-        append(logChoice = new ChoiceGroup("Log Interval (sec)", Choice.EXCLUSIVE, new String[] {"5", "10", "60", "600"}, null));
-        append(sendChoice = new ChoiceGroup("Track Interval (min)", Choice.EXCLUSIVE, new String[] {"5", "10", "30", "60"}, null));       
+        append(logChoice = new ChoiceGroup("Log/Send Periods", Choice.EXCLUSIVE, new String[] {"5s/5min", "10s/10min", "1min/30min", "10min/30min"}, null));
 
 //#if USE_INTERNAL_GPS        
 //#         if (GpsUtil.hasInternalGps()) {
@@ -87,20 +85,6 @@ public class OptionMenu extends Form implements CommandListener {
                 logChoice.setSelectedIndex(3, true);
         }
 
-        switch (cfg.getSendInterval()) {
-            case 5:
-                sendChoice.setSelectedIndex(0, true);
-                break;
-            case 10:
-                sendChoice.setSelectedIndex(1, true);
-                break;
-            case 30:
-                sendChoice.setSelectedIndex(2, true);
-                break;
-            default:
-                sendChoice.setSelectedIndex(3, true);
-        }
-
 //#if USE_INTERNAL_GPS        
 //#         if (GpsUtil.hasInternalGps()) {
 //#             useInternalGps[0] = cfg.getUseInternalGps();
@@ -121,30 +105,20 @@ public class OptionMenu extends Form implements CommandListener {
             switch (logChoice.getSelectedIndex()) {
                 case 0:
                     cfg.setLogInterval(5);
+                    cfg.setSendInterval(5);                    
                     break;
                 case 1:
                     cfg.setLogInterval(10);
+                    cfg.setSendInterval(10);                    
                     break;
                 case 2:
                     cfg.setLogInterval(60);
+                    cfg.setSendInterval(30);                    
                     break;
                 default:
                     cfg.setLogInterval(600);
-            }
-
-            switch (sendChoice.getSelectedIndex()) {
-                case 0:
-                    cfg.setSendInterval(5);
-                    break;
-                case 1:
-                    cfg.setSendInterval(10);
-                    break;
-                case 2:
                     cfg.setSendInterval(30);
-                    break;
-                default:
-                    cfg.setSendInterval(60);
-            } 
+            }
 
 //#if USE_INTERNAL_GPS            
 //#             if (GpsUtil.hasInternalGps()) {

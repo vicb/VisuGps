@@ -37,7 +37,7 @@ public class GpsSender {
     private String id;
     private GpsRecorder recorder;
     
-    private Vector positions = new Vector();
+    private Vector positions = new Vector(60, 60);
     private String url;
     
     private static final int STATE_START = 0;
@@ -142,6 +142,15 @@ public class GpsSender {
             } catch (Exception e) {
             }
         }       
+        
+        // Decimate old unsent positions to save space
+        int i = 1;
+        while (i < positions.size()) {
+            positions.removeElementAt(i);
+            i++;
+        }
+        positions.trimToSize();
+    
     }    
     
     private class Helper extends TimerTask {

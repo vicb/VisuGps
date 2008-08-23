@@ -43,6 +43,9 @@ public class Debug extends List implements CommandListener {
     }
     
     public void append(String value) {
+        if (size() > 50) {
+            clear();
+        }
         append(value, null);
     }
     
@@ -58,7 +61,7 @@ public class Debug extends List implements CommandListener {
             alert.setTimeout(Alert.FOREVER);
             controller.getDisplay().setCurrent(alert, display);
         } else {
-            controller.showMainMenu();
+            controller.showMoreMenu();
         }
     }
     

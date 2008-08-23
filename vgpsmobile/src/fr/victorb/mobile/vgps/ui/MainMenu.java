@@ -22,9 +22,6 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 package fr.victorb.mobile.vgps.ui;
 
-//#if USE_INTERNAL_GPS
-//# import fr.victorb.mobile.utils.GpsUtil;
-//#endif
 import fr.victorb.mobile.vgps.controller.Controller;
 import fr.victorb.mobile.vgps.controller.RecordState;
 import fr.victorb.mobile.vgps.gps.GpsListener;
@@ -60,19 +57,11 @@ public class MainMenu extends List implements CommandListener, GpsListener {
             append("GPS: -", Image.createImage(this.getClass().getResourceAsStream("/res/gps.png")));
             append("Options", Image.createImage(this.getClass().getResourceAsStream("/res/config.png")));
             append("Start", Image.createImage(this.getClass().getResourceAsStream("/res/start.png")));
-            append("Fix invalid", imgInvalid);
-            append("Weather", Image.createImage(this.getClass().getResourceAsStream("/res/weather.png")));
-            append("Flying sites", Image.createImage(this.getClass().getResourceAsStream("/res/map.png")));
-            append("Where am I ?", Image.createImage(this.getClass().getResourceAsStream("/res/map.png")));
+            append("GPS Fix invalid", imgInvalid);
             append("Minimize", Image.createImage(this.getClass().getResourceAsStream("/res/minimize.png")));
-            append("Test data transfer", Image.createImage(this.getClass().getResourceAsStream("/res/phone.png")));
-            append("About...", Image.createImage(this.getClass().getResourceAsStream("/res/about.png")));
+            append("More...", Image.createImage(this.getClass().getResourceAsStream("/res/zoom_in.png")));
         } catch (IOException ex) {
         }
-        
-//#if DEBUG
-//#         append("Debug", null);
-//#endif        
         
         controller.logAppend(controller.configuration.getGpsName());
         controller.logAppend(controller.configuration.getGpsUrl());
@@ -137,34 +126,10 @@ public class MainMenu extends List implements CommandListener, GpsListener {
                     }                            
                     break;
                 case 4:
-                    controller.showWeather();
-                    break;
-                case 5:
-                    controller.showSites();
-                    break;
-                case 6:
-                    controller.showWhereAmI();
-                    break;
-                case 7:
                     controller.getDisplay().setCurrent(null);
                     break;
-                case 8:
-                    controller.testDataTransfer();
-                    break;
-                case 9:
-                    try {
-                        Alert alert = new Alert("VGpsMobile", controller.getVersion() + 
-                                                " - by Victor Berchet - www.victorb.fr - " + 
-                                                "METAR by geonames.org - " +
-                                                "Flying sites by paraglidingearth.com", 
-                                                Image.createImage(this.getClass().getResourceAsStream("/res/icon_big.png")), null);
-                        alert.setTimeout(Alert.FOREVER);
-                        controller.getDisplay().setCurrent(alert, this);
-                    }catch (IOException ex) {
-                    }
-                    break;
-                case 10:
-                    controller.showDebug();
+                case 5:
+                    controller.showMoreMenu();
             }
         } else if (command == cmdExit) {
             controller.exit();
@@ -184,9 +149,9 @@ public class MainMenu extends List implements CommandListener, GpsListener {
      */
     public void gpsFixValidUpdated(boolean valid) {
         if (valid) {
-            set(3, "Fix valid", imgValid);
+            set(3, "GPS Fix valid", imgValid);
         } else {
-            set(3, "Fix invalid", imgInvalid);
+            set(3, "GPS Fix invalid", imgInvalid);
         }
     }
     

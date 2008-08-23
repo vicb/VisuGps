@@ -28,8 +28,8 @@ import fr.victorb.mobile.utils.Time;
 public class GpsPosition {
         public float latitude;
         public float longitude;
-        public int elevation;
-        public float speed;
+        public short elevation;
+        public byte speed;
         public Time time = new Time();
         public Date date = new Date();
         

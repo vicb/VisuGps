@@ -45,6 +45,7 @@ import fr.victorb.mobile.vgps.ui.Weather;
 //#endif
 import fr.victorb.mobile.vgps.Constant;
 import fr.victorb.mobile.vgps.gps.GpsListener;
+import fr.victorb.mobile.vgps.ui.MoreMenu;
 import fr.victorb.mobile.vgps.ui.Sites;
 import fr.victorb.mobile.vgps.ui.WhereAmI;
 import javax.microedition.lcdui.Alert;
@@ -66,6 +67,7 @@ public class Controller implements BluetoothFinderListener, GpsListener {
     private GpsSender sender = null;
     
     private MainMenu menu;
+    private MoreMenu moreMenu = null;
     private OptionMenu options = null;
     private Weather weather = null;
     private Sites sites = null;
@@ -96,7 +98,9 @@ public class Controller implements BluetoothFinderListener, GpsListener {
      * Initialize the controller
      */
     private void init() {
-        debug = new Debug();
+//#if DEBUG        
+//#         debug = new Debug();
+//#endif        
         menu = new MainMenu();       
     }
     
@@ -237,6 +241,11 @@ public class Controller implements BluetoothFinderListener, GpsListener {
     public void showMainMenu() {
         display.setCurrent(menu);
     }
+
+    public void showMoreMenu() {
+        if (moreMenu == null) moreMenu = new MoreMenu();
+        display.setCurrent(moreMenu);
+    }   
     
     public void showOptionMenu() {
         if (options == null) options = new OptionMenu();
@@ -327,7 +336,7 @@ public class Controller implements BluetoothFinderListener, GpsListener {
         String msg = (status  >= 0)?new String("Connection successful \nID=" + String.valueOf(status)):new String("Connection error!");
         Alert alert = new Alert("Data Transfer", msg, null, null);
         alert.setTimeout(Alert.FOREVER);
-        getDisplay().setCurrent(alert, menu);        
+        getDisplay().setCurrent(alert, moreMenu);        
     }
     
     public void gpsPositionUpdated(GpsPosition position) {

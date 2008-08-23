@@ -30,14 +30,14 @@ import java.io.IOException;
 
 public class Configuration implements Serializable {
     static private final int CFGVERSION = 2;
-    private String gpsName = "BlueGPS";
+    private String gpsName = "No GPS";
     private String gpsUrl = "btspp://000A3A25DF6B:1";   
     private String pilotId = "";
-    private short logInterval = 10;
-    private short sendInterval = 10;
+    private short logInterval = 5;
+    private short sendInterval = 5;
     private boolean useInternalGps = false;
-    private boolean useAutoStart = false;
-    private boolean useAutoStop = false;
+    private boolean useAutoStart = true;
+    private boolean useAutoStop = true;
     
     /** Creates a new instance of Configuration */
     public Configuration() {

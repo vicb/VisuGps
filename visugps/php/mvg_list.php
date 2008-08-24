@@ -31,6 +31,8 @@ header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
 
 require('mvg_db.inc.php');
 
+$geoServerStatus = true;
+
 $link = mysql_connect(dbHost, dbUser, dbPassword) or die ('Could not connect: ' . mysql_error());
 mysql_select_db(dbName) or die ('Database does not exist');
 
@@ -97,11 +99,11 @@ if (mysql_num_rows($result)) {
                 $takeoff = mysql_fetch_object($result2);
                 $track['start']['lat'] = $takeoff->latitude;
                 $track['start']['lon'] = $takeoff->longitude;
-                $track['start']['location'] = getNearbyPlace($takeoff->latitude, $takeoff->longitude);
+                $track['start']['location'] = getNearbyPlace($takeoff->latitude, $takeoff->longitude, $geoServerStatus);
                 if ($row->utc) {
                     // Convert UTC to local time
                     try {
-                        $timeZone = new DateTimeZone(getTimeZone($takeoff->latitude, $takeoff->longitude));
+                        $timeZone = new DateTimeZone(getTimeZone($takeoff->latitude, $takeoff->longitude, $geoServerStatus));
                         $timeOffset = timezone_offset_get($timeZone, new DateTime($track['start']['time']));
                     } catch (Exception $e) {        // Will be caught
                         $timeOffset = 0;
@@ -126,7 +128,7 @@ if (mysql_num_rows($result)) {
                 $landing = mysql_fetch_object($result2);
                 $track['end']['lat'] = $landing->latitude;
                 $track['end']['lon'] = $landing->longitude;
-                $track['end']['location'] = getNearbyPlace($landing->latitude, $landing->longitude);
+                $track['end']['location'] = getNearbyPlace($landing->latitude, $landing->longitude, $geoServerStatus);
             }
         }
     $tracks['tracks'][] = $track;
@@ -135,7 +137,10 @@ if (mysql_num_rows($result)) {
 
 echo @json_encode($tracks);
 
-function getNearbyPlace($lat, $lon) {
+function getNearbyPlace($lat, $lon, &$status) {
+    $location['place'] = '-';
+    $location['country'] = '-';
+    if (!$status) return $location;
     $url = "http://ws.geonames.org/findNearbyPlaceNameJSON?lat=$lat&lng=$lon";
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
@@ -144,12 +149,35 @@ function getNearbyPlace($lat, $lon) {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, 5);
     $data = curl_exec($ch);
+    $status = (curl_errno($ch) == 0);
     curl_close($ch);
-    $data = json_decode($data)->geonames[0];
-    $location['place'] = $data->name;
-    $location['country'] = strtolower($data->countryCode);
+    if ($status) {
+        $data = json_decode($data)->geonames[0];
+        $location['place'] = $data->name;
+        $location['country'] = strtolower($data->countryCode);
+    }
     return $location;
 }
+
+function getTimeZone($lat, $lon, &$status) {
+    if (!$status) return NULL;
+    $url = "http://ws.geonames.org/timezoneJSON?lat=$lat&lng=$lon";
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_FAILONERROR, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+    $data = curl_exec($ch);
+    $status = (curl_errno($ch) == 0);
+    curl_close($ch);
+    if ($status) {
+        return json_decode($data)->timezoneId;
+    } else {
+        return NULL;
+    }
+}
+
 
 function format_mysql($text) {
     if(get_magic_quotes_gpc()) {
@@ -160,19 +188,6 @@ function format_mysql($text) {
         }
     }
     return mysql_real_escape_string($text);
-}
-
-function getTimeZone($lat, $lon) {
-    $url = "http://ws.geonames.org/timezoneJSON?lat=$lat&lng=$lon";
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_FAILONERROR, true);
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-    $data = curl_exec($ch);
-    curl_close($ch);
-    return json_decode($data)->timezoneId;
 }
 
 function mysql2timestamp($datetime){

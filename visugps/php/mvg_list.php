@@ -89,6 +89,7 @@ if (mysql_num_rows($result)) {
         $track['end']['time'] = $row->end;
         $track['live'] = ($row->end == NULL);
 
+        // Get take-off information
         $query = "SELECT latitude, longitude FROM point " .
                  "WHERE flightId = $row->flightId " .
                  "ORDER BY point.time ASC " .
@@ -99,25 +100,10 @@ if (mysql_num_rows($result)) {
                 $takeoff = mysql_fetch_object($result2);
                 $track['start']['lat'] = $takeoff->latitude;
                 $track['start']['lon'] = $takeoff->longitude;
-                $track['start']['location'] = getNearbyPlace($takeoff->latitude, $takeoff->longitude, $geoServerStatus);
-                if ($row->utc) {
-                    // Convert UTC to local time
-                    try {
-                        $timeZone = new DateTimeZone(getTimeZone($takeoff->latitude, $takeoff->longitude, $geoServerStatus));
-                        $timeOffset = timezone_offset_get($timeZone, new DateTime($track['start']['time']));
-                    } catch (Exception $e) {        // Will be caught
-                        $timeOffset = 0;
-                    }
-                    $startTime = mysql2timestamp($track['start']['time']) + $timeOffset;
-                    $track['start']['time'] = date("Y-m-d H:i:s", $startTime);
-                    if (!$track['live']) {
-                        $endTime = mysql2timestamp($track['end']['time']) + $timeOffset;
-                        $track['end']['time'] = date("Y-m-d H:i:s", $endTime);
-                    }
-                }
             }
         }
 
+        // Get landing info
         $query = "SELECT latitude, longitude FROM point " .
                  "WHERE flightId = $row->flightId " .
                  "ORDER BY point.time DESC " .
@@ -128,14 +114,95 @@ if (mysql_num_rows($result)) {
                 $landing = mysql_fetch_object($result2);
                 $track['end']['lat'] = $landing->latitude;
                 $track['end']['lon'] = $landing->longitude;
-                $track['end']['location'] = getNearbyPlace($landing->latitude, $landing->longitude, $geoServerStatus);
             }
         }
+
+      $flightInfo = getFlightInfo($track, $geoServerStatus);
+
+      if ($row->utc) {
+          // Convert UTC to local time
+          try {
+              $timeZone = new DateTimeZone($flightInfo->timezone);
+              $timeOffset = timezone_offset_get($timeZone, new DateTime($track['start']['time']));
+          } catch (Exception $e) {
+              $timeOffset = 0;
+          }
+          $startTime = mysql2timestamp($track['start']['time']) + $timeOffset;
+          $track['start']['time'] = date("Y-m-d H:i:s", $startTime);
+          if (!$track['live']) {
+              // Live tracks don't have an end time
+              $endTime = mysql2timestamp($track['end']['time']) + $timeOffset;
+              $track['end']['time'] = date("Y-m-d H:i:s", $endTime);
+          }
+      }
+
     $tracks['tracks'][] = $track;
     }
 }
 
 echo @json_encode($tracks);
+
+
+function getFlightInfo(&$track, &$geoServerStatus) {
+    $id = $track['flightId'];
+    
+    $query = "SELECT * FROM flightInfo WHERE id='$id'";
+    $result = mysql_query($query)  or die('Query error: ' . mysql_error());
+    if (mysql_num_rows($result) == 1) {
+        $flightInfo = mysql_fetch_object($result);
+    } else {
+        $query = "INSERT INTO flightInfo (id) VALUES ('$id')";
+        $result = mysql_query($query)  or die('Query error: ' . mysql_error());
+        $query = "SELECT * FROM flightInfo WHERE id='$id'";
+        $result = mysql_query($query)  or die('Query error: ' . mysql_error());
+        $flightInfo = mysql_fetch_object($result);
+    }
+    
+    // Retrieve take-off information
+    if ($flightInfo->startLocation == NULL) {
+        $track['start']['location'] = getNearbyPlace($track['start']['lat'], $track['start']['lon'], $geoServerStatus);
+        if ($track['start']['location']['place'] != '-') {
+            $query = "UPDATE flightInfo " .
+                     "SET startLocation = '" . $track['start']['location']['place']. "', ".
+                     "startCountry = '" . $track['start']['location']['country']. "' " .
+                     "WHERE id='$id'";
+            $result = mysql_query($query) or die('Query error: ' . mysql_error());
+        }
+    } else {
+        $track['start']['location']['place'] = $flightInfo->startLocation;
+        $track['start']['location']['country'] = $flightInfo->startCountry;
+    }
+    
+    // Retrieve position / landing information
+    if ($flightInfo->endLocation == NULL || $track['live']) {
+        $track['end']['location'] = getNearbyPlace($track['end']['lat'], $track['end']['lon'], $geoServerStatus);
+        if ($track['end']['location']['place'] != '-' && !$track['live']) {
+            $query = "UPDATE flightInfo " .
+                     "SET endLocation = '" . $track['end']['location']['place'] . "', ".
+                     "endCountry = '" . $track['end']['location']['country']. "' " .
+                     "WHERE id='$id'";
+            $result = mysql_query($query) or die('Query error: ' . mysql_error());
+        }
+    } else {
+        $track['end']['location']['place'] = $flightInfo->endLocation;
+        $track['end']['location']['country'] = $flightInfo->endCountry;
+    }
+    
+    // Retrieve timezone information
+    if ($flightInfo->timezone == NULL) {
+        $flightInfo->timezone = getTimeZone($track['start']['lat'], $track['start']['lon'], $geoServerStatus);
+        if ($flightInfo->timezone != NULL) {
+            $query = "UPDATE flightInfo " .
+                     "SET timezone = '$flightInfo->timezone' ".
+                     "WHERE id='$id'";
+            $result = mysql_query($query) or die('Query error: ' . mysql_error());
+        }
+    }
+
+    return $flightInfo;
+
+}
+
 
 function getNearbyPlace($lat, $lon, &$status) {
     $location['place'] = '-';
@@ -177,7 +244,6 @@ function getTimeZone($lat, $lon, &$status) {
         return NULL;
     }
 }
-
 
 function format_mysql($text) {
     if(get_magic_quotes_gpc()) {

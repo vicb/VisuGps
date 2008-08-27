@@ -42,7 +42,8 @@ var VisuGps = new Class({
         measureCfd : true,
         maxSpeed : 80,
         maxVario : 10,
-        maxElev : 9999
+        maxElev : 9999,
+        showIgnMap : true
     },
     /*
     Property: initialize
@@ -63,6 +64,7 @@ var VisuGps = new Class({
             maxSpeed - maximum value for the speed (min = 0)
             maxVario - maximum absolute value for the GR
             maxElev - maximum value for the elevation (min = 0)
+            showIgnMap - wether or not to use IGN maps
     */
     initialize : function(options) {
         this.setOptions(options);
@@ -244,7 +246,9 @@ var VisuGps = new Class({
             }
         }
 
-        document.getElementById('ign').src = './ign.html';
+        if (opt.showIgnMap) {
+            document.getElementById('ign').src = './ign.html';
+        }
 
         // Add common event handlers
         google.maps.Event.addListener(this.map, 'click', this._leftClick.bind(this));

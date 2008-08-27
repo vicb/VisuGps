@@ -72,6 +72,22 @@ if (mysql_num_rows($result) == 1) {
         mysql_query($query) or die('Query error: ' . mysql_error());
         $flightId = mysql_insert_id();
         $flightNeedDate = true;
+    } else {
+        // If the last point is too old and no start has been received
+        // Create a new flight
+        $query = "SELECT HOUR(TIMEDIFF(NOW(), timestamp)) as delta FROM point " .
+                 "WHERE flightId = $flightId ".
+                 "ORDER BY time DESC LIMIT 0, 1";
+        $result = mysql_query($query) or die('Query error: ' . mysql_error());
+        if (mysql_num_rows($result) == 1) {
+            $flight = mysql_fetch_object($result);
+            if ($flight->delta > 2) {
+                $query = "INSERT INTO flight (pilotId, start, end, utc) VALUES ($pilotId, NULL, NULL, $utc)";
+                mysql_query($query) or die('Query error: ' . mysql_error());
+                $flightId = mysql_insert_id();
+                $flightNeedDate = true;
+            }
+        }
     }
 } else {
     $query = "INSERT INTO flight (pilotId, start, end, utc) VALUES ($pilotId, NULL, NULL, $utc)";

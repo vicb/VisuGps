@@ -23,9 +23,9 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 package fr.victorb.mobile.vgps.ui;
 
 import fr.victorb.mobile.utils.GpsUtil;
-import fr.victorb.mobile.vgps.Constant;
 import fr.victorb.mobile.vgps.config.Configuration;
 import fr.victorb.mobile.vgps.controller.Controller;
+import fr.victorb.mobile.vgps.gps.GpsType;
 import javax.microedition.lcdui.Choice;
 import javax.microedition.lcdui.ChoiceGroup;
 import javax.microedition.lcdui.Command;
@@ -56,8 +56,12 @@ public class OptionMenu extends Form implements CommandListener {
 
 //#if USE_INTERNAL_GPS        
 //#         if (GpsUtil.hasInternalGps()) {
-//#             append(gpsChoice = new ChoiceGroup("Gps", Choice.MULTIPLE, new String[]{"Use internal Gps"}, null));
+//#             append(gpsChoice = new ChoiceGroup("Gps Type", Choice.EXCLUSIVE, new String[]{"Bluetooth", "Socket (WM)", "Internal"}, null));
+//#         } else {
+//#             append(gpsChoice = new ChoiceGroup("Gps Type", Choice.EXCLUSIVE, new String[]{"Bluetooth", "Socket (WM)"}, null));
 //#         }
+//#else
+        append(gpsChoice = new ChoiceGroup("Gps Type", Choice.EXCLUSIVE, new String[]{"Bluetooth", "Socket (WM)"}, null));
 //#endif        
         
         append(autoModeChoice = new ChoiceGroup("Automatic mode", Choice.MULTIPLE, new String[] {"Use auto start", "Use auto stop"}, null));
@@ -85,12 +89,16 @@ public class OptionMenu extends Form implements CommandListener {
                 logChoice.setSelectedIndex(3, true);
         }
 
-//#if USE_INTERNAL_GPS        
-//#         if (GpsUtil.hasInternalGps()) {
-//#             useInternalGps[0] = cfg.getUseInternalGps();
-//#             gpsChoice.setSelectedFlags(useInternalGps);
-//#         }
-//#endif
+        switch (cfg.getGpsType()) {
+            case GpsType.BLUETOOTH:
+                gpsChoice.setSelectedIndex(0, true);
+                break;
+            case GpsType.SOCKET:
+                gpsChoice.setSelectedIndex(1, true);
+                break;
+            default:
+                gpsChoice.setSelectedIndex(2, true);
+        }
            
         useAutoMode[0] = cfg.getUseAutoStart();
         useAutoMode[1] = cfg.getUseAutoStop();
@@ -120,24 +128,23 @@ public class OptionMenu extends Form implements CommandListener {
                     cfg.setSendInterval(30);
             }
 
-//#if USE_INTERNAL_GPS            
-//#             if (GpsUtil.hasInternalGps()) {
-//#                 gpsChoice.getSelectedFlags(useInternalGps);
-//#                 if (useInternalGps[0]) {
-//#                     cfg.setUseInternalGps(true);
-//#                     controller.setGpsName(Constant.INTERNALGPS);
-//#                 } else {
-//#                     cfg.setUseInternalGps(false);
-//#                     controller.setGpsName(controller.configuration.getGpsName());                    
-//#                 }            
-//#             }
-//#endif
+            switch (gpsChoice.getSelectedIndex()) {
+                case 0:
+                    cfg.setGpsType(GpsType.BLUETOOTH);
+                    break;
+                case 1:
+                    cfg.setGpsType(GpsType.SOCKET);
+                    break;
+                default:
+                    cfg.setGpsType(GpsType.INTERNAL);
+            }
 
             autoModeChoice.getSelectedFlags(useAutoMode);
             cfg.setUseAutoStart(useAutoMode[0]);
             cfg.setUseAutoStop(useAutoMode[1]);
             
             controller.saveConfig();
+            controller.setGpsName();
             controller.createGps();
         }        
         controller.showMainMenu();

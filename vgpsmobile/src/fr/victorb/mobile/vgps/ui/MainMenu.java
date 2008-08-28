@@ -26,6 +26,7 @@ import fr.victorb.mobile.vgps.controller.Controller;
 import fr.victorb.mobile.vgps.controller.RecordState;
 import fr.victorb.mobile.vgps.gps.GpsListener;
 import fr.victorb.mobile.vgps.gps.GpsPosition;
+import fr.victorb.mobile.vgps.gps.GpsType;
 import java.io.IOException;
 import javax.microedition.lcdui.Alert;
 import javax.microedition.lcdui.Command;
@@ -62,10 +63,7 @@ public class MainMenu extends List implements CommandListener, GpsListener {
             append("More...", Image.createImage(this.getClass().getResourceAsStream("/res/zoom_in.png")));
         } catch (IOException ex) {
         }
-        
-        controller.logAppend(controller.configuration.getGpsName());
-        controller.logAppend(controller.configuration.getGpsUrl());
-                
+
         setCommandListener(this);        
     }
 
@@ -94,15 +92,10 @@ public class MainMenu extends List implements CommandListener, GpsListener {
         if (command == cmdSelect) {
             switch (getSelectedIndex()) {
                 case 0:
-//#if USE_INTERNAL_GPS
-//#                     if (controller.getRecordState() == RecordState.STOP && !controller.configuration.getUseInternalGps()) {
-//#                         controller.searchDevice();
-//#                     }
-//#else
-                    if (controller.getRecordState() == RecordState.STOP) {                    
+                    if (controller.getRecordState() == RecordState.STOP && 
+                        controller.configuration.getGpsType() == GpsType.BLUETOOTH ) {
                         controller.searchDevice();
                     }
-//#endif
                     break;
                 case 1:
                     if (controller.getRecordState() == RecordState.STOP) {
@@ -155,6 +148,11 @@ public class MainMenu extends List implements CommandListener, GpsListener {
         }
     }
     
+    /**
+     * Set the message of the status line
+     * @param msg Error message
+     * @param error true to indicate an error, false otherwise
+     */
     public void setErrorStatus(String msg, boolean error) {
         if (error) {
             set(3, msg, imgInvalid);

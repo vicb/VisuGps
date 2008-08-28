@@ -22,6 +22,7 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 package fr.victorb.mobile.vgps.config;
 
+import fr.victorb.mobile.vgps.gps.GpsType;
 import fr.victorb.mobile.vgps.rmsfile.RmsSerializeException;
 import fr.victorb.mobile.vgps.rmsfile.Serializable;
 import java.io.DataInputStream;
@@ -29,13 +30,13 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class Configuration implements Serializable {
-    static private final int CFGVERSION = 2;
+    static private final int CFGVERSION = 3;
     private String gpsName = "No GPS";
     private String gpsUrl = "btspp://000A3A25DF6B:1";   
     private String pilotId = "";
     private short logInterval = 5;
     private short sendInterval = 5;
-    private boolean useInternalGps = false;
+    private short gpsType = GpsType.BLUETOOTH;
     private boolean useAutoStart = true;
     private boolean useAutoStop = true;
     
@@ -83,12 +84,12 @@ public class Configuration implements Serializable {
         return sendInterval;
     }
     
-    public boolean getUseInternalGps() {
-        return useInternalGps;
+    public int getGpsType() {
+        return gpsType;
     }
     
-    public void setUseInternalGps(boolean value) {
-        useInternalGps = value;        
+    public void setGpsType(short value) {
+        gpsType = value;        
     }
     
     public boolean getUseAutoStart() {
@@ -114,7 +115,7 @@ public class Configuration implements Serializable {
         data.writeUTF(pilotId);
         data.writeShort(logInterval);
         data.writeShort(sendInterval);
-        data.writeBoolean(useInternalGps);
+        data.writeShort(gpsType);
         data.writeBoolean(useAutoStart);
         data.writeBoolean(useAutoStop);
     }
@@ -128,7 +129,7 @@ public class Configuration implements Serializable {
             pilotId = data.readUTF();
             logInterval = data.readShort();
             sendInterval = data.readShort();
-            useInternalGps = data.readBoolean();
+            gpsType = data.readShort();
             useAutoStart = data.readBoolean();
             useAutoStop = data.readBoolean();
     }

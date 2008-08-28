@@ -22,7 +22,9 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 package fr.victorb.mobile.vgps.ui;
 
-import fr.victorb.mobile.utils.GpsUtil;
+//#if USE_INTERNAL_GPS
+//# import fr.victorb.mobile.utils.GpsUtil;
+//#endif
 import fr.victorb.mobile.vgps.config.Configuration;
 import fr.victorb.mobile.vgps.controller.Controller;
 import fr.victorb.mobile.vgps.gps.GpsType;
@@ -44,7 +46,6 @@ public class OptionMenu extends Form implements CommandListener {
     
     private Command cmdOk = new Command("Ok", Command.OK, 1);
     private Command cmdCancel = new Command("Cancel", Command.CANCEL, 1);
-    private boolean[] useInternalGps = new boolean[] {true};
     private boolean[] useAutoMode = new boolean[] {true, true};
     
     public OptionMenu() {

@@ -23,6 +23,7 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 package fr.victorb.mobile.utils;
 
 import fr.victorb.mobile.vgps.Constant;
+import fr.victorb.mobile.vgps.controller.Controller;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Random;
@@ -39,65 +40,60 @@ public class GpsUtil {
     }   
     
     public static void requestNetworkPermission() {
-        DataOutputStream stream = null;
-        HttpConnection connection = null;
-        byte data[] = new String("perm=1").getBytes();
-        try {
-            connection = (HttpConnection)Connector.open(Constant.LOGURL, Connector.WRITE);
-            connection.setRequestMethod(HttpConnection.POST);
-            connection.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
-            connection.setRequestProperty("Content-Length", Integer.toString(data.length));
-            stream = connection.openDataOutputStream();            
-            stream.write(data, 0, data.length);
-            stream.close();
-        } catch (IOException e) {            
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (Exception e) {
-                }
-            }
-            try {
-                stream.close();
-            } catch (Exception e) {
-            }
-        }
+        new Thread(new Helper(false)).start();
     }
 
-    public static int testDataTransfer() {
-        DataOutputStream stream = null;
-        HttpConnection connection = null;
-        Random random = new Random();
-        random.setSeed(System.currentTimeMillis());
-        int rand = random.nextInt(1000);
-        byte data[] = new String("test=1&id=" + String.valueOf(rand)).getBytes();
-        int status = -1;
-        try {
-            connection = (HttpConnection)Connector.open(Constant.LOGURL, Connector.WRITE);
-            connection.setRequestMethod(HttpConnection.POST);
-            connection.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
-            connection.setRequestProperty("Content-Length", Integer.toString(data.length));
-            stream = connection.openDataOutputStream();            
-            stream.write(data, 0, data.length);
-            stream.close();
-            if (connection.getResponseCode() == 200) {
-                status = rand;
-            }
-        } catch (IOException e) {            
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (Exception e) {
-                }
-            }
-            try {
-                stream.close();
-            } catch (Exception e) {
-            }
-        }
-        return status;
+    public static void testDataTransfer() {
+        new Thread(new Helper(true)).start();
     }    
     
+    private static class Helper implements Runnable {
+        private byte[] data;
+        private Random random = new Random();
+        private int rand;
+        private boolean status = false;
+        private boolean test;
+        
+        public Helper(boolean test) {
+            this.test = test;
+            if (test) {
+                random.setSeed(System.currentTimeMillis());
+                rand = random.nextInt(1000);
+                data = new String("test=1&id=" + String.valueOf(rand)).getBytes();
+            } else {
+                data = new String("perm=1").getBytes();
+            }
+        }
+       
+        public void run() {
+            DataOutputStream stream = null;
+            HttpConnection connection = null;
+            try {
+                connection = (HttpConnection)Connector.open(Constant.LOGURL, Connector.WRITE);
+                connection.setRequestMethod(HttpConnection.POST);
+                connection.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
+                connection.setRequestProperty("Content-Length", Integer.toString(data.length));
+                stream = connection.openDataOutputStream();            
+                stream.write(data, 0, data.length);
+                stream.close();
+                status = (connection.getResponseCode() == 200);
+            } catch (IOException e) {            
+            } finally {
+                if (connection != null) {
+                    try {
+                        connection.close();
+                    } catch (Exception e) {
+                    }
+                }
+                try {
+                    stream.close();
+                } catch (Exception e) {
+                }
+                if (test) {
+                    Controller.getController().alert("Data transfer", 
+                                                      status?"Connection successful \nID=" + String.valueOf(rand):"Connection error!");
+                }
+            }
+        }        
+    }    
 }

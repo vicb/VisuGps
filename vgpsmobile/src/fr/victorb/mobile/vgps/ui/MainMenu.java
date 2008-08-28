@@ -149,9 +149,17 @@ public class MainMenu extends List implements CommandListener, GpsListener {
      */
     public void gpsFixValidUpdated(boolean valid) {
         if (valid) {
-            set(3, "GPS Fix valid", imgValid);
+            setErrorStatus("GPS Fix valid", false);
         } else {
-            set(3, "GPS Fix invalid", imgInvalid);
+            setErrorStatus("GPS Fix invalid", true);
+        }
+    }
+    
+    public void setErrorStatus(String msg, boolean error) {
+        if (error) {
+            set(3, msg, imgInvalid);
+        } else {
+            set(3, msg, imgValid);
         }
     }
     

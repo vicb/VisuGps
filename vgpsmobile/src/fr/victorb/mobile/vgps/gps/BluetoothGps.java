@@ -140,6 +140,7 @@ public class BluetoothGps extends Gps implements Runnable {
             } catch(IOException ex) {
                 // Conection error
                 controller.logAppend("Connection error, trying to reconnect in 1min");
+                controller.setErrorStatus("GPS connection lost", true);
                 try {
                     Thread.sleep(60 * 1000);
                     gpsStream = Connector.openInputStream(url);

@@ -22,6 +22,7 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 package fr.victorb.mobile.vgps.ui;
 
+import fr.victorb.mobile.utils.GpsUtil;
 import fr.victorb.mobile.vgps.controller.Controller;
 import java.io.IOException;
 import javax.microedition.lcdui.Alert;
@@ -70,7 +71,7 @@ public class MoreMenu extends List implements CommandListener {
         if (command == cmdSelect) {
             switch (getSelectedIndex()) {
                 case 0:
-                    controller.testDataTransfer();
+                    GpsUtil.testDataTransfer();
                     break;
                 case 1:
                     controller.showWeather();

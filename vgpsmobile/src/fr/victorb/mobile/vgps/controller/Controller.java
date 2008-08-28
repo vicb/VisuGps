@@ -330,13 +330,16 @@ public class Controller implements BluetoothFinderListener, GpsListener {
 //#         display.setCurrent(debug);
 //#endif        
     }
-
-    public void testDataTransfer() {
-        int status = GpsUtil.testDataTransfer();
-        String msg = (status  >= 0)?new String("Connection successful \nID=" + String.valueOf(status)):new String("Connection error!");
-        Alert alert = new Alert("Data Transfer", msg, null, null);
+   
+    public void alert(String title, String msg) {
+        Displayable disp = display.getCurrent();
+        Alert alert = new Alert(title, msg, null, null);
         alert.setTimeout(Alert.FOREVER);
-        getDisplay().setCurrent(alert, moreMenu);        
+        getDisplay().setCurrent(alert, disp);               
+    }
+    
+    public void setErrorStatus(String msg, boolean error) {
+        menu.setErrorStatus(msg, error);
     }
     
     public void gpsPositionUpdated(GpsPosition position) {

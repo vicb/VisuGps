@@ -32,7 +32,7 @@ import javax.microedition.lcdui.Displayable;
 import javax.microedition.lcdui.List;
 
 public class Debug extends List implements CommandListener {
-    private Command cmdExit = new Command("Exit", Command.EXIT, 1);
+    private Command cmdExit = new Command("Back", Command.BACK, 1);
     private Command cmdSelect = new Command("Select", Command.ITEM, 1);    
 
     public Debug() {

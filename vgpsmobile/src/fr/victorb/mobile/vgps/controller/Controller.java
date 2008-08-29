@@ -47,6 +47,7 @@ import fr.victorb.mobile.vgps.Constant;
 import fr.victorb.mobile.vgps.gps.GpsListener;
 import fr.victorb.mobile.vgps.gps.GpsType;
 import fr.victorb.mobile.vgps.ui.MoreMenu;
+import fr.victorb.mobile.vgps.ui.Position;
 import fr.victorb.mobile.vgps.ui.Sites;
 import fr.victorb.mobile.vgps.ui.WhereAmI;
 import javax.microedition.lcdui.Alert;
@@ -72,7 +73,8 @@ public class Controller implements BluetoothFinderListener, GpsListener {
     private OptionMenu options = null;
     private Weather weather = null;
     private Sites sites = null;
-    private WhereAmI whereAmI = null;        
+    private WhereAmI whereAmI = null;   
+    private Position position = null;
 //#if DEBUG
 //#     private Debug debug;
 //#endif    
@@ -165,8 +167,7 @@ public class Controller implements BluetoothFinderListener, GpsListener {
     }
     
     public void requestStart() {
-        String url = (configuration.getGpsType() == GpsType.SOCKET?"socket://127.0.0.1:1234":configuration.getGpsUrl());
-        gps.start(url);                       
+        gps.start(configuration.getGpsUrl());                       
         recordState = RecordState.START_REQUEST;
         gps.addPositionListener(this);
         logAppend("START_REQUEST");
@@ -264,6 +265,12 @@ public class Controller implements BluetoothFinderListener, GpsListener {
         if (whereAmI == null) whereAmI = new WhereAmI();
         whereAmI.start();
         display.setCurrent(whereAmI);
+    }
+    
+    public void showPosition() {
+        if (position == null) position = new Position();
+        position.init(gps);
+        display.setCurrent(position);
     }
     
     public void saveConfig() {

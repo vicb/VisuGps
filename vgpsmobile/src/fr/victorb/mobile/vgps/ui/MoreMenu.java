@@ -47,6 +47,7 @@ public class MoreMenu extends List implements CommandListener {
         addCommand(cmdBack);        
         try {
             append("Test data transfer", Image.createImage(this.getClass().getResourceAsStream("/res/phone.png")));
+            append("Gps position", Image.createImage(this.getClass().getResourceAsStream("/res/arrow_in.png")));
             append("Weather", Image.createImage(this.getClass().getResourceAsStream("/res/weather.png")));
             append("Flying sites", Image.createImage(this.getClass().getResourceAsStream("/res/map.png")));
             append("Where am I ?", Image.createImage(this.getClass().getResourceAsStream("/res/map.png")));
@@ -74,15 +75,18 @@ public class MoreMenu extends List implements CommandListener {
                     GpsUtil.testDataTransfer();
                     break;
                 case 1:
-                    controller.showWeather();
+                    controller.showPosition();
                     break;
                 case 2:
-                    controller.showSites();
+                    controller.showWeather();
                     break;
                 case 3:
-                    controller.showWhereAmI();
+                    controller.showSites();
                     break;
                 case 4:
+                    controller.showWhereAmI();
+                    break;
+                case 5:
                     try {
                         Alert alert = new Alert("VGpsMobile", controller.getVersion() + 
                                                 " - by Victor Berchet - www.victorb.fr - " + 
@@ -94,7 +98,7 @@ public class MoreMenu extends List implements CommandListener {
                     }catch (IOException ex) {
                     }
                     break;
-                case 5:
+                case 6:
                     controller.showDebug();
             }
         } else if (command == cmdBack) {

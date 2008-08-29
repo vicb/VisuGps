@@ -22,6 +22,7 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 package fr.victorb.mobile.vgps.config;
 
+import fr.victorb.mobile.vgps.Constant;
 import fr.victorb.mobile.vgps.gps.GpsType;
 import fr.victorb.mobile.vgps.rmsfile.RmsSerializeException;
 import fr.victorb.mobile.vgps.rmsfile.Serializable;
@@ -69,7 +70,7 @@ public class Configuration implements Serializable {
     }
 
     public String getGpsUrl() {
-        return gpsUrl;
+        return (getGpsType() == GpsType.SOCKET?"socket://127.0.0.1:" + Constant.GPSPORT:gpsUrl);        
     }
    
     public String getPilotId() {

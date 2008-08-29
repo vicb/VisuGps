@@ -153,26 +153,30 @@ function getFilterCondition($filter) {
 
     $where = "";
 
-	for ($i = 0;$i < count($filter); $i++){
-		switch($filter[$i]['data']['type']){
-			case 'string' : 
-                $where .= " AND ".$filter[$i]['field']." LIKE '%".$filter[$i]['data']['value']."%'";
+    for ($i = 0; $i < count($filter); $i++){
+        $field = $filter[$i]['field'];
+        if ($field == 'name' ||
+            $field == 'start') {
+            switch($filter[$i]['data']['type']){
+                case 'string' :
+                    $where .= " AND $field LIKE '%".$filter[$i]['data']['value']."%'";
+                    break;
+                case 'date' :
+                    switch ($filter[$i]['data']['comparison']) {
+                        case 'eq' :
+                            $where .= " AND $field = '" . date('Y-m-d', strtotime($filter[$i]['data']['value'])) . "'";
+                            break;
+                        case 'lt' :
+                            $where .= " AND $field < '" . date('Y-m-d', strtotime($filter[$i]['data']['value'])) . "'";
+                            break;
+                        case 'gt' :
+                            $where .= " AND $field > '" . date('Y-m-d', strtotime($filter[$i]['data']['value'])) . "'";
+                            break;
+                    }
                 break;
-			case 'date' :
-				switch ($filter[$i]['data']['comparison']) {
-					case 'eq' :
-                        $where .= " AND ".$filter[$i]['field']." = '" . date('Y-m-d', strtotime($filter[$i]['data']['value'])) . "'";
-                        break;
-					case 'lt' :
-                        $where .= " AND ".$filter[$i]['field']." < '" . date('Y-m-d', strtotime($filter[$i]['data']['value'])) . "'";
-                        break;
-					case 'gt' :
-                        $where .= " AND ".$filter[$i]['field']." > '" . date('Y-m-d', strtotime($filter[$i]['data']['value'])) . "'";
-                        break;
-				}
-			break;
-		}
-	}
+            }
+        }
+    }
     return $where . " ";
 }
 

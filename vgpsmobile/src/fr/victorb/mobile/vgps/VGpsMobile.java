@@ -29,6 +29,7 @@ public class VGpsMobile extends MIDlet {
     private Controller controller;
     
     public void startApp() {
+        Constant.VERSION = getAppProperty("MIDlet-Version");
         controller = Controller.getController();
         controller.start(this);
     }

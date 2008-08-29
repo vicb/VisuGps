@@ -10,8 +10,9 @@ CREATE TABLE flight (
   `start` datetime default NULL,
   `end` datetime default NULL,
   utc tinyint(1) NOT NULL default '1',
+  ua char(40) default NULL,
   PRIMARY KEY  (id)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=105 DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -42,7 +43,7 @@ CREATE TABLE pilot (
   email char(60) NOT NULL,
   PRIMARY KEY  (id),
   UNIQUE KEY pseudo (pseudo,`name`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=46 DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -56,6 +57,7 @@ CREATE TABLE `point` (
   longitude float NOT NULL,
   elevation int(11) NOT NULL,
   `time` datetime NOT NULL,
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
   KEY flightId (flightId)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 

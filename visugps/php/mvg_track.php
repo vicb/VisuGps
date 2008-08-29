@@ -30,6 +30,7 @@ require('mvg_db.inc.php');
 if (!isset($_POST['id'])) exit;
 $utc = isset($_POST['utc'])?1:0;
 $test = isset($_POST['test'])?true:false;
+$ua = $_SERVER['HTTP_USER_AGENT'];
 
 $link = mysql_connect(dbHost, dbUser, dbPassword) or die ('Could not connect: ' . mysql_error());
 mysql_select_db(dbName) or die ('Database does not exist');
@@ -54,7 +55,7 @@ if (mysql_num_rows($result) == 1) {
 
 // Create a new flight on start
 if (isset($_POST['start'])) {
-    $query = "INSERT INTO flight (pilotId, start, end, utc) VALUES ($pilotId, NULL, NULL, $utc)";
+    $query = "INSERT INTO flight (pilotId, start, end, utc, ua) VALUES ($pilotId, NULL, NULL, $utc, '$ua')";
     mysql_query($query) or die('Query error: ' . mysql_error());
 }
 
@@ -68,7 +69,7 @@ if (mysql_num_rows($result) == 1) {
     if (isset($flight->end)) {
         // This is a previous flight (start has not been received for the current flight)
         // Create a new flight
-        $query = "INSERT INTO flight (pilotId, start, end, utc) VALUES ($pilotId, NULL, NULL, $utc)";
+        $query = "INSERT INTO flight (pilotId, start, end, utc, ua) VALUES ($pilotId, NULL, NULL, $utc, '$ua')";
         mysql_query($query) or die('Query error: ' . mysql_error());
         $flightId = mysql_insert_id();
         $flightNeedDate = true;
@@ -82,7 +83,7 @@ if (mysql_num_rows($result) == 1) {
         if (mysql_num_rows($result) == 1) {
             $flight = mysql_fetch_object($result);
             if ($flight->delta > 2) {
-                $query = "INSERT INTO flight (pilotId, start, end, utc) VALUES ($pilotId, NULL, NULL, $utc)";
+                $query = "INSERT INTO flight (pilotId, start, end, utc, ua) VALUES ($pilotId, NULL, NULL, $utc, '$ua')";
                 mysql_query($query) or die('Query error: ' . mysql_error());
                 $flightId = mysql_insert_id();
                 $flightNeedDate = true;

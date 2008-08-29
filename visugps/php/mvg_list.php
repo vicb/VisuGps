@@ -43,6 +43,8 @@ if ($end < $start) $end = $start;
 $sort = isset($_POST['sort'])?format_mysql($_POST['sort']):'start';
 $dir = isset($_POST['dir'])?(strtoupper($_POST['dir']) == 'ASC'?'ASC':'DESC'):'DESC';
 
+$filterWhere = getFilterCondition($_POST['filter']);
+
 // Set the end time for old flights which haven't received a stop
 $query = "SELECT id, end " .
          "FROM flight " .
@@ -66,7 +68,9 @@ if (mysql_num_rows($result)) {
 // Get the total number of flights
 $query = "SELECT name, start, end, utc, flightId, COUNT(latitude) as points " .
          "FROM pilot, flight, point " .
-         "WHERE flightId = flight.id AND pilotId = pilot.id GROUP BY flightId " .
+         "WHERE flightId = flight.id AND pilotId = pilot.id  " .
+         $filterWhere .
+         "GROUP BY flightId ".
          "HAVING points > 5 ";
 $result = mysql_query($query)  or die('Query error: ' . mysql_error());
 $tracks['count'] = mysql_num_rows($result);
@@ -74,7 +78,9 @@ $tracks['count'] = mysql_num_rows($result);
 // List flights having more than 5 points
 $query = "SELECT name, start, end, utc, flightId, COUNT(latitude) as points " .
          "FROM pilot, flight, point " .
-         "WHERE flightId = flight.id AND pilotId = pilot.id GROUP BY flightId " .
+         "WHERE flightId = flight.id AND pilotId = pilot.id " .
+         $filterWhere .
+         "GROUP BY flightId " .
          "HAVING points > 5 " .
          "ORDER BY $sort $dir LIMIT $start, $limit";
 $result = mysql_query($query)  or die('Query error: ' . mysql_error());
@@ -142,6 +148,33 @@ if (mysql_num_rows($result)) {
 
 echo @json_encode($tracks);
 
+function getFilterCondition($filter) {
+    if (!is_array($filter)) return "";
+
+    $where = "";
+
+	for ($i = 0;$i < count($filter); $i++){
+		switch($filter[$i]['data']['type']){
+			case 'string' : 
+                $where .= " AND ".$filter[$i]['field']." LIKE '%".$filter[$i]['data']['value']."%'";
+                break;
+			case 'date' :
+				switch ($filter[$i]['data']['comparison']) {
+					case 'eq' :
+                        $where .= " AND ".$filter[$i]['field']." = '" . date('Y-m-d', strtotime($filter[$i]['data']['value'])) . "'";
+                        break;
+					case 'lt' :
+                        $where .= " AND ".$filter[$i]['field']." < '" . date('Y-m-d', strtotime($filter[$i]['data']['value'])) . "'";
+                        break;
+					case 'gt' :
+                        $where .= " AND ".$filter[$i]['field']." > '" . date('Y-m-d', strtotime($filter[$i]['data']['value'])) . "'";
+                        break;
+				}
+			break;
+		}
+	}
+    return $where . " ";
+}
 
 function getFlightInfo(&$track, &$geoServerStatus) {
     $id = $track['flightId'];
@@ -187,7 +220,7 @@ function getFlightInfo(&$track, &$geoServerStatus) {
         $track['end']['location']['place'] = $flightInfo->endLocation;
         $track['end']['location']['country'] = $flightInfo->endCountry;
     }
-    
+
     // Retrieve timezone information
     if ($flightInfo->timezone == NULL) {
         $flightInfo->timezone = getTimeZone($track['start']['lat'], $track['start']['lon'], $geoServerStatus);
@@ -202,7 +235,6 @@ function getFlightInfo(&$track, &$geoServerStatus) {
     return $flightInfo;
 
 }
-
 
 function getNearbyPlace($lat, $lon, &$status) {
     $location['place'] = '-';

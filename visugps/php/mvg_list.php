@@ -162,15 +162,16 @@ function getFilterCondition($filter) {
                     $where .= " AND $field LIKE '%".$filter[$i]['data']['value']."%'";
                     break;
                 case 'date' :
+                    $day = date('Y-m-d', strtotime($filter[$i]['data']['value']));
                     switch ($filter[$i]['data']['comparison']) {
-                        case 'eq' :
-                            $where .= " AND $field = '" . date('Y-m-d', strtotime($filter[$i]['data']['value'])) . "'";
+                        case 'eq' :                            
+                            $where .= " AND $field > '$day 00:00:00' AND $field < '$day 23:59:59'";
                             break;
                         case 'lt' :
-                            $where .= " AND $field < '" . date('Y-m-d', strtotime($filter[$i]['data']['value'])) . "'";
+                            $where .= " AND $field < '$day'";
                             break;
                         case 'gt' :
-                            $where .= " AND $field > '" . date('Y-m-d', strtotime($filter[$i]['data']['value'])) . "'";
+                            $where .= " AND $field > '$day'";
                             break;
                     }
                 break;

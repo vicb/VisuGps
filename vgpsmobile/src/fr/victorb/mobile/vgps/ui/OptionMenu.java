@@ -53,7 +53,7 @@ public class OptionMenu extends Form implements CommandListener {
         controller = Controller.getController();
         
         append(idTxt = new TextField("Pilot ID", controller.configuration.getPilotId(), 10, TextField.ANY));
-        append(logChoice = new ChoiceGroup("Log/Send Periods", Choice.EXCLUSIVE, new String[] {"5s/5min", "10s/10min", "1min/30min", "10min/30min"}, null));
+        append(logChoice = new ChoiceGroup("Log/Send Periods", Choice.EXCLUSIVE, new String[] {"5s/5min", "10s/5min", "1min/30min", "10min/30min"}, null));
 
 //#if USE_INTERNAL_GPS        
 //#         if (GpsUtil.hasInternalGps()) {
@@ -118,7 +118,7 @@ public class OptionMenu extends Form implements CommandListener {
                     break;
                 case 1:
                     cfg.setLogInterval(10);
-                    cfg.setSendInterval(10);                    
+                    cfg.setSendInterval(5);                    
                     break;
                 case 2:
                     cfg.setLogInterval(60);

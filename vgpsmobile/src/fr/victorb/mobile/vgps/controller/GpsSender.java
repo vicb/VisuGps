@@ -128,6 +128,10 @@ public class GpsSender {
             stream = connection.openDataOutputStream();            
             stream.write(data, 0, data.length);
             stream.close();
+            int status = connection.getResponseCode();
+            if (status  != 200) {
+                controller.logAppend("HTTP status: " + String.valueOf(status));
+            }
             positions.removeAllElements();
         } catch (IOException e) {            
         } finally {

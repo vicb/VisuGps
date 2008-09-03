@@ -75,6 +75,7 @@ var VisuGps = new Class({
         this.marker = {};
         this.marker3d = null;
         this.model3d = null;
+        this.init3dMap = true;
         this.orientation = null;
         this.path = null;
         this.timer = null;
@@ -237,8 +238,6 @@ var VisuGps = new Class({
             $('vgps-anim').getParent().setStyle('height', h);
 
             this._initGraph();
-            
-            this.map.getEarthInstance(this._gePluginInit.bind(this));
             
             // Remove the top most overlay from the map
             if (load) {
@@ -407,6 +406,11 @@ var VisuGps = new Class({
         if (this.map.getCurrentMapType() == G_SATELLITE_3D_MAP) {
             if (this.path) {
                 this.map.removeOverlay(this.path);
+            // Init the 3d map when displayed for the first time
+            if (this.init3dMap) {
+                this.map.getEarthInstance(this._gePluginInit.bind(this));
+                this.init3dMap = false;
+            }
             // Create iframe shims to view custom controls
             new IFrame({src: 'javascript:false',
                         'frameborder': 0,

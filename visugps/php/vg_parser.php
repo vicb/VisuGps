@@ -329,7 +329,7 @@ Returns:
 */
 function IsKml($trackFile)
 {
-    return (preg_match('/xmlns *= *"http:\/\/earth\.google\.com\/kml\/[\d\.]+/im', $trackFile) > 0);
+    return (preg_match('/xmlns *= *["\']http:\/\/.*?\/kml\/[\d\.]+/im', $trackFile) > 0);
 }
 
 ?>

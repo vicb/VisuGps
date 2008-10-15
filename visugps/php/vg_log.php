@@ -48,11 +48,12 @@ class Log {
         $this->on = $on;
         if ($this->on) {
             $this->handle = fopen($name, 'ab');
-            if ((ftell($this->handle) > self::maxSize) && 
+            if (filesize($name) > self::maxSize &&
                 flock($this->handle, LOCK_EX)) {
                 rewind($this->handle);
                 ftruncate($this->handle, 0);
                 flock($this->handle, LOCK_UN);
+                $this->msg("Maximum size exceeded - file truncated");
             }
         }
     }

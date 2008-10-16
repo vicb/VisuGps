@@ -201,8 +201,8 @@ function getFlightInfo(&$track, &$geoServerStatus) {
         $track['start']['location'] = getNearbyPlace($track['start']['lat'], $track['start']['lon'], $geoServerStatus);
         if ($track['start']['location']['place'] != '-') {
             $query = "UPDATE flightInfo " .
-                     "SET startLocation = '" . $track['start']['location']['place']. "', ".
-                     "startCountry = '" . $track['start']['location']['country']. "' " .
+                     "SET startLocation = '" . format_mysql($track['start']['location']['place']) . "', ".
+                     "startCountry = '" . format_mysql($track['start']['location']['country']) . "' " .
                      "WHERE id='$id'";
             $result = mysql_query($query) or die('Query error: ' . mysql_error());
         }
@@ -216,8 +216,8 @@ function getFlightInfo(&$track, &$geoServerStatus) {
         $track['end']['location'] = getNearbyPlace($track['end']['lat'], $track['end']['lon'], $geoServerStatus);
         if ($track['end']['location']['place'] != '-' && !$track['live']) {
             $query = "UPDATE flightInfo " .
-                     "SET endLocation = '" . $track['end']['location']['place'] . "', ".
-                     "endCountry = '" . $track['end']['location']['country']. "' " .
+                     "SET endLocation = '" . format_mysql($track['end']['location']['place']) . "', ".
+                     "endCountry = '" . format_mysql($track['end']['location']['country']) . "' " .
                      "WHERE id='$id'";
             $result = mysql_query($query) or die('Query error: ' . mysql_error());
         }

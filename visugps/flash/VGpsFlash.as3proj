@@ -44,7 +44,7 @@
     <element path="lib\corelib.swc" />
     <element path="lib\map_flex_1_4.swc" />
     <element path="lib\map_flex_1_5.swc" />
-    <element path="lib\map_flex_1_6.swc" />
+    <element path="lib\map_1_8b.swc" />
   </libraryPaths>
   <!-- External Libraries -->
   <externalLibraryPaths>

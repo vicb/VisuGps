@@ -369,6 +369,7 @@ package fr.victorb.visugps
             map.addControl(new PositionControl());
             map.addControl(new MapTypeControl());
             map.addControl(new ZoomControl());
+            map.addControl(new ScaleControl());
             
             map.setCenter(new LatLng(46.73986, 2.17529),
                           5,

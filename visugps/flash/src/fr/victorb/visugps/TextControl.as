@@ -51,14 +51,16 @@ import com.google.maps.interfaces.IMap;
         /**
         * Constructor of custom control.
         * @constructor.
-        * @param controlColour  Colour transform applied to control's black buttons.
+        * @param ControlPosition  Position of the control on the map
         */
-        public function TextControl(position: ControlPosition) {
-            // Control will be placed at the top left corner of the map,
-            // 10 pixels from the edges.
+        public function TextControl(position: ControlPosition) {            
             super(position);
+        }
+        
+        public override function initControlWithMap(map:IMap):void {            
+            super.initControlWithMap(map);          
             addChild(background);
-            addChild(label);
+            addChild(label);              
         }
       
         public function text(text:String, size:Boolean = true):void {
@@ -70,7 +72,7 @@ import com.google.maps.interfaces.IMap;
             format.rightMargin = 3;
             label.setTextFormat(format);
             
-            if (size) {
+            if (size) {       
                 background.graphics.clear();
                 background.graphics.beginFill(0xFFFFCC, 0.8);
                 background.graphics.lineStyle(1, 0x000000);

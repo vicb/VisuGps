@@ -148,6 +148,8 @@ if (mysql_num_rows($result)) {
 
 echo @json_encode($tracks);
 
+mysql_close($link);
+
 function getFilterCondition($filter) {
     if (!is_array($filter)) return "";
 

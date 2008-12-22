@@ -148,13 +148,14 @@ public class GpsSender {
         }       
         
         // Decimate old unsent positions to save space
-        int i = 1;
-        while (i < positions.size()) {
-            positions.removeElementAt(i);
-            i++;
+        if (positions.size() > 200) {
+            int i = 1;
+            while (i < positions.size()) {
+                positions.removeElementAt(i);
+                i++;
+            }
+            positions.trimToSize();
         }
-        positions.trimToSize();
-    
     }    
     
     private class Helper extends TimerTask {

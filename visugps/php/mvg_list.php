@@ -42,6 +42,7 @@ if ($start < 0) $start = 0;
 if ($end < $start) $end = $start;
 $sort = isset($_POST['sort'])?format_mysql($_POST['sort']):'start';
 $dir = isset($_POST['dir'])?(strtoupper($_POST['dir']) == 'ASC'?'ASC':'DESC'):'DESC';
+$cb = isset($_REQUEST['callback'])?preg_replace('/[^\w]/i', '-', $_REQUEST['callback']):NULL;
 
 $filterWhere = getFilterCondition($_POST['filter']);
 
@@ -146,9 +147,11 @@ if (mysql_num_rows($result)) {
     }
 }
 
-echo @json_encode($tracks);
-
-mysql_close($link);
+if (isset($cb)) {
+  echo "$cb(" . @json_encode($tracks) . ")";
+} else {
+  echo @json_encode($tracks);
+}
 
 function getFilterCondition($filter) {
     if (!is_array($filter)) return "";

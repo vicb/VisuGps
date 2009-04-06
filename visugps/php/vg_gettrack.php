@@ -365,6 +365,7 @@ Returns:
 function generate_kml_task($task, $delay, $utcOffset) {
     $file = "<?xml version='1.0' encoding='UTF-8'?>\n" .
             "<kml xmlns='http://earth.google.com/kml/2.2'>\n" .
+            "<Document>\n" .
             "<Folder>\n" .
             "<Style id='picon'>\n" .
             "    <IconStyle>\n" .
@@ -389,8 +390,61 @@ function generate_kml_task($task, $delay, $utcOffset) {
               $file .= generate_kml_point($track['pilot'], end($track['lat']), end($track['lon']), end($track['elev']));
           }
     }
+/*    
+    $file .= "</Folder><Folder><name>Turn points</name>\n" .
+    "<Placemark>\n" .
+    "    <name>Start 12:30</name>\n" .
+    "    <Point>\n" .
+    "        <coordinates>\n" .
+    "        6.456398, 44.013995, 3000\n" .
+    "        </coordinates>\n" .
+    "    </Point>\n" .
+    "</Placemark>\n" .
+    "<Placemark>\n" .
+    "    <name>B2</name>\n" .
+    "    <Point>\n" .
+    "        <coordinates>\n" .
+    "        6.470938, 43.961758, 3000\n" .
+    "        </coordinates>\n" .
+    "    </Point>\n" .
+    "</Placemark>\n" .
+    "<Placemark>\n" .
+    "    <name>B3</name>\n" .
+    "    <Point>\n" .
+    "        <coordinates>\n" .
+    "        6.443883, 44.047477, 3000\n" .
+    "        </coordinates>\n" .
+    "    </Point>\n" .
+    "</Placemark>\n" .
+    "<Placemark>\n" .
+    "    <name>B4</name>\n" .
+    "    <Point>\n" .
+    "        <coordinates>\n" .
+    "        6.383936, 43.961208, 3000\n" .
+    "        </coordinates>\n" .
+    "    </Point>\n" .
+    "</Placemark>\n" .
+    "<Placemark>\n" .
+    "    <name>B5</name>\n" .
+    "    <Point>\n" .
+    "        <coordinates>\n" .
+    "        6.557838, 43.944109, 3000\n" .
+    "        </coordinates>\n" .
+    "    </Point>\n" .
+    "</Placemark>\n" .    
+    "<Placemark>\n" .
+    "    <name>Goal</name>\n" .
+    "    <Point>\n" .
+    "        <coordinates>\n" .
+    "        6.510494, 43.958585, 3000\n" .
+    "        </coordinates>\n" .
+    "    </Point>\n" .
+    "</Placemark>\n" .
+    "</Folder>\n</Document>\n</kml>";
+*/    
     
     $file .= "</Folder>\n" .
+             "</Document>\n" .
              "</kml>";
 
     return $file;

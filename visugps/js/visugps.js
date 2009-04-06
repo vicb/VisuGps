@@ -723,11 +723,11 @@ var VisuGps = new Class({
             window is being resized.
     */
     _resize : function() {
-        this.charts.showCursor(false);
+        if (this.charts) this.charts.showCursor(false);
         if (this.timer) $clear(this.timer);
-        this.timer = this._drawGraph.delay(100, this);
-        var size = $('ignwrap').getSize();
+        this.timer = this._drawGraph.delay(100, this);        
         if (this.ignMap != null) {
+            var size = $('ignwrap').getSize();
             this.ignMap.reSize(size.x, size.y);
         }
     },

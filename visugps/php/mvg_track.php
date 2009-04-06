@@ -32,6 +32,9 @@ $utc = isset($_POST['utc'])?1:0;
 $test = isset($_POST['test'])?true:false;
 $ua = $_SERVER['HTTP_USER_AGENT'];
 
+// Log connection
+file_put_contents('id.txt', $_POST['id'] . " - " . date(DATE_RFC822) . "\n", FILE_APPEND | LOCK_EX);
+
 $link = mysql_connect(dbHost, dbUser, dbPassword) or die ('Could not connect: ' . mysql_error());
 mysql_select_db(dbName) or die ('Database does not exist');
 

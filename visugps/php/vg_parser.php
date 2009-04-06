@@ -329,7 +329,14 @@ Returns:
 */
 function IsKml($trackFile)
 {
-    return (preg_match('/xmlns *= *["\']http:\/\/.*?\/kml\/[\d\.]+/im', $trackFile) > 0);
+    if (preg_match('/xmlns *= *["\']http:\/\/.*?\/kml\/[\d\.]+/im', $trackFile) > 0) {
+        return true;
+    } elseif (preg_match('/GpsDump/im', $trackFile) > 0 &&
+              preg_match('/<LineString>/im', $trackFile) > 0) {
+        // GpsDump generates invalid kml files!        
+        return true;
+    }
+        
 }
 
 ?>

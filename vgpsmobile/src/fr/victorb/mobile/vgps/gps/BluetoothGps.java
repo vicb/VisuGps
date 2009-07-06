@@ -33,7 +33,7 @@ public class BluetoothGps extends Gps implements Runnable {
     private InputStream gpsStream;
     private boolean connected;
     private String url = new String();
-    private GpsPosition position = new GpsPosition();
+    private final GpsPosition position = new GpsPosition();
     private int elevation = 0;   
     
     /** Creates a new instance of BluetoothGps */
@@ -90,9 +90,11 @@ public class BluetoothGps extends Gps implements Runnable {
             controller.logAppend("Connection error: " + ex.getMessage());
             connected = false;
         }
-               
+
+        StringBuffer buffer = new StringBuffer();
+
         while (connected) {
-            StringBuffer buffer = new StringBuffer();
+            buffer.setLength(0);
             try {
                 while((c = (char)gpsStream.read()) != '$'){}
                 while((c = (char)gpsStream.read()) != 10) {
@@ -110,11 +112,11 @@ public class BluetoothGps extends Gps implements Runnable {
                     split.next();       // N/S
                     split.next();       // lng
                     split.next();       // E/W
-                    string = split.next();                    
-                    valid = (Integer.parseInt(string)) > 0;  // fix valid                    
+                    string = split.next();
+                    valid = (Integer.parseInt(string)) > 0;  // fix valid
                     split.next();       // nb satellites
                     split.next();       // h dilution
-                    elevation =(int) Float.parseFloat(split.next()); // elevation                           
+                    elevation =(int) Float.parseFloat(split.next()); // elevation
                     updatefixValid(valid);
                 } else if (nmea.startsWith("GPRMC")) {
                     split = new Split(nmea);
@@ -124,16 +126,16 @@ public class BluetoothGps extends Gps implements Runnable {
                     synchronized  (position) {
                         position.time.hour = (byte)Integer.parseInt(string.substring(0, 2));
                         position.time.minute = (byte)Integer.parseInt(string.substring(2, 4));
-                        position.time.second = (byte)Integer.parseInt(string.substring(4, 6));                    
+                        position.time.second = (byte)Integer.parseInt(string.substring(4, 6));
                         position.latitude = Float.parseFloat(split.next()) * (split.next().toUpperCase().equals("N")?1:-1) / 100;
                         position.longitude = Float.parseFloat(split.next()) * (split.next().toUpperCase().equals("E")?1:-1) / 100;
-                        position.elevation = (short)elevation;                    
-                        position.speed = (byte)(Float.parseFloat(split.next()) * 1.852f);  // speed (knots -> km/h)    
-                        split.next();                                              // heading 
+                        position.elevation = (short)elevation;
+                        position.speed = (byte)(Float.parseFloat(split.next()) * 1.852f);  // speed (knots -> km/h)
+                        split.next();                                              // heading
                         string = split.next();
                         position.date.day = (byte)Integer.parseInt(string.substring(0, 2));
                         position.date.month = (byte)Integer.parseInt(string.substring(2, 4));
-                        position.date.year = (byte)Integer.parseInt(string.substring(4, 6));                    
+                        position.date.year = (byte)Integer.parseInt(string.substring(4, 6));
                     }
                     updatePosition(position);
                 }                
@@ -147,7 +149,7 @@ public class BluetoothGps extends Gps implements Runnable {
                 } catch (Exception e) {                    
                 }                
             } catch (Exception ex) {
-                // Parsing exception
+              // Parsing exception
             }            
         }
         try {

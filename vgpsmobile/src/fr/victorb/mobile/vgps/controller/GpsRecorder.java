@@ -29,7 +29,7 @@ import java.util.Vector;
 
 public class GpsRecorder implements GpsListener {
 
-    private Vector positions = new Vector(60, 10);
+    private final Vector positions = new Vector(60, 10);
     private Gps gps;   
     private boolean fixValid;
     Timer timer;

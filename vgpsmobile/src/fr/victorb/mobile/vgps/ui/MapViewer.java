@@ -23,6 +23,7 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 package fr.victorb.mobile.vgps.ui;
 
 import fr.victorb.mobile.vgps.Constant;
+import fr.victorb.mobile.vgps.controller.Controller;
 
 public class MapViewer extends ImageViewer {
 
@@ -37,10 +38,9 @@ public class MapViewer extends ImageViewer {
         super("");
         int w = Math.min(getWidth() * 2, 512);
         int h = Math.min(getHeight() * 2, 512);
-        url = Constant.GMAPURL + "?size=" + w + "x"  + h + "&" +
-              "maptype=mobile&markers=" + latSite + "," + lngSite +",smallgreen|" +
-              lat + "," + lng + ",smallblue&" +
-              "key=" + Constant.GMAPKEY;           
+        url = Constant.GMAPURL + "?s=" + w + "x"  + h + 
+              "&m=" + latSite + "," + lngSite +",smallgreen|" +
+              lat + "," + lng + ",smallblue";
     }
 
     /**
@@ -53,9 +53,8 @@ public class MapViewer extends ImageViewer {
         super("");
         int w = Math.min(getWidth() * 2, 512);
         int h = Math.min(getHeight() * 2, 512);
-        url = Constant.GMAPURL + "?size=" + w + "x"  + h + "&" +
-              "maptype=mobile&markers=" + lat + "," + lng +",smallgreen&" +
-              "zoom=" + zoom +
-              "&key=" + Constant.GMAPKEY;           
+        url = Constant.GMAPURL + "?s=" + w + "x"  + h +
+              "&m=" + lat + "," + lng +",smallgreen&" +
+              "z=" + zoom;
     }
 }

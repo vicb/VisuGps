@@ -56,6 +56,7 @@ public class Sites extends Localize implements ItemCommandListener {
         String coordinates = site.getText();
         int start = coordinates.indexOf("[") + 1;
         int middle = coordinates.indexOf(" ", start);
+
         float latSite = Float.parseFloat(coordinates.substring(start, middle));
         float lngSite = Float.parseFloat(coordinates.substring(middle + 1, coordinates.length() - 1));
         

@@ -22,6 +22,8 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 package fr.victorb.mobile.utils;
 
+import java.util.NoSuchElementException;
+
 public class Split {
     private String delimiter = ",";
     private int pos;
@@ -49,10 +51,10 @@ public class Split {
      * Get the next part of the string
      * @return part of string or null when e/o string reached
      */
-    public String next() {
+    public String next() throws NoSuchElementException {
         String sub;
         if (pos >= src.length()) {
-            return null;
+            throw new NoSuchElementException("Reach the end of string");
         } else {
             int match = src.indexOf(delimiter, pos);
             if (match == -1) {

@@ -69,7 +69,11 @@ public class GpsUtil {
             DataOutputStream stream = null;
             HttpConnection connection = null;
             try {
+//#if Blackberry_NO_MDS
+//#                 connection = (HttpConnection)Connector.open(Constant.LOGURL + ";deviceside=true", Connector.READ_WRITE);
+//#else
                 connection = (HttpConnection)Connector.open(Constant.LOGURL, Connector.WRITE);
+//#endif
                 connection.setRequestMethod(HttpConnection.POST);
                 connection.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
                 connection.setRequestProperty("Content-Length", Integer.toString(data.length));

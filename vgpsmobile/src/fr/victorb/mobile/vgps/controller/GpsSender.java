@@ -121,7 +121,11 @@ public class GpsSender {
         HttpConnection connection = null;
         byte data[] = postData.getBytes();
         try {
+//#if Blackberry_NO_MDS
+//#             connection = (HttpConnection)Connector.open(url + ";deviceside=true", Connector.READ_WRITE);
+//#else
             connection = (HttpConnection)Connector.open(url, Connector.WRITE);
+//#endif
             connection.setRequestMethod(HttpConnection.POST);
             connection.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
             connection.setRequestProperty("Content-Length", Integer.toString(data.length));

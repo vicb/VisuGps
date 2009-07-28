@@ -57,7 +57,11 @@ public class Weather extends Localize {
                          "?lat=" + Converter.degMinToDeg(position.latitude) + 
                          "&lon=" + Converter.degMinToDeg(position.longitude);
             try {
+//#if Blackberry_NO_MDS
+//#                 connection = (HttpConnection)Connector.open(url + ";deviceside=true", Connector.READ_WRITE);
+//#else
                 connection = (HttpConnection)Connector.open(url, Connector.READ);
+//#endif
                 connection.setRequestMethod(HttpConnection.GET);
                 stream = connection.openDataInputStream();
                 try {

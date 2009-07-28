@@ -26,6 +26,7 @@ public class Constant {
     // VERSION is automaticaly set at application startup (from descriptor)
     public static String VERSION;
     
+    //Test    public static final String LOGURL = "http://www.ilpulcino.org/php/mvg_track.php";
     public static final String LOGURL = "http://www.victorb.fr/visugps/php/mvg_track.php";
     public static final String WEATHERURL = "http://www.victorb.fr/visugps/php/mvg_weather.php";
     public static final String SITEURL = "http://www.victorb.fr/visugps/php/mvg_sites.php";

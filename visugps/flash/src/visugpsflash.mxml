@@ -7,7 +7,6 @@
 		
 	import flash.events.Event;
 	import fr.victorb.visugps.VisuGps;
-	import com.google.maps.Map;
 	import com.hexagonstar.util.debug.Debug;
 
 	private var map:VisuGps;

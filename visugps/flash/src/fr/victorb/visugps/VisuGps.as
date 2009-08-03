@@ -27,6 +27,7 @@ package fr.victorb.visugps
     import com.google.maps.InfoWindowOptions;
     import com.google.maps.interfaces.IInfoWindow;
     import com.google.maps.LatLngBounds;
+	import com.google.maps.Map3D;
     import com.google.maps.MapMouseEvent;
     import com.google.maps.overlays.*;
     import com.google.maps.LatLng;
@@ -34,6 +35,8 @@ package fr.victorb.visugps
     import com.google.maps.MapEvent;
     import com.google.maps.MapType;
     import com.google.maps.styles.StrokeStyle;
+	import com.google.maps.MapOptions;
+	import com.google.maps.View;
     import com.hexagonstar.util.debug.Debug;
     import flash.display.*;
     import flash.events.*;
@@ -58,7 +61,7 @@ package fr.victorb.visugps
         [Embed(systemFont='Verdana', fontName="Verdanaemb", mimeType="application/x-font-truetype")]
         private static const FONT_VERDANA:String;            
         
-        private var map:Map;        
+        private var map:Map3D;        
         
         private var layout:VBox;
         private var mapHolder:UIComponent;
@@ -92,9 +95,10 @@ package fr.victorb.visugps
          */
         public function VisuGps(key:String)
         {
-            map = new Map();
+            map = new Map3D();
             map.key = key;
-            map.addEventListener(MapEvent.MAP_READY, onMapReady);              
+            map.addEventListener(MapEvent.MAP_READY, onMapReady);  
+            map.addEventListener(MapEvent.MAP_PREINITIALIZE, onMapPreInit);
         }
 
         /**
@@ -358,7 +362,20 @@ package fr.victorb.visugps
                     measureState = MeasureState.MEAS_OFF;
             }
         }
-            
+
+        /**
+         * Map pre-init
+         * @param	event
+         */
+        private function onMapPreInit(event:Event):void {
+			var myMapOptions:MapOptions = new MapOptions();
+			myMapOptions.zoom = 5;
+			myMapOptions.center = new LatLng(46.73986, 2.17529);
+			myMapOptions.mapType = MapType.PHYSICAL_MAP_TYPE;
+			myMapOptions.viewMode = View.VIEWMODE_PERSPECTIVE;
+			map.setInitOptions(myMapOptions);						
+		}
+	
         /**
          * Load the track when the map is ready
          * @param	event
@@ -366,15 +383,10 @@ package fr.victorb.visugps
         private function onMapReady(event:Event):void {
             map.enableScrollWheelZoom();
             map.enableContinuousZoom();
-            map.addControl(new PositionControl());
+            map.addControl(new NavigationControl());
             map.addControl(new MapTypeControl());
-            map.addControl(new ZoomControl());
             map.addControl(new ScaleControl());
-            
-            map.setCenter(new LatLng(46.73986, 2.17529),
-                          5,
-                          MapType.PHYSICAL_MAP_TYPE);
-            
+                       
             infoControl = new TextControl(new ControlPosition(ControlPosition.ANCHOR_BOTTOM_RIGHT, 7, 10));
             infoControl.text("<b>..:iNfO</b>\n" +
                              "[hV]9999m\n" + 

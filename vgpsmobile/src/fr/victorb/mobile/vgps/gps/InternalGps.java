@@ -75,7 +75,7 @@ package fr.victorb.mobile.vgps.gps;
 //#         synchronized (position) {
 //#             position.latitude = Converter.degToDegMin((float) coordinates.getLatitude());
 //#             position.longitude = Converter.degToDegMin((float) coordinates.getLongitude());
-//#             position.elevation = (short) coordinates.getAltitude();
+//#             position.elevation = (short) Math.abs(coordinates.getAltitude());
 //#             Calendar calendar = Calendar.getInstance();
 //#             calendar.setTime(new Date(location.getTimestamp()));
 //#             position.time.hour = (byte) calendar.get(Calendar.HOUR_OF_DAY);

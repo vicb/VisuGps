@@ -122,7 +122,7 @@ if (isset($_POST['gps'])) {
         $insert .= sprintf("(%d, %f, %f, %d, '%s'),", $flightId
                                                     , $lat
                                                     , $lon
-                                                    , intval($data[2])
+                                                    , intval(abs($data[2]))
                                                     , $date);
 
         if ($flightNeedDate) {

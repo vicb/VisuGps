@@ -55,18 +55,18 @@ foreach($ids as $id) {
 
 echo "** Deleting flights having less than 100 points\n";
 
-$query = "SELECT id, COUNT(flightId) AS count " .
-         "FROM flight, point " .
-         "WHERE id = flightId " .
-         "GROUP BY id " .
+$query = "SELECT f.id AS fid, COUNT(p.flightId) AS count " .
+         "FROM flight AS f, point AS p " .
+         "WHERE f.id = p.flightId " .
+         "GROUP BY f.id " .
          "HAVING (count < 100)";
 
 $result = mysql_query($query) or die('Query error: ' . mysql_error());
 
 if (mysql_num_rows($result)) {
     while ($flight = mysql_fetch_object($result)) {
-        echo "  Delete flight $flight->id with $flight->count points\n";
-        $query = "DELETE FROM flight WHERE id='$flight->id' LIMIT 1";
+        echo "  Delete flight $flight->fid with $flight->count points\n";
+        $query = "DELETE FROM flight WHERE id='$flight->fid' LIMIT 1";
         mysql_query($query) or die('Query error: ' . mysql_error());
     }
 }
@@ -91,13 +91,13 @@ echo "** Cleaning table 'point'\n";
 
 $validIds = getCurrentIds();
 
-$query = "SELECT flightId AS id FROM point GROUP BY id";
+$query = "SELECT flightId FROM point GROUP BY flightId";
 $result = mysql_query($query) or die('Query error: ' . mysql_error());
 if (mysql_num_rows($result)) {
     while ($flight = mysql_fetch_object($result)) {
-        if (!in_array($flight->id, $validIds)) {
-            echo "  Deleting invalid flight $flight->id\n";
-            $query = "DELETE FROM point WHERE flightId='$flight->id'";
+        if (!in_array($flight->flightId, $validIds)) {
+            echo "  Deleting invalid flight $flight->flightId\n";
+            $query = "DELETE FROM point WHERE flightId='$flight->flightId'";
             mysql_query($query) or die('Query error: ' . mysql_error());
         }
     }
@@ -113,8 +113,8 @@ function getCurrentIds() {
     if (mysql_num_rows($result)) {
         while ($flight = mysql_fetch_object($result)) {
             $ids[] = $flight->id;
-            $query = "DELETE FROM flightInfo WHERE id='$flight->id' LIMIT 1";
-            mysql_query($query) or die('Query error: ' . mysql_error());
+            //$query = "DELETE FROM flightInfo WHERE id='$flight->id' LIMIT 1";
+            //mysql_query($query) or die('Query error: ' . mysql_error());
         }
     }
     return $ids;

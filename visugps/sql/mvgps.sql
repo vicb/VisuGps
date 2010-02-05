@@ -52,6 +52,7 @@ CREATE TABLE pilot (
 -- 
 
 CREATE TABLE `point` (
+  id int(10) unsigned NOT NULL auto_increment,
   flightId int(10) unsigned NOT NULL,
   latitude float NOT NULL,
   longitude float NOT NULL,

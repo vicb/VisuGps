@@ -478,7 +478,7 @@ var VisuGps = new Class({
     */
     downloadTrack : function(url) {
         new Request.JSON({'url' : 'php/vg_proxy.php?track=' + url,
-                          onSuccess: this.setTrack.bind(this)}).send();
+                          onSuccess: this.setTrack.bind(this)}, method: 'get').send();
     },
     /*
     Property: toggleAnim (INTERNAL)

@@ -109,8 +109,7 @@ var VisuGps = new Class({
             // Custom controls should be created first for stock controls to appear in front of them
             this._createTitleControl('VisuGps');
             this.map.addControl(this.titleCtrl);
-            // Add built-in controls
-            this.map.addControl(new google.maps.MenuMapTypeControl());
+            // Add built-in controls            
             this.map.addControl(new google.maps.LargeMapControl3D());
             this.map.addControl(new google.maps.ScaleControl());
             this.map.enableScrollWheelZoom();
@@ -262,6 +261,9 @@ var VisuGps = new Class({
         if (opt.measure) {
             google.maps.Event.addListener(this.map, 'singlerightclick', this._rightClick.bind(this));
         }
+
+        // Add map type selector
+        this.map.addControl(new google.maps.MenuMapTypeControl());
         
     },
     

@@ -99,7 +99,6 @@ var VisuGps = new Class({
         if (GBrowserIsCompatible()) {
             var map = $(this.options.mapDiv);
             if (!map) return;
-
             // Create the map, add standard controls and keyboard handler
             this.map = new google.maps.Map2(map, {mapTypes: [G_PHYSICAL_MAP,
                                                              G_HYBRID_MAP,
@@ -107,13 +106,15 @@ var VisuGps = new Class({
                                                              G_NORMAL_MAP,
                                                              G_SATELLITE_3D_MAP]});
             this.map.setCenter(new google.maps.LatLng(46.73986, 2.17529), 5, G_PHYSICAL_MAP);
-            this.map.addControl(new google.maps.MapTypeControl());
-            this.map.addControl(new google.maps.LargeMapControl());
-            this.map.addControl(new google.maps.ScaleControl());
-            this.map.enableScrollWheelZoom();
-            this.map.disableDoubleClickZoom();
+            // Custom controls should be created first for stock controls to appear in front of them
             this._createTitleControl('VisuGps');
             this.map.addControl(this.titleCtrl);
+            // Add built-in controls
+            this.map.addControl(new google.maps.MenuMapTypeControl());
+            this.map.addControl(new google.maps.LargeMapControl3D());
+            this.map.addControl(new google.maps.ScaleControl());
+            this.map.enableScrollWheelZoom();
+            this.map.disableDoubleClickZoom();        
         }
     },
     /*

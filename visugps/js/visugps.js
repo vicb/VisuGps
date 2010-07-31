@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with VisuGps; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-Copyright (c) 2007 Victor Berchet, <http://www.victorb.fr>
+Copyright (c) 2007-2010 Victor Berchet, <http://www.victorb.fr>
 
 Credits:
     - Some code is inspired from by the Google Maps API tutorial of Mike Williams <http://www.econym.demon.co.uk/googlemaps/index.htm>
@@ -114,7 +114,14 @@ var VisuGps = new Class({
             this.map.addControl(new google.maps.LargeMapControl3D());
             this.map.addControl(new google.maps.ScaleControl());
             this.map.enableScrollWheelZoom();
-            this.map.disableDoubleClickZoom();        
+            this.map.disableDoubleClickZoom();
+            // Add extra layers
+            var more = new MoreControl(
+            [
+              { name: "Photos", obj: new GLayer("com.panoramio.all") },
+              { name: "Webcams", obj: new GLayer("com.google.webcams")}
+            ]);
+            this.map.addControl(more);
         }
     },
     /*

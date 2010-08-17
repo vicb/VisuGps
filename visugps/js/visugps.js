@@ -115,10 +115,25 @@ var VisuGps = new Class({
             this.map.enableScrollWheelZoom();
             this.map.disableDoubleClickZoom();
             // Add extra layers
+            var copyright = new GCopyrightCollection("\u00a9 ");
+            copyright.addCopyright(new GCopyright("XContest", new GLatLngBounds(new GLatLng(-90, -180), new GLatLng(90, 180)), 0, "\u00a9 XContest"));
+            var tileLayer = new GTileLayer(copyright);
+            tileLayer.getTileUrl = function(tile, zoom) { return "http://maps.pgweb.cz/airspace/" + zoom + "/" + tile.x + "/" + tile.y; };
+            tileLayer.isPng = function() { return true; }
+            tileLayer.getOpacity = function() { return 0.75; }
+            airspaces = new GTileLayerOverlay(tileLayer);
+
+            tileLayer = new GTileLayer(copyright);
+            tileLayer.getTileUrl = function(tile, zoom) { return "http://maps.pgweb.cz/corr/" + zoom + "/" + tile.x + "/" + tile.y; };
+            tileLayer.isPng = function() { return true; }
+            tileLayer.getOpacity = function() { return 0.75; }
+            skyways = new GTileLayerOverlay(tileLayer);            
             var more = new MoreControl(
             [
               { name: "Photos", obj: new GLayer("com.panoramio.all") },
-              { name: "Webcams", obj: new GLayer("com.google.webcams")}
+              { name: "Webcams", obj: new GLayer("com.google.webcams")},
+              { name: "AirSpace", obj: airspaces},
+              { name: "Sky ways", obj: skyways}              
             ]);
             this.map.addControl(more);
         }

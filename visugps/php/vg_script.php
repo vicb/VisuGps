@@ -36,6 +36,7 @@ $jsFiles = array(
   'lib/mootools/mootools-1.2-more.js',
   'js/charts.js',
   'js/sliderprogress.js',
+  'js/moreCtrl.js',
   'js/visugps.js',
   'lib/chart/canvaschartpainter.js',
   'lib/chart/chart.js',
@@ -83,7 +84,10 @@ if (VISUGPS_DEV) {
     }
 } else {
     // Create the cache folder when it does not exist
-    if (!is_dir(CACHE_BASE_FOLDER)) mkdir(CACHE_BASE_FOLDER, 0777, true);
+    if (!is_dir(CACHE_BASE_FOLDER)) {
+      mkdir(CACHE_BASE_FOLDER, 0777, true);
+      chmod(CACHE_BASE_FOLDER, 0777);
+    }
     // Check if the cached version is older than any of the source files
     $cacheTime = getFileTime(SCRIPT_FILE);
     $outdated = false;

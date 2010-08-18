@@ -296,7 +296,7 @@ var VisuGps = new Class({
         // Add the map switcher control
         this.mapSwitcher = new Element('div', {'id' : 'vgps-mapSwitcher'}).inject(this.options.chartDiv, 'top');
         this.mapSwitcher.set('html', 'google');
-        this.mapSwitcher.addEvent('click', this._switchMap.bind(this));
+        this.mapSwitcher.addEvent('mousedown', this._switchMap.bindWithEvent(this));
     },
     /*
     Property: ignLeftClick
@@ -309,7 +309,8 @@ var VisuGps = new Class({
     Property: _switchMap
             Switch between IGN anf Google maps
     */
-    _switchMap : function() {
+    _switchMap : function(event) {
+      event.stopPropagation().preventDefault();
         if (this.mapSwitcher.get('html') == 'google') {
             $('ignwrap').setStyle('left', 0);
             $(this.options.mapDiv).setStyle('left', -5000);
@@ -319,7 +320,7 @@ var VisuGps = new Class({
             $('ignwrap').setStyle('left', -5000);
             $(this.options.mapDiv).setStyle('left', 0);
             this.mapSwitcher.set('html', 'google');
-        }
+        }        
     },
     /*
     Property: _gePluginInit (INTERNAL)

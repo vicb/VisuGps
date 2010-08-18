@@ -31,12 +31,16 @@ require('jsmin-1.1.0.php');
 define('SCRIPT_FILE', CACHE_BASE_FOLDER . 'scripts.js');
 
 // JS folder
-$jsFiles = array( 'js/charts.js',
-                  'js/sliderprogress.js',
-                  'js/visugps.js',
-                  'lib/chart/canvaschartpainter.js',
-                  'lib/chart/chart.js',
-                  'lib/chart/excanvas.js');
+$jsFiles = array(
+  'lib/mootools/mootools-1.2.4-core.js',
+  'lib/mootools/mootools-1.2-more.js',
+  'js/charts.js',
+  'js/sliderprogress.js',
+  'js/visugps.js',
+  'lib/chart/canvaschartpainter.js',
+  'lib/chart/chart.js',
+  'lib/chart/excanvas.js'
+);
 
 // Script
 $script = '';
@@ -79,7 +83,7 @@ if (VISUGPS_DEV) {
     }
 } else {
     // Create the cache folder when it does not exist
-    if (!is_dir(CACHE_BASE_FOLDER)) mkdir(CACHE_BASE_FOLDER, 0700, true);
+    if (!is_dir(CACHE_BASE_FOLDER)) mkdir(CACHE_BASE_FOLDER, 0777, true);
     // Check if the cached version is older than any of the source files
     $cacheTime = getFileTime(SCRIPT_FILE);
     $outdated = false;
@@ -97,6 +101,7 @@ if (VISUGPS_DEV) {
         }
         $script = $copyright . JSMin::minify($script);
         file_put_contents(SCRIPT_FILE, $script, LOCK_EX);
+        @chmod(SCRIPT_FILE, 0777);
     } else {
         // Use the up to date version when it exists
         $script = file_get_contents(SCRIPT_FILE);

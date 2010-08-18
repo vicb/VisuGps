@@ -16,15 +16,7 @@
     }
   </style>
   
-  <script type="text/javascript">
-    if (location.href.indexOf('www.victorb.fr') < 0) {
-        document.write("<" + "script src='http://api.ign.fr/api?v=1.0beta3&key=1758908981132545182&instance=map'" +
-                       " type='text/javascript'></" + "script>");
-    } else {
-        document.write("<" + "script src='http://api.ign.fr/api?v=1.0beta3&key=6174263735005666407&instance=map'" +
-                       " type='text/javascript'></" + "script>"); 
-    }
-  </script> 
+  <script type="text/javascript" src="http://api.ign.fr/geoportail/api?v=1.1-e&key=3916634386220191627&instance=viewer"></script>
 
   <script type="text/javascript">//<![CDATA[
     var kMap = null;
@@ -35,7 +27,12 @@
     var displayProjection = null;
     var infoControl = null;
 
+    /**
+     * Automatically called when the script has loaded
+     */
     function initGeoportalMap() {
+
+
         OpenLayers.Control.Click = OpenLayers.Class(OpenLayers.Control, {
             defaultHandlerOptions: {
                 'single': true,
@@ -46,12 +43,12 @@
             },
 
             initialize: function(callback, options) {
-                this.handlerOptions = OpenLayers.Util.extend({}, this.defaultHandlerOptions);
-                OpenLayers.Control.prototype.initialize.apply(this, arguments);
+                OpenLayers.Control.prototype.initialize.apply(this,arguments);
+                this.handlerOptions = OpenLayers.Util.extend({}, this.defaultHandlerOptions);                
                 this.handler = new OpenLayers.Handler.Click(this, {'click': callback}, this.handlerOptions);
             }
         });
-        
+
         Geoportal.Control.Info = OpenLayers.Class(Geoportal.Control, {
             initialize: function(options) {
                 this.options = options;
@@ -73,19 +70,28 @@
             CLASS_NAME: "Geoportal.Control.Info"
         });
 
+        geoportalLoadviewer('igndiv', 'normal', 'FXX');
 
-        geoportalLoadmap('igndiv', 'normal', 'FXX');
-        if(map.allowedGeoportalLayers){
-          map.addGeoportalLayers(map.allowedGeoportalLayers);
+        viewer.setInformationPanelVisibility(false);
+        
+        olMap = viewer.getMap();
+
+        var layers = olMap.allowedGeoportalLayers;
+
+        for (var i= 0; i< layers.length; i++) {
+            var layer = layers[i];
+            if (layer.match(/GEOGRAPHICALGRIDSYSTEMS.MAPS/)) {
+              viewer.addGeoportalLayer(layer, {visibility: true, opacity: 1});
+            } else {
+              viewer.addGeoportalLayer(layer, {visibility: false, opacity: 0.8});
+            }
         }
-        
-        olMap = map.getMap();
-        
+
         olMap.addControl(infoControl = new Geoportal.Control.Info());
 
         var click = new OpenLayers.Control.Click(onClick);
         olMap.addControl(click);
-        click.activate();       
+        click.activate();
         
         kMap = parent.kMap;
         kMap.initIgnMap();
@@ -99,18 +105,17 @@
     function setTrack(lat, lon) {
         trackLayer = new OpenLayers.Layer.Vector('Track');
 
-        var point = {};
-        var points = [];
+        var point = {}, points = [];
         for (var i = 0; i < lat.length; i++) {
             point = new OpenLayers.Geometry.Point(lon[i], lat[i]);
-            point.transform(map.displayProjection, olMap.getProjection());
+            point.transform(viewer.displayProjection, olMap.getProjection());
             points.push(point);
         }
         var line = new OpenLayers.Geometry.LineString(points);
         var style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
         style.strokeColor = '#ff0000';
         var feature = new OpenLayers.Feature.Vector(line, {}, style);
-        
+
         trackLayer.addFeatures(feature);
 
         markerLayer = new OpenLayers.Layer.Markers('Marker');
@@ -119,15 +124,12 @@
         olMap.addLayers([trackLayer, markerLayer]);
 
         setCenter(lat[0], lon[0]);
-        olMap.zoomTo(9);
-        
+        olMap.zoomTo(13);        
     }
 
-    function setTrackKml(proxy, url) {
-        map.setProxyUrl(proxy);
-        map.addLayer("KML",
-                     "Track",
-                     url);
+    function setTrackKml(proxy, url) {        
+        var kml = olMap.addLayer("KML", "Track", proxy + url, { visibility: true, opacity: 1 });
+        kml.events.register('loadend', kml, function() { this.map.zoomToExtent(this.getDataExtent()); });
     }
 
     
@@ -139,12 +141,12 @@
         var size = new OpenLayers.Size(20, 34);
         var offset = new OpenLayers.Pixel(-(size.w / 2), -size.h);
         var icon = new OpenLayers.Icon('./img/marker.gif', size, offset);
-        marker = new OpenLayers.Marker(new OpenLayers.LonLat(lon, lat).transform(map.displayProjection, olMap.getProjection()), icon);
+        marker = new OpenLayers.Marker(new OpenLayers.LonLat(lon, lat).transform(viewer.displayProjection, olMap.getProjection()), icon);
         markerLayer.addMarker(marker);
     }
     
     function setCenter(lat, lon) {
-        map.setCenterAtLonLat(lon, lat, olMap.zoom);
+        olMap.setCenterAtLonLat(lon, lat, olMap.zoom);
     }
     
     function zoom(direction) {
@@ -157,21 +159,20 @@
 
     function onClick(event) {
         var lonlat = olMap.getLonLatFromViewPortPx(event.xy);
-        lonlat.transform(olMap.getProjection(), map.displayProjection);
+        lonlat.transform(olMap.getProjection(), viewer.displayProjection);
         kMap.ignLeftClick(lonlat.lat, lonlat.lon);
     }
     
     function reSize(w, h) {
-        map.setSize(w, h);
+        viewer.setSize(w, h);
         $('igndiv').style.height = h + "px";
-        map.mapDiv2.style.height = h - 50 + "px";
     }
     
     function destroy() {
         if (marker != null) marker.destroy();
         if (markerLayer != null) markerLayer.destroy();
         if (trackLayer != null) trackLayer.destroy();
-        olMap.destroy();
+        viewer.destroy();
     }
 
   //]]></script>

@@ -66,7 +66,10 @@ class Cache {
         // Do not allow user to abort the script
         ignore_user_abort(true);
 
-        if (!is_dir($this->idxDir)) mkdir($this->idxDir, 0700, true);
+        if (!is_dir($this->idxDir)) {
+          mkdir($this->idxDir, 0777, true);
+          chmod($this->idxDir, 0777);
+        }
         $this->log = new Log($this->idxDir . self::logName, true);
         $this->capacity = $capacity;
         $this->log->msg("+ Cache constructor");

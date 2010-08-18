@@ -905,7 +905,9 @@ var VisuGps = new Class({
                             this.track.speed[idx] + 'km/h [Vx]<br/>' +
                             this._NbToStrW(this.track.time.hour[idx],2) + ':' +
                             this._NbToStrW(this.track.time.min[idx], 2) + ':' +
-                            this._NbToStrW(this.track.time.sec[idx], 2) + '[Th]');
+                            this._NbToStrW(this.track.time.sec[idx], 2) + '[Th]<br/>' +
+                            'by suumit.com');
+                          
         if (this.ignMap) this.ignMap.setInfo(this.nfo.get('html'));
     },
     /*

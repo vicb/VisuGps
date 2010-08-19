@@ -300,15 +300,15 @@ function MakeJsonTrack($track) {
 
     // Generate CHART_NBLBL labels
     for ($i = 0, $idx = 0, $step = ($nbPts - 1) / (CHART_NBLBL - 1); $i < CHART_NBLBL; $i++, $idx += $step) {
-        $jsTrack['time']['label'][$i] = $track['time']['hour'][$idx] . "h" . $track['time']['min'][$idx];
+        $jsTrack['time']['label'][$i] = sprintf("%02dh%02d", $track['time']['hour'][$idx], $track['time']['min'][$idx]);
     }
 
     // Change the number of points to CHART_NBPTS
     for ($i = 0, $idx = 0, $step = ($nbPts - 1) / (CHART_NBPTS - 1); $i < CHART_NBPTS; $i++, $idx += $step) {
         $jsTrack['elev'][$i] = $track['elev'][$idx];
-        $jsTrack['time']['hour'][$i] = $track['time']['hour'][$idx];
-        $jsTrack['time']['min'][$i] = $track['time']['min'][$idx];
-        $jsTrack['time']['sec'][$i] = $track['time']['sec'][$idx];
+        $jsTrack['time']['hour'][$i] = sprintf("%02d", $track['time']['hour'][$idx]);
+        $jsTrack['time']['min'][$i] = sprintf("%02d", $track['time']['min'][$idx]);
+        $jsTrack['time']['sec'][$i] = sprintf("%02d", $track['time']['sec'][$idx]);
     }
 
     $jsTrack['lat'] = $track['lat'];

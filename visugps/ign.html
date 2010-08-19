@@ -123,8 +123,7 @@
 
         olMap.addLayers([trackLayer, markerLayer]);
 
-        setCenter(lat[0], lon[0]);
-        olMap.zoomTo(13);        
+        olMap.zoomToExtent(trackLayer.getDataExtent().transform(viewer.displayProjection, olMap.getProjection()));
     }
 
     function setTrackKml(proxy, url) {        

@@ -310,7 +310,7 @@ var VisuGps = new Class({
             Switch between IGN anf Google maps
     */
     _switchMap : function(event) {
-      event.stopPropagation().preventDefault();
+        event.stopPropagation().preventDefault();
         if (this.mapSwitcher.get('html') == 'google') {
             $('ignwrap').setStyle('left', 0);
             $(this.options.mapDiv).setStyle('left', -5000);

@@ -194,9 +194,9 @@ var VisuGps = new Class({
                                                          load.fade('out');
                                                      }
                                                      // Print a warning for limited support
-                                                     $(me.options.chartDiv).set('html', '<p style="text-align:center;margin:20px;font:10px Verdana, Arial, sans-serif;">' +
-                                                                                        '<b>No graph available for KML files</b>' +
-                                                                                        '</p>');
+                                                     new Element('p', {
+                                                       'style' : 'text-align:center;margin:20px;font:10px Verdana, Arial, sans-serif'
+                                                     }).inject($(me.options.chartDiv), 'top');
                                                  }
                                              });
         } else {

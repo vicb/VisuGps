@@ -120,13 +120,13 @@ var VisuGps = new Class({
             var tileLayer = new GTileLayer(copyright);
             tileLayer.getTileUrl = function(tile, zoom) { return "http://maps.pgweb.cz/airspace/" + zoom + "/" + tile.x + "/" + tile.y; };
             tileLayer.isPng = function() { return true; }
-            tileLayer.getOpacity = function() { return 0.75; }
+            tileLayer.getOpacity = function() { return 0.9; }
             airspaces = new GTileLayerOverlay(tileLayer);
 
             tileLayer = new GTileLayer(copyright);
             tileLayer.getTileUrl = function(tile, zoom) { return "http://maps.pgweb.cz/corr/" + zoom + "/" + tile.x + "/" + tile.y; };
             tileLayer.isPng = function() { return true; }
-            tileLayer.getOpacity = function() { return 0.75; }
+            tileLayer.getOpacity = function() { return 0.9; }
             skyways = new GTileLayerOverlay(tileLayer);            
             var more = new MoreControl(
             [

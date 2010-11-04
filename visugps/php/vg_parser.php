@@ -41,19 +41,6 @@ Returns:
 */
 function ParseIgc($trackFile, &$trackData)
 {
-    // Regexp fields
-    define('IGC_hour', 1);
-    define('IGC_min', 2);
-    define('IGC_sec', 3);
-    define('IGC_latE', 4);
-    define('IGC_latD', 5);
-    define('IGC_latS', 6);
-    define('IGC_lonE', 7);
-    define('IGC_lonD', 8);
-    define('IGC_lonS', 9);
-    define('IGC_elevP', 10);
-    define('IGC_elevG', 11);
-
     if (preg_match('/HFDTE(\d{2})(\d{2})(\d{2})/mi', $trackFile, $m)) {
         $trackData['date']['day'] = intval($m[1]);
         $trackData['date']['month'] = intval($m[2]);
@@ -64,22 +51,30 @@ function ParseIgc($trackFile, &$trackData)
         $trackData['pilot'] = htmlentities(trim($m[1]));
     }
 
-    preg_match_all('/B(\d{2})(\d{2})(\d{2})(\d{2})(\d{5})(\w)(\d{3})(\d{5})(\w).(\d{5})(\d{5})/im',
-                   $trackFile, $m);
+    preg_match_all(
+      '/B
+      (?<hour>\d{2})(?<min>\d{2})(?<sec>\d{2})
+      (?<latE>\d{2})(?<latD>\d{5})(?<latS>\w)
+      (?<lonE>\d{3})(?<lonD>\d{5})(?<lonS>\w).
+      (?<elevP>\d{5})(?<elevG>\d{5})
+      /xim',
+      $trackFile, 
+      $m
+    );
 
     $nbPts = $trackData['nbPt'] = count($m[0]);
 
     if ($nbPts > 5) {
         // Extract latitude, longitude, altitudes and time in second
         for ($i = 0; $i < $nbPts; $i++) {
-            $m[IGC_latD][$i] = ("0." . $m[IGC_latD][$i]) * 100 / 60;
-            $m[IGC_lonD][$i] = ("0." . $m[IGC_lonD][$i]) * 100 / 60;
-            $trackData['lat'][$i] = ($m[IGC_latE][$i] + $m[IGC_latD][$i]) * (strtoupper($m[IGC_latS][$i]) == 'N'?1:-1);
-            $trackData['lon'][$i] = ($m[IGC_lonE][$i] + $m[IGC_lonD][$i]) * (strtoupper($m[IGC_lonS][$i]) == 'E'?1:-1);
-            $trackData['elev'][$i] = intval($m[IGC_elevG][$i]);
-            $trackData['time']['hour'][$i] = intval($m[IGC_hour][$i]);
-            $trackData['time']['min'][$i] = intval($m[IGC_min][$i]);
-            $trackData['time']['sec'][$i] = intval($m[IGC_sec][$i]);
+            $m['latD'][$i] = ("0." . $m['latD'][$i]) * 100 / 60;
+            $m['lonD'][$i] = ("0." . $m['lonD'][$i]) * 100 / 60;
+            $trackData['lat'][$i] = ($m['latE'][$i] + $m['latD'][$i]) * (strtoupper($m['latS'][$i]) == 'N'?1:-1);
+            $trackData['lon'][$i] = ($m['lonE'][$i] + $m['lonD'][$i]) * (strtoupper($m['lonS'][$i]) == 'E'?1:-1);
+            $trackData['elev'][$i] = intval($m['elevG'][$i]);
+            $trackData['time']['hour'][$i] = intval($m['hour'][$i]);
+            $trackData['time']['min'][$i] = intval($m['min'][$i]);
+            $trackData['time']['sec'][$i] = intval($m['sec'][$i]);
         }
     }
     return $nbPts;
@@ -88,6 +83,8 @@ function ParseIgc($trackFile, &$trackData)
 /*
 Function: ParseOzi
         Parse a GPS track - OziExplorer PLT format
+
+See: http://www.rus-roads.ru/gps/help_ozi/fileformats.html
 
 Arguments:
         trackFile - input track file
@@ -99,29 +96,31 @@ Returns:
 */
 function ParseOzi($trackFile, &$trackData)
 {
-    // Regexp fields
-    define('OZI_lat', 1);
-    define('OZI_lon', 2);
-    define('OZI_elev', 3);
-    define('OZI_date', 4);
-
     if (!preg_match('/OziExplorer/i', $trackFile, $m)) {
         return 0;
     }
 
-    preg_match_all('/^\s+([-\d\.]+)[,\s]+([-\d\.]+)[,\s]+[01][,\s]+([-\d\.]+)[,\s]+([\d\.]+).*$/im',
-                   $trackFile, $m);
+    preg_match_all(
+      '/^\s+
+      (?<lat>[-\d\.]+)[,\s]+
+      (?<lon>[-\d\.]+)[,\s]+[01][,\s]+
+      (?<elev>[-\d\.]+)[,\s]+
+      (?<date>[\d\.]+).*$
+      /xim',
+      $trackFile,
+      $m
+    );
 
     $nbPts = $trackData['nbPt'] = count($m[0]);
 
     if ($nbPts > 5) {
         // Extract latitude, longitude, altitudes and time in second
         for ($i = 0; $i < $nbPts; $i++) {
-            $trackData['lat'][$i] = floatval($m[OZI_lat][$i]);
-            $trackData['lon'][$i] = floatval($m[OZI_lon][$i]);
-            $trackData['elev'][$i] = max(intval($m[OZI_elev][$i] * 0.3048), 0);
+            $trackData['lat'][$i] = floatval($m['lat'][$i]);
+            $trackData['lon'][$i] = floatval($m['lon'][$i]);
+            $trackData['elev'][$i] = max(intval($m['elev'][$i] * 0.3048), 0);
 
-            $time = floatval($m[OZI_date][$i]) - intval($m[OZI_date][$i]);
+            $time = floatval($m['date'][$i]) - intval($m['date'][$i]);
             $time = $time * 24;
             $hour = intval($time);
             $time = ($time - $hour) * 60;
@@ -133,8 +132,8 @@ function ParseOzi($trackFile, &$trackData)
             $trackData['time']['sec'][$i] = $sec;
         }
     $date = date_create();
-    date_date_set($date, 1980, 1, 1);
-    date_modify($date, '+' . (intval($m[OZI_date][0]) - 29221) . ' days');
+    date_date_set($date, 1899, 12, 30);
+    date_modify($date, intval($m['date'][0]) . ' days');
     $trackData['date']['day'] = intval(date_format($date, 'j'));
     $trackData['date']['month'] = intval(date_format($date, 'n'));
     $trackData['date']['year'] = intval(date_format($date, 'Y'));
@@ -157,40 +156,52 @@ Returns:
 */
 function ParseTrk($trackFile, &$trackData)
 {
-    // Regexp fields
-    define('TRK_lat', 1);
-    define('TRK_latS', 2);
-    define('TRK_lon', 3);
-    define('TRK_lonS', 4);
-    define('TRK_day', 5);
-    define('TRK_month', 6);
-    define('TRK_year', 7);                
-    define('TRK_hour', 8);
-    define('TRK_min', 9);
-    define('TRK_sec', 10);
-    define('TRK_elev', 11);
+    preg_match_all(
+      '/^T\s+A\s+
+      (?<lat>[0-9\.]+).(?<latS>\w)\s+
+      (?<lon>[0-9\.]+).(?<lonS>\w)\s+
+      (?<day>\d{2})-(?<month>\w{3})-(?<year>\d{2})\s+
+      (?<hour>\d{2}):(?<min>\d{2}):(?<sec>\d{2})\s+.\s+
+      (?<elev>\d+)
+      /xim',
+      $trackFile, 
+      $m
+    );
 
-    preg_match_all('/^T\s+A\s+([0-9\.]+).(\w)\s+([0-9\.]+).(\w)\s+(\d{2})-(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})\s+.\s+(\d+)/im',
-                   $trackFile, $m);
+    if (count($m[0] < 5 ))
+    {
+      preg_match_all(
+        '/^T\s+
+        (?<latS>\w)(?<lat>[0-9\.]+)\s+
+        (?<lonS>\w)(?<lon>[0-9\.]+)\s+
+        (?<day>\d{2})-(?<month>\w{3})-(?<year>\d{2})\s+
+        (?<hour>\d{2}):(?<min>\d{2}):(?<sec>\d{2})\s+
+        (?<elev>\d+)
+        /xim',
+        $trackFile,
+        $m
+      );
+    }
 
     $nbPts = $trackData['nbPt'] = count($m[0]);
 
     if ($nbPts > 5) {
         // Extract latitude, longitude, altitudes and time in second
         for ($i = 0; $i < $nbPts; $i++) {
-            $trackData['lat'][$i] = ($m[TRK_lat][$i]) * (strtoupper($m[TRK_latS][$i]) == 'N'?1:-1);
-            $trackData['lon'][$i] = ($m[TRK_lon][$i]) * (strtoupper($m[TRK_lonS][$i]) == 'E'?1:-1);
-            $trackData['elev'][$i] = intval($m[TRK_elev][$i]);
-            $trackData['time']['hour'][$i] = intval($m[TRK_hour][$i]);
-            $trackData['time']['min'][$i] = intval($m[TRK_min][$i]);
-            $trackData['time']['sec'][$i] = intval($m[TRK_sec][$i]);
+            $trackData['lat'][$i] = ($m['lat'][$i]) * (strtoupper($m['latS'][$i]) == 'N'?1:-1);
+            $trackData['lon'][$i] = ($m['lon'][$i]) * (strtoupper($m['lonS'][$i]) == 'E'?1:-1);
+            $trackData['elev'][$i] = intval($m['elev'][$i]);
+            $trackData['time']['hour'][$i] = intval($m['hour'][$i]);
+            $trackData['time']['min'][$i] = intval($m['min'][$i]);
+            $trackData['time']['sec'][$i] = intval($m['sec'][$i]);
         }
 
         $months = array('JAN' => 1, 'FEB' => 2, 'MAR' => 3, 'APR' => 4, 'MAY' => 5, 'JUN' => 6, 
                         'JUL' => 7, 'AUG' => 8, 'SEP' => 9, 'OCT' => 10, 'NOV' => 11, 'DEC' => 12);
-        $trackData['date']['day'] = intval($m[TRK_day][0]);             
-        $trackData['date']['month'] = $months[strtoupper($m[TRK_month][0])];
-        $trackData['date']['year'] = intval($m[TRK_year][0]) + (($m[TRK_year][0] > 60)?1900:2000);           
+        $trackData['date']['day'] = intval($m['day'][0]);
+        $month = strtoupper($m['month'][0]);
+        $trackData['date']['month'] = isset($months[$month]) ? $months[$month] : 1;
+        $trackData['date']['year'] = intval($m['year'][0]) + (($m['year'][0] > 60)?1900:2000);
         
     }
     return $nbPts;

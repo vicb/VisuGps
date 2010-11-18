@@ -63,6 +63,10 @@ var Charts = new Class({
         this.sortable = null;
         this.curPos = 0;
         this.position = 0;
+	this.initialNommc = 0;
+	// 'nommc' is overwritten via 'nommc' param.
+	// i.e. http://toto.shacknet.nu/visugps/visugps.html?track=file:///c:/xampp/htdocs/visugps/20100912.igc&map=3g&nommc=1
+	this.nommc = 0; // If nommc is set => No mouse move charts (use kbd only to move cursor in the chart, except click)
         
         if (this.options.cursor) {
             this.cursorDiv = new Element('div', {'styles' : { 'position' : 'absolute',
@@ -80,7 +84,10 @@ var Charts = new Class({
                           'mousedown' : this._down.bindWithEvent(this),
                           'mousewheel' : this._wheel.bindWithEvent(this)});
 
-        if (this.options.keySupport) document.addEvent('keydown', this._move.bindWithEvent(this));
+        if (this.options.keySupport) {
+	    document.addEvent('keydown', this._move.bindWithEvent(this));
+            document.addEvent('keydown', this._down.bindWithEvent(this));
+	}
 
         function stopEvent(event, notOnSort) {
           new Event(event).stop();
@@ -229,6 +236,13 @@ var Charts = new Class({
                 offset = event.shift?10 * offset:offset;
                 pos += offset;
             } else {
+		// In nommc mode (No Mouse Move Chart) we void mouse move.
+		// user does not want to use the mouse to move in the chart
+		// (except 'click', see '_down()'), he prefers to use kbd keys.
+		if (this.nommc && !event.type.contains('key')) {
+		    this.setCursor(pos); this.fireEvent('onMouseMove', pos);
+		    return;
+		}
                 var x = event.page.x;
                 var dim = this.charts[0].getCoordinates();
                 var left = dim.left + this.chartDiv.getPosition().x;
@@ -246,7 +260,44 @@ var Charts = new Class({
             Fire the 'onMouseDown' event
     */
     _down: function(event) {
+        if (this.nommc && this.charts.length) {
+	    // In nommc mode we don't recenter the map for a 'click', we just move it
+	    // to where user clicked.
+	    // To 'recenter the map' in nommc mode use the 'space' key
+	    // (or 'up' key to recenter+ZOOM IN, 'down' key to recenter+ZOOM OUT).
+            if (event.type.contains('key')) {
+		var pos = this.position;
+                if (event.key == 'space') {
+		    // By convention 'onMouseDown' event trigs a map recentering
+		    this.fireEvent('onMouseDown', pos);
+		} else if (event.key == 'up') {
+		    // By convention 'onMouseWheel' event trigs a map recentering + zoom
+		    this.fireEvent('onMouseWheel', [pos, +1]);
+		} else if (event.key == 'down') {
+		    // By convention 'onMouseWheel' event trigs a map recentering + zoom
+		    this.fireEvent('onMouseWheel', [pos, -1]);
+		};
+		return;
+            } else {
+		if (1) { // I'd like this to work ONLY for middle click but I don't know how to do it in mootools !
+		    // Accept only middle or right click when in nommc mode
+		    var x = event.page.x;
+		    var dim = this.charts[0].getCoordinates();
+		    var left = dim.left + this.chartDiv.getPosition().x;
+		    x = x < left?left:x;
+		    x = x > (left + dim.width)?left + dim.width:x;
+		    pos = (1000 * (x - left) / dim.width).toInt();
+		    pos = pos.limit(0, 1000);
+		    this.setCursor(pos);
+		} else {
+		    return;
+		}
+	    }
+            this.fireEvent('onMouseMove', this.position);
+	} else {
+	    // By convention 'onMouseDown' event trigs a map recentering
         this.fireEvent('onMouseDown', this.position);
+	}
     },
     /*
     Property: _wheel (INTERNAL)

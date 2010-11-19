@@ -33,14 +33,29 @@
 
         window.addEvent('domready', function() {
 
-            kMap = new VisuGps({elevTileUrl: ['ts0.victorb.fr',
-                                              'ts1.victorb.fr',
-                                              'ts2.victorb.fr',
-                                              'ts3.victorb.fr'],
-                                weatherTileUrl: ['ts0.victorb.fr',
-                                                 'ts1.victorb.fr',
-                                                 'ts2.victorb.fr',
-                                                 'ts3.victorb.fr']});
+           // kMap = new VisuGps({elevTileUrl: ['ts0.victorb.fr',
+           //                                   'ts1.victorb.fr',
+           //                                   'ts2.victorb.fr',
+           //                                   'ts3.victorb.fr'],
+           //                     weatherTileUrl: ['ts0.victorb.fr',
+           //                                      'ts1.victorb.fr',
+           //                                      'ts2.victorb.fr',
+           //                                     'ts3.victorb.fr']});
+
+	   kMap = new VisuGps();
+	   // Honor possible 'map=3g' parameter to specify we should start with GoogleEarth pluging instead of the default '2g'
+	   // For instance user might have called us as:
+	   //     http://toto.shacknet.nu/visugps/visugps.html?track=file:///c:/xampp/htdocs/visugps/20100912.igc&map=3g
+	   kMap.options.initialMapType = '2g';
+	   var paramArray = new Array();
+	   paramArray = window.location.search.substr(1).split("&"); // Store result in 'paramArray'
+	   for (var i=0; i < paramArray.length; i++) {
+	     var param=unescape(paramArray[i]);
+	     if (param == "map=3g")   { kMap.options.initialMapType = '3g'; }
+	     if (param == "nommc=1")  { kMap.options.nommc = 1; } // No mouse move chart (kbd only)
+	     // console.debug("Treated param='%s'", param);
+	   }
+	   kMap.createMap();
 
            var trackName = decodeURIComponent(location.search) || 'noparam';
 

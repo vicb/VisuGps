@@ -34,9 +34,9 @@ var VisuGps = new Class({
     Implements: Options,
     options: {
         mapDiv : 'map',
-	initialMapType : '2g', // Overwritten by 'map' param. i.e. http://toto.shacknet.nu/visugps/visugps.html?track=file:///c:/xampp/htdocs/visugps/20100912.igc&map=3g
-	initialNommc : 0, // Overwritten by 'nommc' param. i.e. http://toto.shacknet.nu/visugps/visugps.html?track=file:///c:/xampp/htdocs/visugps/20100912.igc&map=3g&nommc=1
-	nommc : 0,
+        initialMapType : '2g', // Overwritten by 'map' param. i.e. http://toto.shacknet.nu/visugps/visugps.html?track=file:///c:/xampp/htdocs/visugps/20100912.igc&map=3g
+        initialNommc : 0, // Overwritten by 'nommc' param. i.e. http://toto.shacknet.nu/visugps/visugps.html?track=file:///c:/xampp/htdocs/visugps/20100912.igc&map=3g&nommc=1
+        nommc : 0,
         chartDiv : 'vgps-chartcont',
         loadDiv : 'load',
         elevTileUrl : null,

@@ -105,8 +105,8 @@ var VisuGps = new Class({
         if (GBrowserIsCompatible()) {
             var map = $(this.options.mapDiv);
             if (!map) return;
-	    // Overwritten by 'nommc' param. i.e. http://toto.shacknet.nu/visugps/visugps.html?track=file:///c:/xampp/htdocs/visugps/20100912.igc&map=3g&nommc=1
-	    this.options.initialNommc = this.options.nommc;
+            // Overwritten by 'nommc' param. i.e. http://toto.shacknet.nu/visugps/visugps.html?track=file:///c:/xampp/htdocs/visugps/20100912.igc&map=3g&nommc=1
+            this.options.initialNommc = this.options.nommc;
 
             // Create the map, add standard controls and keyboard handler
             this.map = new google.maps.Map2(map, {mapTypes: [G_PHYSICAL_MAP,
@@ -114,14 +114,14 @@ var VisuGps = new Class({
                                                              G_SATELLITE_MAP,
                                                              G_NORMAL_MAP,
                                                              G_SATELLITE_3D_MAP]});
-	    if (this.options.initialMapType == '3g') {
-		// User called us with the special param 'map=3g', i.e:
-		//     http://toto.shacknet.nu/visugps/visugps.html?track=file:///c:/xampp/htdocs/visugps/20100912.igc&map=3g
-		// so we take arrangement to start with google earth instead of the default 2g terrain map.
-		this.map.setCenter(new google.maps.LatLng(46.73986, 2.17529), 5, G_SATELLITE_3D_MAP);
-	    } else {
-		this.map.setCenter(new google.maps.LatLng(46.73986, 2.17529), 5, G_PHYSICAL_MAP);
-	    }
+            if (this.options.initialMapType == '3g') {
+                // User called us with the special param 'map=3g', i.e:
+                //     http://toto.shacknet.nu/visugps/visugps.html?track=file:///c:/xampp/htdocs/visugps/20100912.igc&map=3g
+                // so we take arrangement to start with google earth instead of the default 2g terrain map.
+                this.map.setCenter(new google.maps.LatLng(46.73986, 2.17529), 5, G_SATELLITE_3D_MAP);
+            } else {
+                this.map.setCenter(new google.maps.LatLng(46.73986, 2.17529), 5, G_PHYSICAL_MAP);
+            }
             // Custom controls should be created first for stock controls to appear in front of them
             this._createTitleControl('VisuGps');
             this.map.addControl(this.titleCtrl);
@@ -296,7 +296,7 @@ var VisuGps = new Class({
         // Add map type selector
         this.map.addControl(new google.maps.MenuMapTypeControl());
         
-	if (this.options.initialMapType == '3g') { this._mapTypeChanged(); this.options.initialMapType = ''; }
+        if (this.options.initialMapType == '3g') { this._mapTypeChanged(); this.options.initialMapType = ''; }
 
     },
     
@@ -352,9 +352,9 @@ var VisuGps = new Class({
     _gePluginInit : function(ge) {
         if (!$defined(this.track.kmlUrl)) {
             this.ge = ge;
-	    this.ge.getOptions().setStatusBarVisibility(true);   // Nice to always see ground altitude under the mouse
-	    this.ge.getOptions().setScaleLegendVisibility(true); // hint on distance
-	    this.ge.getOptions().setUnitsFeetMiles(false);       // meter and km
+            this.ge.getOptions().setStatusBarVisibility(true);   // Nice to always see ground altitude under the mouse
+            this.ge.getOptions().setScaleLegendVisibility(true); // hint on distance
+            this.ge.getOptions().setUnitsFeetMiles(false);       // meter and km
             // Create the 3d track
             var lineString;
             lineString = ge.createLineString('');
@@ -371,9 +371,9 @@ var VisuGps = new Class({
             lineString.setAltitudeMode(ge.ALTITUDE_ABSOLUTE);
             
             google.earth.addEventListener(ge.getWindow(), "mousedown", this._leftClick3d.bind(this));
-	    // I want to be signaled at end of any view change (so that we could for instance
-	    // decide whether or not to show the track cursor based on above ground altitude).
-	    google.earth.addEventListener(ge.getView(), 'viewchangeend', this._viewChangeDone3d.bind(this));
+            // I want to be signaled at end of any view change (so that we could for instance
+            // decide whether or not to show the track cursor based on above ground altitude).
+            google.earth.addEventListener(ge.getView(), 'viewchangeend', this._viewChangeDone3d.bind(this));
 
             if (!lineStringPlacemark.getStyleSelector()) {
                 lineStringPlacemark.setStyleSelector(ge.createStyle(''));
@@ -394,137 +394,137 @@ var VisuGps = new Class({
             this.orientation = ge.createOrientation('');
             this.model3d.setOrientation(this.orientation);
             var scale = ge.createScale('');
-	    // Using a too big scale is a nuisance when zooming a lot
+            // Using a too big scale is a nuisance when zooming a lot
             //scale.set(50, 50, 50);
             scale.set(10, 10, 10);
             this.model3d.setScale(scale);
             this.model3d.setAltitudeMode(ge.ALTITUDE_ABSOLUTE);
             this._set3dPosition(0);
-	    var me = this;
-	    
-	    gex = new GEarthExtensions(ge);
-	    parcours3d = function() { // Our parcours3d object builder
-		this.placemark = null;
-		this.state = 'hidden';
-		this.distTarget = null;
-		this.hSdTarget = null;
-		this.hSaTarget = null;
-		this.gex = null;
-		this.distance = 0.0;
-		this.startPlacemark = null;
-	    };
-	    // Add 'clear' method to our 'parcours3d' type object
-	    parcours3d.prototype.clear = function() {
-		this.distance = 0.0;
-		if (this.placemark) {
-		    if (this.distTarget) {
-			this.gex.edit.endEditLineString(this.placemark.getGeometry());
-			document.getElementById(this.distTarget).innerHTML = 'N/A';
-			document.getElementById(this.hSdTarget).innerHTML = 'N/A';
-			document.getElementById(this.hSaTarget).innerHTML = 'N/A';
-			this.distTarget = null;
-		    }
-		    this.gex.dom.removeObject(this.placemark);
-		    this.placemark = null;
-		    this.state = 'hidden';
-		    if (this.startPlacemark) { this.gex.dom.removeObject(this.startPlacemark); }
-		    me.charts.nommc = me.charts.initialNommc;
-		}
-	    };
-	    // Add 'measureDistance' method to 'parcours3d' type object
-	    parcours3d.prototype.measureDistance = function(gex, distanceId, hSolDepId, hSolArrId) {    
-		this.gex = gex;
-		this.clear();
-		me.charts.nommc = 1;
-		// id of the HTML tag whose innerHTML will be updated with the distance
-		this.distTarget = distanceId;
-		this.hSdTarget =  hSolDepId;
-		this.hSaTarget =  hSolArrId;
-		this.placemark = gex.dom.addPlacemark({
-		    lineString: [],
-		    style     : { line: { width: 4, opacity : 0.5, color: '#ff0' } }
-		});
-		var self = this; // Our 'my_parcours3d' object
-		var drawLineStringOptions = {
-		    bounce: false,
-		    drawCallback  : function(coordIndex) { self.updateDistance(coordIndex); },
-		    finishCallback: function() {
-			var editLineStringOptions={editCallback: function() { self.updateDistance();}}
-			gex.edit.editLineString(self.placemark.getGeometry(), editLineStringOptions);
-		    }
-		};
-		gex.edit.drawLineString(this.placemark.getGeometry(), drawLineStringOptions);
-	    };
-	    this.old_startTransition_lat = 0;
-	    this.old_startTransition_lon = 0;
+            var me = this;
+            
+            gex = new GEarthExtensions(ge);
+            parcours3d = function() { // Our parcours3d object builder
+                this.placemark = null;
+                this.state = 'hidden';
+                this.distTarget = null;
+                this.hSdTarget = null;
+                this.hSaTarget = null;
+                this.gex = null;
+                this.distance = 0.0;
+                this.startPlacemark = null;
+            };
+            // Add 'clear' method to our 'parcours3d' type object
+            parcours3d.prototype.clear = function() {
+                this.distance = 0.0;
+                if (this.placemark) {
+                    if (this.distTarget) {
+                        this.gex.edit.endEditLineString(this.placemark.getGeometry());
+                        document.getElementById(this.distTarget).innerHTML = 'N/A';
+                        document.getElementById(this.hSdTarget).innerHTML = 'N/A';
+                        document.getElementById(this.hSaTarget).innerHTML = 'N/A';
+                        this.distTarget = null;
+                    }
+                    this.gex.dom.removeObject(this.placemark);
+                    this.placemark = null;
+                    this.state = 'hidden';
+                    if (this.startPlacemark) { this.gex.dom.removeObject(this.startPlacemark); }
+                    me.charts.nommc = me.charts.initialNommc;
+                }
+            };
+            // Add 'measureDistance' method to 'parcours3d' type object
+            parcours3d.prototype.measureDistance = function(gex, distanceId, hSolDepId, hSolArrId) {    
+                this.gex = gex;
+                this.clear();
+                me.charts.nommc = 1;
+                // id of the HTML tag whose innerHTML will be updated with the distance
+                this.distTarget = distanceId;
+                this.hSdTarget =  hSolDepId;
+                this.hSaTarget =  hSolArrId;
+                this.placemark = gex.dom.addPlacemark({
+                    lineString: [],
+                    style     : { line: { width: 4, opacity : 0.5, color: '#ff0' } }
+                });
+                var self = this; // Our 'my_parcours3d' object
+                var drawLineStringOptions = {
+                    bounce: false,
+                    drawCallback  : function(coordIndex) { self.updateDistance(coordIndex); },
+                    finishCallback: function() {
+                        var editLineStringOptions={editCallback: function() { self.updateDistance();}}
+                        gex.edit.editLineString(self.placemark.getGeometry(), editLineStringOptions);
+                    }
+                };
+                gex.edit.drawLineString(this.placemark.getGeometry(), drawLineStringOptions);
+            };
+            this.old_startTransition_lat = 0;
+            this.old_startTransition_lon = 0;
 
-	    // Add 'updateDistance' method to 'parcours3d' type object
-	    parcours3d.prototype.updateDistance = function(coordIndex) {
-		if (this.distTarget) {
-		    var startPlacemarkOptions = {
-			style: {
-			    icon: { // a Nice "D" icon
-				color: 'yellow',
-				href: 'http://maps.google.com/mapfiles/kml/pal5/icon51.png',
-				scale: 1, // 0.5
-				hotSpot: { left: '50%', top: 0 },
-			    }
-			}
-		    };
-		    var lineString = this.placemark.getGeometry();
-		    this.distance = new geo.Path(lineString).distance()/1000;
-		    document.getElementById(this.distTarget).innerHTML = this.distance.toFixed(2)+' km';
-		    var coords = lineString.getCoordinates();
-		    var nbPoints_in_lineString = coords.getLength(); var qnhAltitude;
-		    if (nbPoints_in_lineString == 1) { // Dealing with Start of Transition
-			var point0_lat = coords.get(0).getLatitude(); var point0_lon = coords.get(0).getLongitude();
-			// I add an extra placemark to flag the start of the transition with a "D" icon
-			this.startPlacemark = gex.dom.addPointPlacemark([point0_lat,point0_lon+0.000001], startPlacemarkOptions);
-			qnhAltitude = ge.getGlobe().getGroundAltitude(coords.get(0).getLatitude(), coords.get(0).getLongitude());
-			document.getElementById(this.hSdTarget).innerHTML = parseInt(qnhAltitude)+' m';
-			this.old_startTransition_lat = coords.get(0).getLatitude(); this.old_startTransition_lon = coords.get(0).getLongitude();
-		    } else if (nbPoints_in_lineString == 2) { // Dealing with End OR Start of Transition
-			var point0_lat = coords.get(0).getLatitude(); var point0_lon = coords.get(0).getLongitude();
-			if ((this.old_startTransition_lat == point0_lat) && (this.old_startTransition_lon == point0_lon)) {
-			    // Point0 was not changed => Dealing with End of Transition
-			    var point1_lat = coords.get(1).getLatitude(); var point1_lon = coords.get(1).getLongitude();
-			    qnhAltitude = ge.getGlobe().getGroundAltitude(point1_lat, point1_lon);
-			    document.getElementById(this.hSaTarget).innerHTML = parseInt(qnhAltitude)+' m';
-			} else {
-			    // Point0 was changed => Dealing with Start of Transition
-			    qnhAltitude = ge.getGlobe().getGroundAltitude(point0_lat, point0_lon);
-			    document.getElementById(this.hSdTarget).innerHTML = parseInt(qnhAltitude)+' m';
-			    // I must also handle my extra placemark flagging the start of the transition with a "D" icon
-			    this.old_startTransition_lat = point0_lat; this.old_startTransition_lon = point0_lon;
-			    this.gex.dom.removeObject(this.startPlacemark);
-			    this.startPlacemark = gex.dom.addPointPlacemark([point0_lat,point0_lon+0.000001], startPlacemarkOptions);
-			}
-		    } else if (nbPoints_in_lineString > 2) {
-			// If user add an extra points between the 2 original point (=> we got at least 3 points)
-			// our hSaTarget will be wrong => it is therefore better to clean it.
-			document.getElementById(this.hSaTarget).innerHTML = 'N/A';
-		    }
-		}
-	    };
-	    // We instantiate our 'my_parcours3d' object
-	    my_parcours3d = new parcours3d();
-	    this.parcours3d = my_parcours3d;
-	    // Our mousedown event handler to handle our 'my_parcours3d' object
-	    my_parcours3d.mousedownHandler = function(kmlEvent) {
-		if ((kmlEvent.getType() == 'KmlMouseEvent') && (kmlEvent.getButton() == 2)) {
-		    if (my_parcours3d.state == 'hidden') {
-			// Right click and hidden => Start measuring  distance
-			my_parcours3d.state = 'showing';
-			my_parcours3d.measureDistance(gex, "distance", "hSolDep", "hSolArr");
-		    } else {
-			// Right click and showing => Stop measuring distance
-			my_parcours3d.state = 'hidden';
-			my_parcours3d.clear();
-		    }
-		}
-	    };
-	    // We hook our mousedown event handler
-	    google.earth.addEventListener(ge.getWindow(), "mousedown", my_parcours3d.mousedownHandler);
+            // Add 'updateDistance' method to 'parcours3d' type object
+            parcours3d.prototype.updateDistance = function(coordIndex) {
+                if (this.distTarget) {
+                    var startPlacemarkOptions = {
+                        style: {
+                            icon: { // a Nice "D" icon
+                                color: 'yellow',
+                                href: 'http://maps.google.com/mapfiles/kml/pal5/icon51.png',
+                                scale: 1, // 0.5
+                                hotSpot: { left: '50%', top: 0 },
+                            }
+                        }
+                    };
+                    var lineString = this.placemark.getGeometry();
+                    this.distance = new geo.Path(lineString).distance()/1000;
+                    document.getElementById(this.distTarget).innerHTML = this.distance.toFixed(2)+' km';
+                    var coords = lineString.getCoordinates();
+                    var nbPoints_in_lineString = coords.getLength(); var qnhAltitude;
+                    if (nbPoints_in_lineString == 1) { // Dealing with Start of Transition
+                        var point0_lat = coords.get(0).getLatitude(); var point0_lon = coords.get(0).getLongitude();
+                        // I add an extra placemark to flag the start of the transition with a "D" icon
+                        this.startPlacemark = gex.dom.addPointPlacemark([point0_lat,point0_lon+0.000001], startPlacemarkOptions);
+                        qnhAltitude = ge.getGlobe().getGroundAltitude(coords.get(0).getLatitude(), coords.get(0).getLongitude());
+                        document.getElementById(this.hSdTarget).innerHTML = parseInt(qnhAltitude)+' m';
+                        this.old_startTransition_lat = coords.get(0).getLatitude(); this.old_startTransition_lon = coords.get(0).getLongitude();
+                    } else if (nbPoints_in_lineString == 2) { // Dealing with End OR Start of Transition
+                        var point0_lat = coords.get(0).getLatitude(); var point0_lon = coords.get(0).getLongitude();
+                        if ((this.old_startTransition_lat == point0_lat) && (this.old_startTransition_lon == point0_lon)) {
+                            // Point0 was not changed => Dealing with End of Transition
+                            var point1_lat = coords.get(1).getLatitude(); var point1_lon = coords.get(1).getLongitude();
+                            qnhAltitude = ge.getGlobe().getGroundAltitude(point1_lat, point1_lon);
+                            document.getElementById(this.hSaTarget).innerHTML = parseInt(qnhAltitude)+' m';
+                        } else {
+                            // Point0 was changed => Dealing with Start of Transition
+                            qnhAltitude = ge.getGlobe().getGroundAltitude(point0_lat, point0_lon);
+                            document.getElementById(this.hSdTarget).innerHTML = parseInt(qnhAltitude)+' m';
+                            // I must also handle my extra placemark flagging the start of the transition with a "D" icon
+                            this.old_startTransition_lat = point0_lat; this.old_startTransition_lon = point0_lon;
+                            this.gex.dom.removeObject(this.startPlacemark);
+                            this.startPlacemark = gex.dom.addPointPlacemark([point0_lat,point0_lon+0.000001], startPlacemarkOptions);
+                        }
+                    } else if (nbPoints_in_lineString > 2) {
+                        // If user add an extra points between the 2 original point (=> we got at least 3 points)
+                        // our hSaTarget will be wrong => it is therefore better to clean it.
+                        document.getElementById(this.hSaTarget).innerHTML = 'N/A';
+                    }
+                }
+            };
+            // We instantiate our 'my_parcours3d' object
+            my_parcours3d = new parcours3d();
+            this.parcours3d = my_parcours3d;
+            // Our mousedown event handler to handle our 'my_parcours3d' object
+            my_parcours3d.mousedownHandler = function(kmlEvent) {
+                if ((kmlEvent.getType() == 'KmlMouseEvent') && (kmlEvent.getButton() == 2)) {
+                    if (my_parcours3d.state == 'hidden') {
+                        // Right click and hidden => Start measuring  distance
+                        my_parcours3d.state = 'showing';
+                        my_parcours3d.measureDistance(gex, "distance", "hSolDep", "hSolArr");
+                    } else {
+                        // Right click and showing => Stop measuring distance
+                        my_parcours3d.state = 'hidden';
+                        my_parcours3d.clear();
+                    }
+                }
+            };
+            // We hook our mousedown event handler
+            google.earth.addEventListener(ge.getWindow(), "mousedown", my_parcours3d.mousedownHandler);
         }
     },
     /*
@@ -572,24 +572,24 @@ var VisuGps = new Class({
             kmlEvent: Event description
     */
     _leftClick3d : function(kmlEvent) {
-	if ((kmlEvent.getType() == 'KmlMouseEvent') && (kmlEvent.getButton() == 2)) {
-	    return; // Dealing with right click
-	}
-	// While in measure mode (parcours or transition) ONLY middle click give access to track setting
-	if (this.parcours3d && this.parcours3d.distTarget && !(kmlEvent.getButton() == 1)) {
-	    return;
-	}
+        if ((kmlEvent.getType() == 'KmlMouseEvent') && (kmlEvent.getButton() == 2)) {
+            return; // Dealing with right click
+        }
+        // While in measure mode (parcours or transition) ONLY middle click give access to track setting
+        if (this.parcours3d && this.parcours3d.distTarget && !(kmlEvent.getButton() == 1)) {
+            return;
+        }
         var point = new google.maps.LatLng(kmlEvent.getLatitude(), kmlEvent.getLongitude());
         this._leftClick(null, point);
     },
     _viewChangeDone3d : function() {
-	var lookAt = this.ge.getView().copyAsLookAt(this.ge.ALTITUDE_RELATIVE_TO_GROUND);
-	agl = lookAt.getRange();
-	if (agl > 20000) {
-	    this.marker.show();
-	} else {
+        var lookAt = this.ge.getView().copyAsLookAt(this.ge.ALTITUDE_RELATIVE_TO_GROUND);
+        agl = lookAt.getRange();
+        if (agl > 20000) {
+            this.marker.show();
+        } else {
             this.marker.hide();
-	}
+        }
     },
      /*
     Property: _mapTypeChanged (INTERNAL)
@@ -600,7 +600,7 @@ var VisuGps = new Class({
         if (this.map.getCurrentMapType() == G_SATELLITE_3D_MAP) {
             if (this.path) {
                 this.map.removeOverlay(this.path);
-	    }
+            }
             // Init the 3d map when displayed for the first time
             if (this.init3dMap) {
                 this.map.getEarthInstance(this._gePluginInit.bind(this));
@@ -608,8 +608,8 @@ var VisuGps = new Class({
             }
             // Create iframe shims to view custom controls
             new IFrame({src:
-			//'javascript:false', // If you uncomment this line you get the word 'false' on the display
-			'javascript:""',
+                        //'javascript:false', // If you uncomment this line you get the word 'false' on the display
+                        'javascript:""',
                         'frameborder': 0,
                         'scrolling': 'no',
                         styles: {
@@ -623,8 +623,8 @@ var VisuGps = new Class({
                             zIndex: -10000
                         }}).inject(this.titleCtrl.div);
             new IFrame({src:
-			//'javascript:false', // If you uncomment this line you get the word 'false' on the display
-			'javascript:""',
+                        //'javascript:false', // If you uncomment this line you get the word 'false' on the display
+                        'javascript:""',
                         'frameborder': 0,
                         'scrolling': 'no',
                         styles: {
@@ -676,12 +676,12 @@ var VisuGps = new Class({
     */
     downloadTrack : function(url) {
         new Request.JSON({
-	    'url' : 'php/vg_proxy.php?track=' + url,
-	    // If I leave this method line at the end as it was originally
-	    // I get the nasty error "missing ) after argument list"
-	    method : "get",
+            'url' : 'php/vg_proxy.php?track=' + url,
+            // If I leave this method line at the end as it was originally
+            // I get the nasty error "missing ) after argument list"
+            method : "get",
           onSuccess: this.setTrack.bind(this), 
-	}).send();
+        }).send();
     },
     /*
     Property: toggleAnim (INTERNAL)
@@ -900,10 +900,10 @@ var VisuGps = new Class({
                                   onMouseDown : this._showMarkerCenter.bind(this),
                                   onMouseWheel : this._showMarkerCenterZoom.bind(this)});
 
-	// 'initialNommc' is overwritten via 'nommc' param.
-	// i.e. http://toto.shacknet.nu/visugps/visugps.html?track=file:///c:/xampp/htdocs/visugps/20100912.igc&map=3g&nommc=1
-	this.charts.initialNommc = this.options.initialNommc;
-	this.charts.nommc = this.options.nommc;  // If nommc is set => No mouse move charts (use kbd only to move cursor in the chart, except click)
+        // 'initialNommc' is overwritten via 'nommc' param.
+        // i.e. http://toto.shacknet.nu/visugps/visugps.html?track=file:///c:/xampp/htdocs/visugps/20100912.igc&map=3g&nommc=1
+        this.charts.initialNommc = this.options.initialNommc;
+        this.charts.nommc = this.options.nommc;  // If nommc is set => No mouse move charts (use kbd only to move cursor in the chart, except click)
         var chart = this.charts.add('h', 0.9, '#ff0000');
         chart.setGridDensity(this.track.nbChartLbl, 4);
         chart.setHorizontalLabels(this.track.time.label);
@@ -1035,11 +1035,11 @@ var VisuGps = new Class({
         }
         this._showInfo(pos);
         if (this.map.getCurrentMapType() == G_SATELLITE_3D_MAP) {
-	    // In method gePluginInit() I have set a rather small scale for the little
-	    // paraglider 'paraglider.dae', it is hardly noticeable when GE is not zoomed
-	    // In this condition it is nice to keep the default track marker
-	    // Now in 3g the hidding/showing of the default track pointer is done in
-	    // method _viewChangeDone3d() which get called whenever the view changes.
+            // In method gePluginInit() I have set a rather small scale for the little
+            // paraglider 'paraglider.dae', it is hardly noticeable when GE is not zoomed
+            // In this condition it is nice to keep the default track marker
+            // Now in 3g the hidding/showing of the default track pointer is done in
+            // method _viewChangeDone3d() which get called whenever the view changes.
             // this.marker.hide();
         } else {
             this.marker.show();
@@ -1157,11 +1157,11 @@ var VisuGps = new Class({
                                                        'text-align':'right',
                                                        'font' : '10px Verdana, Arial, sans-serif'}
                                  }).set('html', '<p class="vgps-info"><strong>...iNfO</strong></p>' +
-					        // These 3 span id "distance" "hSolDep" and "hSolArr" are used
-					        // to display distance and altitude in 3g (fired via mouse 2 and mouse3)
-					        '<strong>Distance: </strong><span id="distance">N/A</span><br/>'+
-					        '<strong>hS_D: </strong><span id="hSolDep">N/A</span><br/>'+
-					        '<strong>hS_A: </strong><span id="hSolArr">N/A</span><br/>'+
+                                                // These 3 span id "distance" "hSolDep" and "hSolArr" are used
+                                                // to display distance and altitude in 3g (fired via mouse 2 and mouse3)
+                                                '<strong>Distance: </strong><span id="distance">N/A</span><br/>'+
+                                                '<strong>hS_D: </strong><span id="hSolDep">N/A</span><br/>'+
+                                                '<strong>hS_A: </strong><span id="hSolArr">N/A</span><br/>'+
                                                 '<p class="vgps-info" id="vgps-nfofield"></p>' +
                                                 '<div id="vgps-anim"><div id="vgps-play"></div></div>' +
                                                 '</div>')

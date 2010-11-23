@@ -40,7 +40,8 @@ $jsFiles = array(
   'js/visugps.js',
   'lib/chart/canvaschartpainter.js',
   'lib/chart/chart.js',
-  'lib/chart/excanvas.js'
+  'lib/chart/excanvas.js',
+  'lib/ge/extensions-0.2.1.pack.js' // Extension required for 3g distance handling
 );
 
 // Script

@@ -402,6 +402,80 @@ var VisuGps = new Class({
             this._set3dPosition(0);
             var me = this;
             
+            // Here is a description of the 3 supported modes when running in 3d (ge pluging),
+            // user actions allowed in each of them, and how user enters/quits them.
+            //
+            // (1) 'DEFAULT MODE' is the initial mode when you start visugps in 3d.
+            //     - Entered from 'DISTANCE MEASURING MODIFY MODE' via a RightClick or
+            //               by deleting one of the 2 last measuring pointmarks.
+            //               (As a special case can also be entered straight from
+            //                'DISTANCE MEASURING DEFINE MODE' via a 2nd RightClick
+            //                but user generally rather use a double click to go first
+            //                to 'DISTANCE MEASURING MODIFY MODE')
+            //     - Exited via a RightClick.
+            //     In this mode: 
+            //     - CLICK (left) set the point in the track to the closest clicked location.
+            //
+            // (2) 'DISTANCE MEASURING DEFINE MODE' to define measuring pointmarks.
+            //     - Entered from 'DEFAULT MODE' via a RightClick
+            //     - Exited via a double (left) click to move around the measuring pointmarks.
+            //              (might also be exited via a 2nd RightClick but in that case all
+            //               measuring pointmarks get removed so you won't be able to move them around).
+            //     In this mode: 
+            //     - EACH CLICK (left) defines a new measuring pointmarks.
+            //
+            // (3) 'DISTANCE MEASURING MODIFY MODE' to move around measuring pointmarks
+            //     - Entered from DISTANCE MEASURING DEFINE MODE via a DoubleClick (left).
+            //     - Exited via a RightClick (or removing 1 of the 2 last measuring pointmarks).
+            //     In this mode: 
+            //     - DRAGING measuring pointmark is allowed and distance info get updated.
+            //       The GROUND ALTITUDES INFO of the 1rst measuring pointmark get also updated.
+            //       The GROUND ALTITUDES INFO of the 2nd  measuring pointmark get also updated if
+            //       only 2 measuring pointmark remain.
+            //     - DOUBLE CLICKING (left) a measuring pointmark clears it.
+            //     - Note that single click (left) have no special meaning AMONG OTHER IT
+            //       DOES NOT SET THE POINT IN THE TRACK (use middle click for that in that mode).
+            //     - DRAGGING MIDDLE SEGMENT shadowed pointmark creates a new pointmark.
+            //
+            // Actually 'DISTANCE MEASURING MODIFY MODE' is not only handy for distance and altitude
+            // info, it also provide a way to void this nasty effect of moving the point in the track
+            // when you click anywhere in GE pluging window (use mouse 2 to set the point in the track).
+            // Yet another interesting interaction of this mode is that it modifies the key and mouse
+            // binding in used when the focus is in the graph located at the bottom part of the display
+            // (look for 'nommc' in the code). So great care is now taken in 'charts.js' to
+            // AVOID MOVING THE GE PLUGING WINDOW INADVERTENTLY:
+            // - Moving the mouse in this graph does not move anymore the point in the graph.
+            //   You should instead explicitely use the 'RIGHT' and 'LEFT' key for moving it
+            //   (If you shift those 2 keys movement will increase)
+            //   You can also use a click to set the point in the graph and hence set the point in the
+            //   track (but even then, the code will ONLY move the GE pluging window when you use
+            //          the SPACE key to recenter the map).
+            // - up and down key trigger a zoom in and zomm out of the GE pluging window
+            // - space recenter the map around the paraglider (current point in the track)
+            // Actually all this key/mouse binding remains actif when you are showing the 'IGN' map
+            //   (you toggle between 'IGN MAP' and 'GE PLUGING' by clicking on the 'ign' or 'google'
+            //    button located in the top middle of the bottom graph.)
+            //
+            // A typicall 3d distance measuring session for the Granier->Savoyarde transition
+            // would be as follow:
+            // - Move the GE plugin window so that it displays the Granier,
+            // - RIGHTCLICK => The 1rst 'measuring pointmark' appears sticked to your pointer,
+            //                 Place it by CLICKING (left) at the beginning of the transition
+            //                 somewhere on the Granier.
+            //   The click you just did gives you another 'measuring pointmark' sticked to your pointer,
+            //                 Place it by CLICKING (left) at the end of the transition
+            //                 somewhere on the Savoyarde.
+            // - Then you realise you just forgot to double click (instead of single click) to stop
+            //   auto generating 'measuring pointmark' ....
+            //   No problem, you merely DOUBLE CLICK => no more pointmark sticked to your pointer
+            //               DOUBLE CLICK again on the last 'measuring pointmark' => it get deleted
+            // - Now you may want to move a little bit the 2 'measuring pointmark' you created.
+            //   Well, just drag them and see that the distance and altitude information get updated
+            //               during the drag.
+            // - Once you're happy, with your measurement, remove it all by using a RIGHTCLICK
+            //   (unless you prefer to use the keybinding in the bottom chart protecting against
+            //    GE pluging window inadvertant move triggered by mouse move ... See above)
+            
             gex = new GEarthExtensions(ge);
             parcours3d = function() { // Our parcours3d object builder
                 this.placemark = null;
@@ -412,6 +486,7 @@ var VisuGps = new Class({
                 this.distance = 0.0;
                 this.DstartPlacemark = null;
             };
+
             // Add 'clear' method to our 'parcours3d' type object
             parcours3d.prototype.clear = function() {
                 this.distance = 0.0;
@@ -436,7 +511,7 @@ var VisuGps = new Class({
             parcours3d.prototype.measureDistance = function(gex, distanceId, hSolDepId, hSolArrId) {    
                 this.gex = gex;
                 this.clear();
-                me.charts.nommc = 1;
+                me.charts.nommc = 1; // Modifies key/mouse binding in 'charts.js' (more based on kbd)
                 // id of the HTML tag whose innerHTML will be updated with the distance
                 this.distTarget = distanceId;
                 this.hSdTarget =  hSolDepId;
@@ -455,6 +530,28 @@ var VisuGps = new Class({
                     }
                 };
                 gex.edit.drawLineString(this.placemark.getGeometry(), drawLineStringOptions);
+                /**
+                 * drawLineString()
+                 *
+                 * Enters a mode in which the user can draw the given line string geometry
+                 * on the globe by clicking on the globe to create coordinates.
+                 * To cancel the placement, use GEarthExtensions#edit.endEditLineString.
+                 * This is similar in intended usage to GEarthExtensions#edit.place.
+                 * @param {KmlLineString|KmlLinearRing} lineString The line string geometry
+                 *     to allow the user to draw (or append points to).
+                 * @param {Object} [options] The edit options.
+                 * @param {Boolean} [options.bounce=true] Whether or not to enable bounce
+                 *     effects while drawing coordinates.
+                 * @param {Function} [options.drawCallback] A callback to fire when new
+                 *     vertices are drawn. The only argument passed will be the index of the
+                 *     new coordinate (it can either be prepended or appended, depending on
+                 *     whether or not ensuring counter-clockwisedness).
+                 * @param {Function} [options.finishCallback] A callback to fire when drawing
+                 *     is successfully completed (via double click or by clicking on the first
+                 *     coordinate again).
+                 * @param {Boolean} [options.ensureCounterClockwise=true] Whether or not to
+                 *     automatically keep polygon coordinates in counter clockwise order.
+                 */
             };
             this.old_startTransition_lat = 0;
             this.old_startTransition_lon = 0;
@@ -474,7 +571,7 @@ var VisuGps = new Class({
                     };
                     var lineString = this.placemark.getGeometry();
                     this.distance = new geo.Path(lineString).distance()/1000;
-                    document.getElementById(this.distTarget).innerHTML = this.distance.toFixed(2)+' km';
+                    document.getElementById(this.distTarget).innerHTML=this.distance.toFixed(2)+' km';
                     var coords = lineString.getCoordinates();
                     var nbPoints_in_lineString = coords.getLength(); var qnhAltitude;
                     if (nbPoints_in_lineString == 1) { // Dealing with Start of Transition
@@ -482,14 +579,14 @@ var VisuGps = new Class({
                         var point0_lat = coords.get(0).getLatitude();
                         var point0_lon = coords.get(0).getLongitude();
                         // Add an extra placemark to flag the start of the transition with a "D" icon
-                        this.DstartPlacemark=gex.dom.addPointPlacemark([point0_lat,point0_lon+0.000001],
-                                                                       DstartPlacemarkOptions);
+                        this.DstartPlacemark=gex.dom.addPointPlacemark([point0_lat,point0_lon+0.000001]
+                                                                       , DstartPlacemarkOptions);
                         qnhAltitude = ge.getGlobe().getGroundAltitude(coords.get(0).getLatitude(),
                                                                       coords.get(0).getLongitude());
                         document.getElementById(this.hSdTarget).innerHTML = parseInt(qnhAltitude)+' m';
                         this.old_startTransition_lat = coords.get(0).getLatitude();
                         this.old_startTransition_lon = coords.get(0).getLongitude();
-                    } else if (nbPoints_in_lineString == 2) { // Dealing with End OR Start of Transition
+                    } else if (nbPoints_in_lineString == 2) { //Dealing with End OR Start of Transition
                         var point0_lat = coords.get(0).getLatitude();
                         var point0_lon = coords.get(0).getLongitude();
                         if ((this.old_startTransition_lat == point0_lat) &&
@@ -498,11 +595,13 @@ var VisuGps = new Class({
                             var point1_lat = coords.get(1).getLatitude();
                             var point1_lon = coords.get(1).getLongitude();
                             qnhAltitude = ge.getGlobe().getGroundAltitude(point1_lat, point1_lon);
-                            document.getElementById(this.hSaTarget).innerHTML=parseInt(qnhAltitude)+' m';
+                            document.getElementById(this.hSaTarget).innerHTML =
+                                parseInt(qnhAltitude)+' m';
                         } else {
                             // Point0 was changed => Dealing with Start of Transition
                             qnhAltitude = ge.getGlobe().getGroundAltitude(point0_lat, point0_lon);
-                            document.getElementById(this.hSdTarget).innerHTML=parseInt(qnhAltitude)+' m';
+                            document.getElementById(this.hSdTarget).innerHTML =
+                                parseInt(qnhAltitude)+' m';
                             // I must also handle the extra placemark flagging the start
                             // of the transition with a "D" icon
                             this.old_startTransition_lat = point0_lat;
@@ -527,10 +626,10 @@ var VisuGps = new Class({
             my_parcours3d.mousedownHandler = function(kmlEvent) {
                 if ((kmlEvent.getType() == 'KmlMouseEvent') && (kmlEvent.getButton() == 2)) {
                     if (my_parcours3d.DstartPlacemark == null) {
-                        // Right click and no D placemark yet => Start measuring  distance
+                        // 1rst Right Click => Start measuring  distance
                         my_parcours3d.measureDistance(gex, "distance", "hSolDep", "hSolArr");
                     } else {
-                        // Right click and no D placemark => Stop measuring distance
+                        // 2nd Right Click => Clear measuring distance
                         my_parcours3d.clear();
                     }
                 }

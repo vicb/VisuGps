@@ -130,6 +130,7 @@ var VisuGps = new Class({
             this.map.addControl(new google.maps.ScaleControl());
             this.map.enableScrollWheelZoom();
             this.map.disableDoubleClickZoom();
+
             // Add extra layers
             var copyright = new GCopyrightCollection("\u00a9 ");
             copyright.addCopyright(new GCopyright("XContest", new GLatLngBounds(new GLatLng(-90, -180), new GLatLng(90, 180)), 0, "\u00a9 XContest"));
@@ -1195,11 +1196,16 @@ var VisuGps = new Class({
     */
     _showInfo : function(pos) {
         var idx = (pos * (this.track.nbChartPt - 1) / 1000).toInt();
-        this.nfo.set('html',this.track.elev[idx] + 'm [hV]<br/>' +
+        this.nfo.set('html','=========<br/>' + 
+                            '<strong>' + '<span style="font-size: 150%;color:red">' +
+                            this.track.elev[idx] + '</span>' + 'm</strong> [hV]<br/>' +
+                            '=========<br/>' +
                             this.track.elevGnd[idx] + 'm [hS]<br/>' +
                             (0).max((this.track.elev[idx] - this.track.elevGnd[idx])) + 'm [hR]<br/>' +
-                            this.track.vario[idx] + 'm/s [Vz]<br/>' +
-                            this.track.speed[idx] + 'km/h [Vx]<br/>' +
+                            '<strong>' + '<span style="font-size: 150%;color:red">' +
+                            this.track.vario[idx] + '</span>' + 'm/s</strong> [Vz]<br/>' +
+                            '<strong>' + '<span style="font-size: 150%;color:red">' +
+                            this.track.speed[idx] + '</span>' + 'km/h</strong> [Vx]<br/>' +
                             this._NbToStrW(this.track.time.hour[idx],2) + ':' +
                             this._NbToStrW(this.track.time.min[idx], 2) + ':' +
                             this._NbToStrW(this.track.time.sec[idx], 2) + '[Th]<br/>' +
@@ -1271,7 +1277,7 @@ var VisuGps = new Class({
                                                        'font' : '10px Verdana, Arial, sans-serif'}
                                  }).set('html', '<p class="vgps-info"><strong>...iNfO</strong></p>' +
                                                 // These 3 span id "distance" "hSolDep" and "hSolArr" are used
-                                                // to display distance and altitude in 3g (fired via mouse 2 and mouse3)
+                                                // to display distance and altitude in 3g (fired via mouse3, end via doubleclick)
                                                 '<strong>Distance: </strong><span id="distance">N/A</span><br/>'+
                                                 '<strong>hS_D: </strong><span id="hSolDep">N/A</span><br/>'+
                                                 '<strong>hS_A: </strong><span id="hSolArr">N/A</span><br/>'+

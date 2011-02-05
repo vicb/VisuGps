@@ -70,7 +70,7 @@ var Charts = new Class({
         
         if (this.options.cursor) {
             this.cursorDiv = new Element('div', {'styles' : { 'position' : 'absolute',
-                                                              'border-left' : 'dashed 1px #508',
+                                                              'border-left' : 'dashed 5px #508',
                                                               'width' : 0,
                                                               'z-index' : 80,
                                                               'visibility' : 'hidden'}

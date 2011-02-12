@@ -407,10 +407,10 @@ var VisuGps = new Class({
             // user actions allowed in each of them, and how user enters/quits them.
             //
             // (1) 'DEFAULT MODE' is the initial mode when you start visugps in 3d.
-            //     - Entered from 'DISTANCE MEASURING MODIFY MODE' via a RightClick or
+            //     - Entered from 'DISTANCE MEASURING MODIFY MODE' via a S-C-A-RightClick or
             //               by deleting one of the 2 last measuring pointmarks.
             //               (As a special case can also be entered straight from
-            //                'DISTANCE MEASURING DEFINE MODE' via a 2nd RightClick
+            //                'DISTANCE MEASURING DEFINE MODE' via a S-C-A-RightClick
             //                but user generally rather use a double click to go first
             //                to 'DISTANCE MEASURING MODIFY MODE')
             //     - Exited via a RightClick.
@@ -420,14 +420,15 @@ var VisuGps = new Class({
             // (2) 'DISTANCE MEASURING DEFINE MODE' to define measuring pointmarks.
             //     - Entered from 'DEFAULT MODE' via a RightClick
             //     - Exited via a double (left) click to move around the measuring pointmarks.
-            //              (might also be exited via a 2nd RightClick but in that case all
+            //              (might also be exited via a S-C-A-RightClick but in that case all
             //               measuring pointmarks get removed so you won't be able to move them around).
             //     In this mode: 
             //     - EACH CLICK (left) defines a new measuring pointmarks.
+            //     - DOUBLE CLICK places the last new measuring pointmarks.
             //
             // (3) 'DISTANCE MEASURING MODIFY MODE' to move around measuring pointmarks
             //     - Entered from DISTANCE MEASURING DEFINE MODE via a DoubleClick (left).
-            //     - Exited via a RightClick (or removing 1 of the 2 last measuring pointmarks).
+            //     - Exited via a S-C-A-RightClick (or removing 1 of the 2 last measuring pointmarks).
             //     In this mode: 
             //     - DRAGING measuring pointmark is allowed and distance info get updated.
             //       The GROUND ALTITUDES INFO of the 1rst measuring pointmark get also updated.
@@ -440,12 +441,22 @@ var VisuGps = new Class({
             //
             // Actually 'DISTANCE MEASURING MODIFY MODE' is not only handy for distance and altitude
             // info, it also provide a way to void this nasty effect of moving the point in the track
-            // when you click anywhere in GE pluging window (use mouse 2 to set the point in the track).
+            // when you click anywhere in GE pluging window (use 'mouse-2' or 'A-mouse-1' to set
+            // the point in the track).
             // Yet another interesting interaction of this mode is that it modifies the key and mouse
             // binding in used when the focus is in the graph located at the bottom part of the display
             // (look for 'nommc' in the code). So great care is now taken in 'charts.js' to
-            // AVOID MOVING THE GE PLUGING WINDOW INADVERTENTLY:
-            // - Moving the mouse in this graph does not move anymore the point in the graph.
+            // AVOID MOVING THE GE PLUG-IN WINDOW INADVERTENTLY:
+            // - Moving the little paraglider in the trace can be done WHEN FOCUS IS IN THE GE PLUG-IN
+            //   window (not where is the graph) via 'mouse-3' to go forward and 'C-mouse-3' to go
+            //   backward. Also if you SHIFT those you get bigger move.
+            //             It would have been better to use key binding but the API
+            //             does not provide access to any key event in the GE PLUG-IN WINDOW
+            //             ... so we are stuck to use the mouse button.
+            //   Using the GE PLUG-IN WINDOW (instead of the graph) is also really nice as you have
+            //   at hand all the Google Earth shortcut keys to move, zoom, tilt and so on.
+            // - But if you decide to use the graph instead, note that moving the mouse in this graph
+            //   does not move anymore the point in the graph !
             //   You should instead explicitely use the 'RIGHT' and 'LEFT' key for moving it
             //   (If you shift those 2 keys movement will increase)
             //   You can also use a click to set the point in the graph and hence set the point in the
@@ -473,9 +484,10 @@ var VisuGps = new Class({
             // - Now you may want to move a little bit the 2 'measuring pointmark' you created.
             //   Well, just drag them and see that the distance and altitude information get updated
             //               during the drag.
-            // - Once you're happy, with your measurement, remove it all by using a RIGHTCLICK
-            //   (unless you prefer to use the keybinding in the bottom chart protecting against
-            //    GE pluging window inadvertant move triggered by mouse move ... See above)
+            // - Once you're happy, with your measurement, remove it all by using a C-A-S-RIGHTCLICK
+            //   (unless you prefer like me to have the protection against inadvertant wandering
+            //    of your mouse in the bottom chart so that your paraglider does not sundenly jump
+            //    out very far ... See above)
             
             gex = new GEarthExtensions(ge);
             parcours3d = function() { // Our parcours3d object builder
@@ -622,16 +634,19 @@ var VisuGps = new Class({
             };
             // We instantiate our 'my_parcours3d' object
             my_parcours3d = new parcours3d();
+            my_parcours3d.voidNextStartParcours3d = 0;
+
             this.parcours3d = my_parcours3d;
             // Our mousedown event handler to handle our 'my_parcours3d' object
             my_parcours3d.mousedownHandler = function(kmlEvent) {
                 if ((kmlEvent.getType() == 'KmlMouseEvent') && (kmlEvent.getButton() == 2)) {
                     if (my_parcours3d.DstartPlacemark == null) {
                         // 1rst Right Click => Start measuring  distance
-                        my_parcours3d.measureDistance(gex, "distance", "hSolDep", "hSolArr");
-                    } else {
-                        // 2nd Right Click => Clear measuring distance
-                        my_parcours3d.clear();
+                        if (my_parcours3d.voidNextStartParcours3d) {
+                            my_parcours3d.voidNextStartParcours3d = 0;
+                        } else {
+                            my_parcours3d.measureDistance(gex, "distance", "hSolDep", "hSolArr");
+                        }
                     }
                 }
             };
@@ -685,10 +700,31 @@ var VisuGps = new Class({
     */
     _leftClick3d : function(kmlEvent) {
         if ((kmlEvent.getType() == 'KmlMouseEvent') && (kmlEvent.getButton() == 2)) {
-            return; // Dealing with right click
+            // Dealing with right click
+            if (this.parcours3d && this.parcours3d.DstartPlacemark) {
+                var offset = 1;
+                if (kmlEvent.getShiftKey() && kmlEvent.getCtrlKey() && kmlEvent.getAltKey()) {
+                    this.parcours3d.clear(); // A quicker way out than deletting 1 by 1 the pointmarks
+                    this.parcours3d.voidNextStartParcours3d = 1;
+                    return;
+                }
+                if (kmlEvent.getShiftKey()) { offset = 10; }
+                if (kmlEvent.getCtrlKey()) {
+                    pos = this.curPos - offset;
+                } else {
+                    pos = this.curPos + offset;
+                }
+                pos = pos.limit(0, 1000);
+                this.charts.setCursor(pos);
+                this._showInfo(pos);
+                this._showMarker(pos, true);
+                this.curPos = pos;
+            }
+            return;
         }
-        // While in measure mode (parcours or transition) ONLY middle click give access to track setting
-        if (this.parcours3d && this.parcours3d.distTarget && !(kmlEvent.getButton() == 1)) {
+        // While in 3D measure mode ONLY middle click OR 'Alt left click' give access to track setting
+        if (this.parcours3d && this.parcours3d.distTarget &&
+            ((kmlEvent.getButton() == 0) && !kmlEvent.getAltKey())) {
             return;
         }
         var point = new google.maps.LatLng(kmlEvent.getLatitude(), kmlEvent.getLongitude());
@@ -999,6 +1035,7 @@ var VisuGps = new Class({
                     var pos = (1000 * bestIdx / this.track.nbTrackPt).toInt();
                     this.charts.setCursor(pos);
                     this._showInfo(pos);
+                    this.curPos = pos; 
                 }
         }
     },
@@ -1299,7 +1336,9 @@ var VisuGps = new Class({
         }
 
         InfoControl.prototype.getDefaultPosition = function() {
-            return new google.maps.ControlPosition(G_ANCHOR_BOTTOM_RIGHT, new GSize(2, 12));
+            // Position info block hight enought (40 pixel) to not hide GE eye view altitude
+            // even when font size are changed
+            return new google.maps.ControlPosition(G_ANCHOR_BOTTOM_RIGHT, new GSize(2, 40));
         }
 
         this.infoCtrl = new InfoControl();

@@ -156,24 +156,26 @@ Returns:
 */
 function ParseTrk($trackFile, &$trackData)
 {
+    // T  A 49.34586726ºN 0.72568615ºW 01-NOV-10 15:54:34.000 N 51.6 0.0 0.1 0.0 0 -1000.0 9999999562023526247000000.0 -1 60.9 -1.0
     preg_match_all(
       '/^T\s+A\s+
-      (?<lat>[0-9\.]+).(?<latS>\w)\s+
-      (?<lon>[0-9\.]+).(?<lonS>\w)\s+
+      (?<lat>[0-9.]+).*?(?<latS>[NS])\s+
+      (?<lon>[0-9.]+).*?(?<lonS>[EW])\s+
       (?<day>\d{2})-(?<month>\w{3})-(?<year>\d{2})\s+
-      (?<hour>\d{2}):(?<min>\d{2}):(?<sec>\d{2})\s+.\s+
+      (?<hour>\d{2}):(?<min>\d{2}):(?<sec>\d{2})\.\d+\s+.\s+
       (?<elev>\d+)
       /xim',
       $trackFile, 
       $m
     );
 
-    if (count($m[0] < 5 ))
+    // T  N45.6321216 E003.1162763 19-JUL-10 14:33:59 00785
+    if (count($m[0]) < 5 )
     {
       preg_match_all(
         '/^T\s+
-        (?<latS>\w)(?<lat>[0-9\.]+)\s+
-        (?<lonS>\w)(?<lon>[0-9\.]+)\s+
+        (?<latS>[NS])(?<lat>[0-9.]+)\s+
+        (?<lonS>[EW])(?<lon>[0-9.]+)\s+
         (?<day>\d{2})-(?<month>\w{3})-(?<year>\d{2})\s+
         (?<hour>\d{2}):(?<min>\d{2}):(?<sec>\d{2})\s+
         (?<elev>\d+)
@@ -221,40 +223,52 @@ Returns:
 */
 function ParseNmea($trackFile, &$trackData)
 {
-    // Regexp fields
-    define('NMEA_hour', 1);
-    define('NMEA_min', 2);
-    define('NMEA_sec', 3);
-    define('NMEA_lat', 4);
-    define('NMEA_latS', 5);
-    define('NMEA_lon', 6);
-    define('NMEA_lonS', 7);
-    define('NMEA_elev', 8);
-
-    if (preg_match('/^\$GPRMC,\d+,.,[\d\.]+,.,[\d\.]+,.,[\d\.]+,[\d\.]+,(\d{2})(\d{2})(\d{2})/mi', $trackFile, $m)) {
-        $trackData['date']['day'] = intval($m[1]);
-        $trackData['date']['month'] = intval($m[2]);
-        $trackData['date']['year'] = intval($m[3]) + (($m[3] > 60)?1900:2000);
+    // $GPRMC,134329.000,V,4902.174,N,00132.360,E,0.00,0.00,030910,,*19
+    if (preg_match('
+      /^\$GPRMC,
+      [\d.]+,
+      .,
+      [\d.]+,
+      .,
+      [\d.]+,
+      .,
+      [\d.]+,
+      [\d.]+,
+      (?<day>\d{2})(?<month>\d{2})(?<year>\d{2})
+      /xim', $trackFile, $m))
+    {
+        $trackData['date']['day'] = intval($m['day']);
+        $trackData['date']['month'] = intval($m['month']);
+        $trackData['date']['year'] = intval($m['year']) + (($m['year'] > 60)? 1900 : 2000);
     }
 
-    preg_match_all('/^\$GPGGA,(\d{2})(\d{2})(\d{2})[\d\.]*,([\d\.]+),(\w),([\d\.]+),(\w),\d+,\d+,[\d\.]+,([\d\.]+)/im',
-                   $trackFile, $m);
+    // $GPGGA,134329.000,4902.174,N,00132.360,E,0,00,0.0,119.000,M,0.0,M,,*62
+    preg_match_all('
+      /^\$GPGGA,
+      (?<hour>\d{2})(?<min>\d{2})(?<sec>\d{2})[\d.]*,
+      (?<lat>[\d.]+),(?<latS>[NS]),
+      (?<lon>[\d.]+),(?<lonS>[EW]),
+      \d+,
+      \d+,
+      [\d.]+,
+      (?<elev>[\d.]+)
+      /xim', $trackFile, $m);
 
     $nbPts = $trackData['nbPt'] = count($m[0]);
 
     if ($nbPts > 5) {
         // Extract latitude, longitude, altitudes and time in second
         for ($i = 0; $i < $nbPts; $i++) {
-            $lonDeg= intval($m[NMEA_lon][$i] / 100);
-            $lonMin= $m[NMEA_lon][$i] - $lonDeg * 100;
-            $latDeg= intval($m[NMEA_lat][$i] / 100);
-            $latMin= $m[NMEA_lat][$i] - $latDeg * 100;
-            $trackData['lat'][$i] = ($latDeg + $latMin / 60) * (strtoupper($m[NMEA_latS][$i]) == 'N'?1:-1);
-            $trackData['lon'][$i] = ($lonDeg + $lonMin / 60) * (strtoupper($m[NMEA_lonS][$i]) == 'E'?1:-1);
-            $trackData['elev'][$i] = intval($m[NMEA_elev][$i]);
-            $trackData['time']['hour'][$i] = intval($m[NMEA_hour][$i]);
-            $trackData['time']['min'][$i] = intval($m[NMEA_min][$i]);
-            $trackData['time']['sec'][$i] = intval($m[NMEA_sec][$i]);
+            $lonDeg= intval($m['lon'][$i] / 100);
+            $lonMin= $m['lon'][$i] - $lonDeg * 100;
+            $latDeg= intval($m['lat'][$i] / 100);
+            $latMin= $m['lat'][$i] - $latDeg * 100;
+            $trackData['lat'][$i] = ($latDeg + $latMin / 60) * (strtoupper($m['latS'][$i]) == 'N'? 1 : -1);
+            $trackData['lon'][$i] = ($lonDeg + $lonMin / 60) * (strtoupper($m['lonS'][$i]) == 'E'? 1 : -1);
+            $trackData['elev'][$i] = intval($m['elev'][$i]);
+            $trackData['time']['hour'][$i] = intval($m['hour'][$i]);
+            $trackData['time']['min'][$i] = intval($m['min'][$i]);
+            $trackData['time']['sec'][$i] = intval($m['sec'][$i]);
         }
     }
     return $nbPts;
@@ -274,7 +288,6 @@ Returns:
 */
 function ParseGpx($trackFile, &$trackData) 
 {
-
     if (!($xml = @simplexml_load_string($trackFile))) return 0;
 
     if (!isset($xml->trk[0]->trkseg[0]->trkpt[0])) return 0;
@@ -300,17 +313,17 @@ function ParseGpx($trackFile, &$trackData)
 
             if (isset($trackPt->ele)) $ptElev = round($trackPt->ele);
             if (isset($trackPt->time)) {
-                if (preg_match('/(\d{2}):(\d{2}):(\d{2})/', $trackPt->time, $m)) {
-                    $ptHour = intval($m[1]);
-                    $ptMin = intval($m[2]);
-                    $ptSec = intval($m[3]);
+                if (preg_match('/(?<h>\d{2}):(?<m>\d{2}):(?<s>\d{2})/', $trackPt->time, $m)) {
+                    $ptHour = intval($m['h']);
+                    $ptMin = intval($m['m']);
+                    $ptSec = intval($m['s']);
                 }
                 if (!$dateSet &&
-                    preg_match('/(\d{4})-(\d{2})-(\d{2})/', $trackPt->time, $m)) {
+                    preg_match('/(?<y>\d{4})-(?<m>\d{2})-(?<d>\d{2})/', $trackPt->time, $m)) {
                     $dateSet = true;
-                    $trackData['date']['year'] = intval($m[1]);
-                    $trackData['date']['month'] = intval($m[2]);
-                    $trackData['date']['day'] = intval($m[3]);
+                    $trackData['date']['year'] = intval($m['y']);
+                    $trackData['date']['month'] = intval($m['m']);
+                    $trackData['date']['day'] = intval($m['d']);
                 }
             }
             $trackData['lat'][$i] = $ptLat;

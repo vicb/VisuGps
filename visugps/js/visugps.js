@@ -175,7 +175,12 @@ var VisuGps = new Class({
         if (track.error != null) {
             if (load) {
                 load.set('html', track.error);
-                new Fx.Styles(load, {transition: Fx.Transitions.linear}).start({'opacity': 0.9, 'background-color': '#ff2222'});
+                new Fx.Morph(load, {transition: Fx.Transitions.linear})
+                  .start({
+                    'duration' : 500,
+                    'opacity': 0.9,
+                    'background-color': '#ff2222'
+                  });
             }
             return;
         }

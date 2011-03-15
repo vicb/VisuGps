@@ -42,10 +42,10 @@
                                                  'ts2.victorb.fr',
                                                  'ts3.victorb.fr']});
 
-           var trackName = decodeURIComponent(location.search) || 'noparam';
+            var params = location.search.replace(/^\?/, '').parseQueryString();
 
-            if (m = /^\?track=(.*)$/i.exec(trackName)) {
-                kMap.downloadTrack(m[1]);
+            if (params.track) {              
+                kMap.downloadTrack(params.track);
             } else {
                 kMap.downloadTrack(location.href.replace(/[\w\.]*$/, 'test.igc'));
             }

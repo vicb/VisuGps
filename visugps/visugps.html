@@ -47,7 +47,11 @@
             if (params.track) {              
                 kMap.downloadTrack(params.track);
             } else {
-                kMap.downloadTrack(location.href.replace(/[\w\.]*$/, 'test.igc'));
+                kMap.downloadTrack(location.href.replace(/\?.*/, '').replace(/[\w\.]*$/, 'test.igc'));
+            }
+
+            if (params.turnpoints) {
+                kMap.drawRoute(params);
             }
 
         });

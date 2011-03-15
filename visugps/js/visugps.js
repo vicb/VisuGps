@@ -286,7 +286,42 @@ var VisuGps = new Class({
         this.map.addControl(new google.maps.MenuMapTypeControl());
         
     },
-    
+
+    drawRoute: function(params) {
+      var map = this.map,
+          pos,
+          icon,
+          startIcon,
+          start, tp, tps = [],
+          ovs = [];
+
+      icon = new google.maps.Icon(G_DEFAULT_ICON);
+      icon.image = "http://labs.google.com/ridefinder/images/mm_20_orange.png";
+      icon.shadow = "http://labs.google.com/ridefinder/images/mm_20_shadow.png";
+      icon.iconSize = new google.maps.Size(12, 20);
+      icon.shadowSize = new google.maps.Size(22, 20);
+      icon.iconAnchor = new google.maps.Point(6, 20);
+
+      Array.each(JSON.decode(params.turnpoints) || [], function(pos) {
+          tp = new google.maps.LatLng(pos[0], pos[1]);
+          tps.push(tp);
+          ovs.push(new google.maps.Marker(tp, { clickable: false, icon: icon  }));
+      });
+
+      startIcon = new google.maps.Icon(icon);
+      startIcon.image = "http://labs.google.com/ridefinder/images/mm_20_green.png";
+
+      if (pos = JSON.decode(params.start)) {
+        start = new google.maps.LatLng(pos[0], pos[1]);
+        tps.unshift(start);
+        ovs.push(new google.maps.Marker(start, { clickable: false, icon: startIcon  } ));
+      }
+      
+      ovs.push(new GPolyline(tps, "#00f", 2, 1.0));
+
+      Array.each(ovs, function(ov) { map.addOverlay(ov); });
+    },
+
     /*
     Property: initIgnMap
             Initialize IGN map

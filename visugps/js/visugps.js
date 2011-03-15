@@ -172,7 +172,7 @@ var VisuGps = new Class({
         var opt = this.options;
         var load = $(opt.loadDiv);
         
-        if ($defined(track.error)) {
+        if (track.error != null) {
             if (load) {
                 load.set('html', track.error);
                 new Fx.Styles(load, {transition: Fx.Transitions.linear}).start({'opacity': 0.9, 'background-color': '#ff2222'});
@@ -180,7 +180,7 @@ var VisuGps = new Class({
             return;
         }
 
-        if ($defined(track.kmlUrl)) {
+        if (track.kmlUrl != null) {
             // Display KML files (no graph available)
             var me = this;
 
@@ -242,14 +242,14 @@ var VisuGps = new Class({
             this.mapTitle = [this.track.date.day, this.track.date.month, this.track.date.year].join('/');
 
             if ((this.mapTitle !== '0/0/0') &&
-                ($type(opt.weatherTileUrl) === 'array')) {
+                (typeOf(opt.weatherTileUrl) === 'array')) {
                 this._createModisMap(this.track.date.day, this.track.date.month, this.track.date.year);
             }
 
             if (this.track.pilot) this.mapTitle += '<br/>' + this.track.pilot;
             this.titleCtrl.setText(this.mapTitle);
 
-            if ($type(opt.elevTileUrl) === 'array') {
+            if (typeOf(opt.elevTileUrl) === 'array') {
                 this._createSrtmMap();
             }
 
@@ -288,7 +288,7 @@ var VisuGps = new Class({
     */
     initIgnMap : function() {
         this.ignMap = frames.ign;
-        if ($defined(this.track.kmlUrl)) {
+        if (this.track.kmlUrl != null) {
             this.ignMap.setTrackKml('php/vg_directproxy.php?url=', this.track.kmlUrl);
         } else {
             this.ignMap.setTrack(this.track.lat, this.track.lon);
@@ -296,7 +296,7 @@ var VisuGps = new Class({
         // Add the map switcher control
         this.mapSwitcher = new Element('div', {'id' : 'vgps-mapSwitcher'}).inject(this.options.chartDiv, 'top');
         this.mapSwitcher.set('html', 'google');
-        this.mapSwitcher.addEvent('mousedown', this._switchMap.bindWithEvent(this));
+        this.mapSwitcher.addEvent('mousedown', this._switchMap.bind(this));
     },
     /*
     Property: ignLeftClick
@@ -332,7 +332,7 @@ var VisuGps = new Class({
     
     */
     _gePluginInit : function(ge) {
-        if (!$defined(this.track.kmlUrl)) {
+        if (this.track.kmlUrl == null) {
             this.ge = ge;
             // Create the 3d track
             var lineString;
@@ -516,7 +516,7 @@ var VisuGps = new Class({
     _toggleAnim : function(e) {
         if (e.rightClick) {
             this.animPos = 0;
-            $clear(this.animTimer);
+            clearInterval(this.animTimer);
             this.animTimer = null;
             var playGif = $('vgps-anim').getStyle('background-image').replace(/pause/, 'play');
             $('vgps-anim').setStyle('background-image', playGif);
@@ -528,7 +528,7 @@ var VisuGps = new Class({
                 var pauseGif = $('vgps-anim').getStyle('background-image').replace(/play/, 'pause');
                 $('vgps-anim').setStyle('background-image', pauseGif);
             } else {
-                $clear(this.animTimer);
+                clearInterval(this.animTimer);
                 this.animTimer = null;
                 var playGif = $('vgps-anim').getStyle('background-image').replace(/pause/, 'play');
                 $('vgps-anim').setStyle('background-image', playGif);
@@ -546,7 +546,7 @@ var VisuGps = new Class({
         this.animDelay.val = this.animDelay.min +
                              (100 - val) / 100 * (this.animDelay.max - this.animDelay.min);
         if (this.animTimer !== null) {
-            $clear(this.animTimer);
+            clearInterval(this.animTimer);
             this.animTimer = this._animate.periodical(this.animDelay.val, this);
         }
     },
@@ -557,7 +557,7 @@ var VisuGps = new Class({
     _animate : function() {
         if (this.animPos >= 1000) {
             this.animPos = 0;
-            $clear(this.animTimer);
+            clearInterval(this.animTimer);
             this.animTimer = null;
             var playGif = $('vgps-anim').getStyle('background-image').replace(/pause/, 'play');
             $('vgps-anim').setStyle('background-image', playGif);
@@ -753,7 +753,7 @@ var VisuGps = new Class({
     */
     _resize : function() {
         if (this.charts) this.charts.showCursor(false);
-        if (this.timer) $clear(this.timer);
+        if (this.timer) clearTimeout(this.timer);
         this.timer = this._drawGraph.delay(100, this);        
         if (this.ignMap != null) {
             var size = $('ignwrap').getSize();
@@ -831,7 +831,7 @@ var VisuGps = new Class({
             center - true to centre the map
     */
     _showMarker : function(pos, center) {
-        center = $pick(center, false);
+        center = center == undefined ? false : center;
         var idx = (pos * (this.track.nbTrackPt - 1) / 1000).toInt();
         this.marker.setPoint(this.points[idx]);
         if (this.marker3d) {
@@ -983,7 +983,7 @@ var VisuGps = new Class({
 
             // Add the animation control
             $('vgps-play').addEvent('mousedown', function(event) {(new Event(event)).stop();});
-            $('vgps-anim').addEvent('mousedown', me._toggleAnim.bindWithEvent(me));
+            $('vgps-anim').addEvent('mousedown', me._toggleAnim.bind(me));
             new SliderProgress('vgps-play', {'color': '#FF850C',
                                              'onChange' : me._setAnimDelay.bind(me)}).set(50);
 

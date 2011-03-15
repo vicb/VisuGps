@@ -131,7 +131,7 @@ var Chart = new Class({
     add : function(label, color, values, flags) {
         var offset;
         var opt = this.options;
-        flags = $pick(flags, this._flags);
+        flags = flags || this._flags;
         if (flags & CHART_BAR) {
             offset = opt.barDistance + this._bars * (opt.barWidth + opt.barDistance);
             this._bars++;

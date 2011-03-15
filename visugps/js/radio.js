@@ -31,7 +31,7 @@ Class: RadioBtn
 var RadioBtn = new Class({
     Implements: [Options, Events],
     options: {
-        onSelect: $empty,
+        onSelect: function() {},
         classSelect: "btn-selected",
         initBtn: 0
     },

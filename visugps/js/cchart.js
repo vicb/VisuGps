@@ -38,9 +38,9 @@ var CChart = new Class({
     Implements: Events,
     options: {
         cursor : true,
-        onMouseMove: $empty,
-        onMouseDown: $empty,
-        onMouseWheel: $empty
+        onMouseMove: function() {},
+        onMouseDown: function() {},
+        onMouseWheel: function() {}
     },
     /*
     Property: initialize
@@ -68,14 +68,14 @@ var CChart = new Class({
                                                               'visibility' : 'hidden'}
                                                 }
                                         ).inject($(div))
-                                         .addEvents({'mousedown' : this._down.bindWithEvent(this),
-                                                     'mousewheel' : this._wheel.bindWithEvent(this)});
+                                         .addEvents({'mousedown' : this._down.bind(this),
+                                                     'mousewheel' : this._wheel.bind(this)});
         }
         this.position = 0;
         // Add events to both divs
-        $(div).addEvents({'mousemove' : this._move.bindWithEvent(this),
-                          'mousedown' : this._down.bindWithEvent(this),
-                          'mousewheel' : this._wheel.bindWithEvent(this)});
+        $(div).addEvents({'mousemove' : this._move.bind(this),
+                          'mousedown' : this._down.bind(this),
+                          'mousewheel' : this._wheel.bind(this)});
     },
     /*
     Property: draw
@@ -114,7 +114,7 @@ var CChart = new Class({
     */    
     showCursor: function(visible) {
         if (this.options.cursor) {
-            visible = $pick(visible, true);
+            visible = visible == undefined ? true : visble;
             this.cursorDiv.setStyle('visibility', visible?'visible':'hidden');
         }
     },

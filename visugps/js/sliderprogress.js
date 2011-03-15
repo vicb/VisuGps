@@ -21,8 +21,8 @@ Events:
 var SliderProgress = new Class({
     Implements: [Events, Options],
     options: {
-        onChange: $empty,
-        onComplete: $empty,
+        onChange: function() {},
+        onComplete: function() {},
         mode: 'horizontal',
         steps: 100,
         color: '#f00',
@@ -36,7 +36,7 @@ var SliderProgress = new Class({
         this.element = $(el);
         opt.border?this.element.setStyle('border-width', opt.border):opt.boder = 0;
         this.capture = false;
-        this._mouseMoveWrapper = this._mouseMove.bindWithEvent(this);
+        this._mouseMoveWrapper = this._mouseMove.bind(this);
         this._updateDim();
         switch(opt.mode){
             case 'horizontal':
@@ -62,9 +62,9 @@ var SliderProgress = new Class({
 
         this.value = 0;
 
-        this.element.addEvents({'mouseup' : this._mouseUp.bindWithEvent(this),
-                                'mouseleave' : this._mouseUp.bindWithEvent(this),
-                                'mousedown' : this._mouseDown.bindWithEvent(this)});
+        this.element.addEvents({'mouseup' : this._mouseUp.bind(this),
+                                'mouseleave' : this._mouseUp.bind(this),
+                                'mousedown' : this._mouseDown.bind(this)});
 
         if (opt.initialize) opt.initialize.call(this);
     },

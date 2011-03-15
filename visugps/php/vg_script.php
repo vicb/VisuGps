@@ -32,8 +32,8 @@ define('SCRIPT_FILE', CACHE_BASE_FOLDER . 'scripts.js');
 
 // JS folder
 $jsFiles = array(
-  'lib/mootools/mootools-1.2.4-core.js',
-  'lib/mootools/mootools-1.2-more.js',
+  'lib/mootools/mootools-core-1.3.1.js',
+  'lib/mootools/mootools-more-1.3.1.1.js',
   'js/charts.js',
   'js/sliderprogress.js',
   'js/moreCtrl.js',

@@ -37,9 +37,9 @@ var Charts = new Class({
     options: {
         cursor : true,
         keySupport : true,
-        onMouseMove: $empty,
-        onMouseDown: $empty,
-        onMouseWheel: $empty
+        onMouseMove: function() {},
+        onMouseDown: function() {},
+        onMouseWheel: function() {}
     },
     /*
     Property: initialize
@@ -72,15 +72,15 @@ var Charts = new Class({
                                                               'visibility' : 'hidden'}
                                                 }
                                         ).inject($(div))
-                                         .addEvents({'mousedown' : this._down.bindWithEvent(this),
-                                                     'mousewheel' : this._wheel.bindWithEvent(this)});
+                                         .addEvents({'mousedown' : this._down.bind(this),
+                                                     'mousewheel' : this._wheel.bind(this)});
         }
         
-        $(div).addEvents({'mousemove' : this._move.bindWithEvent(this),
-                          'mousedown' : this._down.bindWithEvent(this),
-                          'mousewheel' : this._wheel.bindWithEvent(this)});
+        $(div).addEvents({'mousemove' : this._move.bind(this),
+                          'mousedown' : this._down.bind(this),
+                          'mousewheel' : this._wheel.bind(this)});
 
-        if (this.options.keySupport) document.addEvent('keydown', this._move.bindWithEvent(this));
+        if (this.options.keySupport) document.addEvent('keydown', this._move.bind(this));
 
         function stopEvent(event, notOnSort) {
           new Event(event).stop();
@@ -140,9 +140,9 @@ var Charts = new Class({
             The chart object (see chart.js)
     */
     add: function(label, opacity, color, options) {
-        label = $pick(label, 'label');
-        opacity = $pick(opacity.limit(0, 1), 1);
-        color = $pick(color, '#f00');
+        label = label == undefined ? 'label' : label;
+        opacity = opacity == undefined ? 1 : opacity.limit(0, 1);
+        color = color == undefined ? '#f00' : color;
 
         function setOpacity(opacity) {
             div.setStyle('opacity', opacity / 100);
@@ -155,7 +155,7 @@ var Charts = new Class({
                                       'id' : 'chart-' + idNum})
                              .inject(this.chartDiv, 'top');
                              
-        var chart = new Chart(div, $pick(options, {}));
+        var chart = new Chart(div, options || {});
 
         this.charts.push(chart);
         
@@ -199,7 +199,7 @@ var Charts = new Class({
     */
     showCursor: function(visible) {
         if (this.options.cursor) {
-            visible = $pick(visible, true);
+            visible = visible == undefined ? true : visible;
             this.cursorDiv.setStyle('visibility', visible?'visible':'hidden');
         }
     },

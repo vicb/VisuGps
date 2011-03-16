@@ -24,6 +24,7 @@ Copyright (c) 2007-2010 Victor Berchet, <http://www.victorb.fr>
 
 Credits:
     - Some code is inspired from by the Google Maps API tutorial of Mike Williams <http://www.econym.demon.co.uk/googlemaps/index.htm>
+    - Some code is inspired from the XCPlanner of Tom Payne <https://github.com/twpayne/xcplanner>
 */
 
 /*
@@ -66,7 +67,7 @@ var VisuGps = new Class({
             maxElev - maximum value for the elevation (min = 0)
             showIgnMap - wether or not to use IGN maps
     */
-    initialize : function(options) {
+    initialize : function(options, route) {
         this.setOptions(options);
         this.map = {};
         this.track = {};
@@ -88,6 +89,7 @@ var VisuGps = new Class({
         this.mapTitle = 'VisuGps';
         this.ge = null;
         this.iFrameShim = false;
+        this.route = null;
 
         this.mapSwitcher = null;
         this.ignMap = null;
@@ -136,6 +138,11 @@ var VisuGps = new Class({
               { name: "Sky ways", obj: skyways}              
             ]);
             this.map.addControl(more);
+            // Handle the route
+            if (route != undefined && route.flightType && route.turnpoints) {
+              this.route = route;
+              this.drawRoute();
+            }
         }
     },
     /*
@@ -287,13 +294,14 @@ var VisuGps = new Class({
         
     },
 
-    drawRoute: function(params) {
+    drawRoute: function() {
       var map = this.map,
           pos,
           icon,
-          startIcon,
-          start, tp, tps = [],
-          ovs = [];
+          startIcon, endIcon,
+          start, end, tp, tps = [],
+          ovs = [],
+          bounds = new google.maps.LatLngBounds();
 
       icon = new google.maps.Icon(G_DEFAULT_ICON);
       icon.image = "http://labs.google.com/ridefinder/images/mm_20_orange.png";
@@ -302,24 +310,46 @@ var VisuGps = new Class({
       icon.shadowSize = new google.maps.Size(22, 20);
       icon.iconAnchor = new google.maps.Point(6, 20);
 
-      Array.each(JSON.decode(params.turnpoints) || [], function(pos) {
-          tp = new google.maps.LatLng(pos[0], pos[1]);
-          tps.push(tp);
-          ovs.push(new google.maps.Marker(tp, { clickable: false, icon: icon  }));
-      });
-
       startIcon = new google.maps.Icon(icon);
       startIcon.image = "http://labs.google.com/ridefinder/images/mm_20_green.png";
 
-      if (pos = JSON.decode(params.start)) {
-        start = new google.maps.LatLng(pos[0], pos[1]);
-        tps.unshift(start);
-        ovs.push(new google.maps.Marker(start, { clickable: false, icon: startIcon  } ));
-      }
-      
-      ovs.push(new GPolyline(tps, "#00f", 2, 1.0));
+      endIcon = new google.maps.Icon(startIcon);
+      endIcon.image = "http://labs.google.com/ridefinder/images/mm_20_red.png";
 
+      Array.each(JSON.decode(this.route.turnpoints) || [], function(pos) {
+          tp = new google.maps.LatLng(pos[0], pos[1]);
+          tps.push(tp);
+          bounds.extend(tp);
+      });
+     
+      ovs.push(new GPolyline(tps, "#00f", 1, 0.9));
+
+      if (this.route.flightType && this.route.flightType.substr(-1) === 'c' ) {
+        if (pos = JSON.decode(this.route.start)) {
+            start = new google.maps.LatLng(pos[0], pos[1]);
+            ovs.push(new google.maps.Marker(start, { clickable: false, icon: startIcon } ));
+            ovs.push(new GPolyline([start, tps[0]], "#222", 1, 0.9));
+            bounds.extend(start);
+        }
+        if (pos = JSON.decode(this.route.end)) {
+            end = new google.maps.LatLng(pos[0], pos[1]);
+            ovs.push(new google.maps.Marker(end, { clickable: false, icon: endIcon  } ));
+            ovs.push(new GPolyline([end, tps[tps.length - 1]], "#222", 1, 0.9));
+            bounds.extend(end);
+        }
+        ovs.push(new GPolyline([tps[0], tps[tps.length - 1]], "#00f", 1, 0.9));
+      } else {
+        ovs.push(new google.maps.Marker(tps.shift(), { clickable: false, icon: startIcon}));
+        ovs.push(new google.maps.Marker(tps.pop(), { clickable: false, icon: endIcon}));
+      }
+
+      Array.each(tps, function(tp) { ovs.push(new google.maps.Marker(tp, {clickable: false, icon: icon})); });
       Array.each(ovs, function(ov) { map.addOverlay(ov); });
+
+      this.map.setCenter(bounds.getCenter(), this.map.getBoundsZoomLevel(bounds));
+
+      if ($(this.options.loadDiv)) { $(this.options.loadDiv).fade(); }
+
     },
 
     /*

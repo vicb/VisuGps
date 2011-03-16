@@ -19,19 +19,16 @@
   <script type="text/javascript" src="http://api.ign.fr/geoportail/api?v=1.1-e&key=3916634386220191627&instance=viewer"></script>
 
   <script type="text/javascript">//<![CDATA[
-    var kMap = null;
-    var olMap = null;
-    var marker = null;
-    var markerLayer = null;
-    var trackLayer = null;
-    var displayProjection = null;
-    var infoControl = null;
+    var kMap, olMap,
+        marker, 
+        markerLayer, trackLayer, tpLayer, routeLayer,
+        displayProjection,
+        infoControl;
 
     /**
      * Automatically called when the script has loaded
      */
     function initGeoportalMap() {
-
 
         OpenLayers.Control.Click = OpenLayers.Class(OpenLayers.Control, {
             defaultHandlerOptions: {
@@ -92,10 +89,9 @@
         var click = new OpenLayers.Control.Click(onClick);
         olMap.addControl(click);
         click.activate();
-        
+       
         kMap = parent.kMap;
-        kMap.initIgnMap();
-         
+        kMap.initIgnMap();         
     }
     
     function setInfo(text) {
@@ -124,14 +120,94 @@
         olMap.addLayers([trackLayer, markerLayer]);
 
         setCenter(lat[0], lon[0]);
-        olMap.zoomTo(13);        
+        olMap.zoomTo(10);
+    }
+
+    function setRoute(type, turnpoints, first, last) {
+      var icon,
+          startIcon, endIcon,
+          tp, tps = [],
+          i,
+          style;
+
+        tpLayer = new OpenLayers.Layer.Markers('Turnpoints');
+        routeLayer = new OpenLayers.Layer.Vector('Route');
+
+        style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+
+        icon = new OpenLayers.Icon(
+            'http://labs.google.com/ridefinder/images/mm_20_yellow.png',
+            new OpenLayers.Size(12, 20),
+            new OpenLayers.Pixel(-6, -20)
+        );
+
+        startIcon = new OpenLayers.Icon(
+            'http://labs.google.com/ridefinder/images/mm_20_green.png',
+            new OpenLayers.Size(12, 20),
+            new OpenLayers.Pixel(-6, -20)
+        );
+
+        endIcon = new OpenLayers.Icon(
+            'http://labs.google.com/ridefinder/images/mm_20_red.png',
+            new OpenLayers.Size(12, 20),
+            new OpenLayers.Pixel(-6, -20)
+        );
+
+        for (i = 0; i < turnpoints.length; i++) {
+            tp = new OpenLayers.Geometry.Point(turnpoints[i][1], turnpoints[i][0]);
+            tps.push(tp.transform(viewer.displayProjection, olMap.getProjection()));
+        }
+
+        if (type && type.substr(-1) === 'c' ) {
+            style.strokeColor = '#202020';
+            if (first) {
+                tp = new OpenLayers.Geometry.Point(first[1], first[0]).transform(viewer.displayProjection, olMap.getProjection());
+                routeLayer.addFeatures(new OpenLayers.Feature.Vector(
+                    new OpenLayers.Geometry.LineString([tp, tps[0]], {}, style)
+                ));
+            }
+            if (last) {
+                tp = new OpenLayers.Geometry.Point(last[1], last[0]).transform(viewer.displayProjection, olMap.getProjection());
+                routeLayer.addFeatures(new OpenLayers.Feature.Vector(                    
+                    new OpenLayers.Geometry.LineString([tp, tps[tps.length - 1]], {}, style)
+                ));
+            }
+            tps.push(tps[0].clone());
+        } else {
+            first = turnpoints.shift();
+            last = turnpoints.pop();
+        }
+
+        style.strokeColor = '#0000ff';
+
+        routeLayer.addFeatures(new OpenLayers.Feature.Vector(
+            new OpenLayers.Geometry.LineString(tps),
+            {},
+            style
+        ));
+
+        if (first) {
+            tp = new OpenLayers.LonLat(first[1], first[0]);
+            tpLayer.addMarker(new OpenLayers.Marker(tp.transform(viewer.displayProjection, olMap.getProjection()), startIcon));
+        }
+
+        if (last) {
+            tp = new OpenLayers.LonLat(last[1], last[0]);
+            tpLayer.addMarker(new OpenLayers.Marker(tp.transform(viewer.displayProjection, olMap.getProjection()), endIcon));
+        }
+
+        for (i = 0; i < turnpoints.length; i++) {
+            tp = new OpenLayers.LonLat(turnpoints[i][1], turnpoints[i][0]);
+            tpLayer.addMarker(new OpenLayers.Marker(tp.transform(viewer.displayProjection, olMap.getProjection()), icon.clone()));
+        }
+
+        olMap.addLayers([tpLayer, routeLayer]);      
     }
 
     function setTrackKml(proxy, url) {        
         var kml = olMap.addLayer("KML", "Track", proxy + url, { visibility: true, opacity: 1 });
         kml.events.register('loadend', kml, function() { this.map.zoomToExtent(this.getDataExtent()); });
     }
-
     
     function setMarker(lat, lon) {
         if (marker != null) {
@@ -169,9 +245,10 @@
     }
     
     function destroy() {
-        if (marker != null) marker.destroy();
-        if (markerLayer != null) markerLayer.destroy();
-        if (trackLayer != null) trackLayer.destroy();
+        if (marker) marker.destroy();
+        if (markerLayer) markerLayer.destroy();
+        if (trackLayer) trackLayer.destroy();
+        if (routeLayer) routeLayer.destroy();
         viewer.destroy();
     }
 

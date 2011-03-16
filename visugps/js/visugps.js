@@ -349,7 +349,6 @@ var VisuGps = new Class({
       this.map.setCenter(bounds.getCenter(), this.map.getBoundsZoomLevel(bounds));
 
       if ($(this.options.loadDiv)) { $(this.options.loadDiv).fade(); }
-
     },
 
     /*
@@ -367,6 +366,13 @@ var VisuGps = new Class({
         this.mapSwitcher = new Element('div', {'id' : 'vgps-mapSwitcher'}).inject(this.options.chartDiv, 'top');
         this.mapSwitcher.set('html', 'google');
         this.mapSwitcher.addEvent('mousedown', this._switchMap.bind(this));
+        // Add the route layer
+        if (this.route) { this.ignMap.setRoute(
+            this.route.flightType,
+            this.route.turnpoints && JSON.decode(this.route.turnpoints),
+            this.route.start && JSON.decode(this.route.start),
+            this.route.end && JSON.decode(this.route.end)
+        );}
     },
     /*
     Property: ignLeftClick

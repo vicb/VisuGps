@@ -93,6 +93,7 @@ var VisuGps = new Class({
 
         this.mapSwitcher = null;
         this.ignMap = null;
+        this.mapType = 'google';
 
         this.distPts = {};
         this.distState = 0;
@@ -364,7 +365,7 @@ var VisuGps = new Class({
         }
         // Add the map switcher control
         this.mapSwitcher = new Element('div', {'id' : 'vgps-mapSwitcher'}).inject(this.options.chartDiv, 'top');
-        this.mapSwitcher.set('html', 'google');
+        this.mapSwitcher.set('html', '<b>google</b> / ign');
         this.mapSwitcher.addEvent('mousedown', this._switchMap.bind(this));
         // Add the route layer
         if (this.route) { this.ignMap.setRoute(
@@ -387,15 +388,17 @@ var VisuGps = new Class({
     */
     _switchMap : function(event) {
         event.stopPropagation().preventDefault();
-        if (this.mapSwitcher.get('html') == 'google') {
+        if (this.mapType == 'google') {
             $('ignwrap').setStyle('left', 0);
             $(this.options.mapDiv).setStyle('left', -5000);
-            this.mapSwitcher.set('html', 'ign');
+            this.mapSwitcher.set('html', 'google / <b>ign</b>');
+            this.mapType = 'ign';
             this._resize();            
         } else {
             $('ignwrap').setStyle('left', -5000);
             $(this.options.mapDiv).setStyle('left', 0);
-            this.mapSwitcher.set('html', 'google');
+            this.mapType = 'google';
+            this.mapSwitcher.set('html', '<b>google</b> / ign');
         }        
     },
     /*

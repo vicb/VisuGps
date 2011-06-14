@@ -30,11 +30,11 @@ Credits:
 /*
 Function: ParseIgc
         Parse a GPS track - IGC format
-        
+
 Arguments:
         trackFile - input track file
         trackData - output track (associative array)
-        
+
 Returns:
         The number of points of the track.
         0 if the track format is not recognized
@@ -53,12 +53,12 @@ function ParseIgc($trackFile, &$trackData)
 
     preg_match_all(
       '/B
-      (?<hour>\d{2})(?<min>\d{2})(?<sec>\d{2})
-      (?<latE>\d{2})(?<latD>\d{5})(?<latS>\w)
-      (?<lonE>\d{3})(?<lonD>\d{5})(?<lonS>\w).
-      (?<elevP>\d{5})(?<elevG>\d{5})
+      (?P<hour>\d{2})(?P<min>\d{2})(?P<sec>\d{2})
+      (?P<latE>\d{2})(?P<latD>\d{5})(?P<latS>\w)
+      (?P<lonE>\d{3})(?P<lonD>\d{5})(?P<lonS>\w).
+      (?P<elevP>\d{5})(?P<elevG>\d{5})
       /xim',
-      $trackFile, 
+      $trackFile,
       $m
     );
 
@@ -102,10 +102,10 @@ function ParseOzi($trackFile, &$trackData)
 
     preg_match_all(
       '/^\s+
-      (?<lat>[-\d\.]+)[,\s]+
-      (?<lon>[-\d\.]+)[,\s]+[01][,\s]+
-      (?<elev>[-\d\.]+)[,\s]+
-      (?<date>[\d\.]+).*$
+      (?P<lat>[-\d\.]+)[,\s]+
+      (?P<lon>[-\d\.]+)[,\s]+[01][,\s]+
+      (?P<elev>[-\d\.]+)[,\s]+
+      (?P<date>[\d\.]+).*$
       /xim',
       $trackFile,
       $m
@@ -159,13 +159,13 @@ function ParseTrk($trackFile, &$trackData)
     // T  A 49.34586726ºN 0.72568615ºW 01-NOV-10 15:54:34.000 N 51.6 0.0 0.1 0.0 0 -1000.0 9999999562023526247000000.0 -1 60.9 -1.0
     preg_match_all(
       '/^T\s+A\s+
-      (?<lat>[0-9.]+).*?(?<latS>[NS])\s+
-      (?<lon>[0-9.]+).*?(?<lonS>[EW])\s+
-      (?<day>\d{2})-(?<month>\w{3})-(?<year>\d{2})\s+
-      (?<hour>\d{2}):(?<min>\d{2}):(?<sec>\d{2})\.\d+\s+.\s+
-      (?<elev>\d+)
+      (?P<lat>[0-9.]+).*?(?P<latS>[NS])\s+
+      (?P<lon>[0-9.]+).*?(?P<lonS>[EW])\s+
+      (?P<day>\d{2})-(?P<month>\w{3})-(?P<year>\d{2})\s+
+      (?P<hour>\d{2}):(?P<min>\d{2}):(?P<sec>\d{2})\.\d+\s+.\s+
+      (?P<elev>\d+)
       /xim',
-      $trackFile, 
+      $trackFile,
       $m
     );
 
@@ -174,11 +174,11 @@ function ParseTrk($trackFile, &$trackData)
     {
       preg_match_all(
         '/^T\s+
-        (?<latS>[NS])(?<lat>[0-9.]+)\s+
-        (?<lonS>[EW])(?<lon>[0-9.]+)\s+
-        (?<day>\d{2})-(?<month>\w{3})-(?<year>\d{2})\s+
-        (?<hour>\d{2}):(?<min>\d{2}):(?<sec>\d{2})\s+
-        (?<elev>\d+)
+        (?P<latS>[NS])(?P<lat>[0-9.]+)\s+
+        (?P<lonS>[EW])(?P<lon>[0-9.]+)\s+
+        (?P<day>\d{2})-(?P<month>\w{3})-(?P<year>\d{2})\s+
+        (?P<hour>\d{2}):(?P<min>\d{2}):(?P<sec>\d{2})\s+
+        (?P<elev>\d+)
         /xim',
         $trackFile,
         $m
@@ -198,13 +198,13 @@ function ParseTrk($trackFile, &$trackData)
             $trackData['time']['sec'][$i] = intval($m['sec'][$i]);
         }
 
-        $months = array('JAN' => 1, 'FEB' => 2, 'MAR' => 3, 'APR' => 4, 'MAY' => 5, 'JUN' => 6, 
+        $months = array('JAN' => 1, 'FEB' => 2, 'MAR' => 3, 'APR' => 4, 'MAY' => 5, 'JUN' => 6,
                         'JUL' => 7, 'AUG' => 8, 'SEP' => 9, 'OCT' => 10, 'NOV' => 11, 'DEC' => 12);
         $trackData['date']['day'] = intval($m['day'][0]);
         $month = strtoupper($m['month'][0]);
         $trackData['date']['month'] = isset($months[$month]) ? $months[$month] : 1;
         $trackData['date']['year'] = intval($m['year'][0]) + (($m['year'][0] > 60)?1900:2000);
-        
+
     }
     return $nbPts;
 }
@@ -234,7 +234,7 @@ function ParseNmea($trackFile, &$trackData)
       .,
       [\d.]+,
       [\d.]+,
-      (?<day>\d{2})(?<month>\d{2})(?<year>\d{2})
+      (?P<day>\d{2})(?P<month>\d{2})(?P<year>\d{2})
       /xim', $trackFile, $m))
     {
         $trackData['date']['day'] = intval($m['day']);
@@ -245,13 +245,13 @@ function ParseNmea($trackFile, &$trackData)
     // $GPGGA,134329.000,4902.174,N,00132.360,E,0,00,0.0,119.000,M,0.0,M,,*62
     preg_match_all('
       /^\$GPGGA,
-      (?<hour>\d{2})(?<min>\d{2})(?<sec>\d{2})[\d.]*,
-      (?<lat>[\d.]+),(?<latS>[NS]),
-      (?<lon>[\d.]+),(?<lonS>[EW]),
+      (?P<hour>\d{2})(?P<min>\d{2})(?P<sec>\d{2})[\d.]*,
+      (?P<lat>[\d.]+),(?P<latS>[NS]),
+      (?P<lon>[\d.]+),(?P<lonS>[EW]),
       \d+,
       \d+,
       [\d.]+,
-      (?<elev>[\d.]+)
+      (?P<elev>[\d.]+)
       /xim', $trackFile, $m);
 
     $nbPts = $trackData['nbPt'] = count($m[0]);
@@ -286,7 +286,7 @@ Returns:
         The number of points of the track.
         0 if the track format is not recognized
 */
-function ParseGpx($trackFile, &$trackData) 
+function ParseGpx($trackFile, &$trackData)
 {
     if (!($xml = @simplexml_load_string($trackFile))) return 0;
 
@@ -304,22 +304,22 @@ function ParseGpx($trackFile, &$trackData)
         }
         $trkIdx++;
     }
-    
+
     foreach ($xml->trk[$gpsTrkIdx]->trkseg as $trackSeg) {
         foreach ($trackSeg->trkpt as $trackPt) {
             $atr = $trackPt->attributes();
             if (isset($atr->lat)) $ptLat = floatval($atr->lat);
-            if (isset($atr->lon)) $ptLon = floatval($atr->lon);                 
+            if (isset($atr->lon)) $ptLon = floatval($atr->lon);
 
             if (isset($trackPt->ele)) $ptElev = round($trackPt->ele);
             if (isset($trackPt->time)) {
-                if (preg_match('/(?<h>\d{2}):(?<m>\d{2}):(?<s>\d{2})/', $trackPt->time, $m)) {
+                if (preg_match('/(?P<h>\d{2}):(?P<m>\d{2}):(?P<s>\d{2})/', $trackPt->time, $m)) {
                     $ptHour = intval($m['h']);
                     $ptMin = intval($m['m']);
                     $ptSec = intval($m['s']);
                 }
                 if (!$dateSet &&
-                    preg_match('/(?<y>\d{4})-(?<m>\d{2})-(?<d>\d{2})/', $trackPt->time, $m)) {
+                    preg_match('/(?P<y>\d{4})-(?P<m>\d{2})-(?P<d>\d{2})/', $trackPt->time, $m)) {
                     $dateSet = true;
                     $trackData['date']['year'] = intval($m['y']);
                     $trackData['date']['month'] = intval($m['m']);
@@ -337,7 +337,7 @@ function ParseGpx($trackFile, &$trackData)
     }
 
     $trackData['nbPt'] = $i;
-    
+
     return $i;
 }
 
@@ -357,10 +357,10 @@ function IsKml($trackFile)
         return true;
     } elseif (preg_match('/GpsDump/im', $trackFile) > 0 &&
               preg_match('/<LineString>/im', $trackFile) > 0) {
-        // GpsDump generates invalid kml files!        
+        // GpsDump generates invalid kml files!
         return true;
     }
-        
+
 }
 
 ?>

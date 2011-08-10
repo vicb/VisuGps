@@ -21,7 +21,7 @@ You should have received a copy of the GNU General Public License
 along with VisuGps; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-Copyright (c) 2007 Victor Berchet, <http://www.victorb.fr>
+Copyright (c) 2007-2011 Victor Berchet, <http://www.victorb.fr>
 
 Credits:
     - Some of GPX, NMEA and TRK parsing routines are from Emmanuel Chabani <mans@parawing.net>
@@ -56,7 +56,7 @@ function ParseIgc($trackFile, &$trackData)
       (?P<hour>\d{2})(?P<min>\d{2})(?P<sec>\d{2})
       (?P<latE>\d{2})(?P<latD>\d{5})(?P<latS>\w)
       (?P<lonE>\d{3})(?P<lonD>\d{5})(?P<lonS>\w).
-      (?P<elevP>\d{5})(?P<elevG>\d{5})
+      (?P<elevP>\d{5}|(-\d{4}))(?P<elevG>\d{5})
       /xim',
       $trackFile,
       $m

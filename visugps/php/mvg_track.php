@@ -105,6 +105,7 @@ if (mysql_num_rows($result) == 1) {
 if (isset($_POST['gps'])) {
     $insert = "INSERT INTO point (flightId, latitude, longitude, elevation, time) VALUES ";
     $points = $_POST['gps'];
+    $atLeastOneValidPoint = false;
     for ($i = 0; $i < count($points); $i++) {
         $data = explode(";", $points[$i]);
         $date = sprintf("20%02d-%d-%d %d:%d:%d", intval($data[8])
@@ -119,21 +120,25 @@ if (isset($_POST['gps'])) {
         $lon = floatval($data[1]);
         $lon = (intval($lon)) + ($lon - intval($lon)) * 100 / 60;
 
-        $insert .= sprintf("(%d, %f, %f, %d, '%s'),", $flightId
-                                                    , $lat
-                                                    , $lon
-                                                    , intval(abs($data[2]))
-                                                    , $date);
-
-        if ($flightNeedDate) {
-            $query = "UPDATE flight SET start = '$date' WHERE id = '$flightId'";
-            mysql_query($query) or die ('Query error: ' . mysql_error());
-            $flightNeedDate = false;
+        if ($lat != 0 && $lon != 0) {
+            $insert .= sprintf("(%d, %f, %f, %d, '%s'),", $flightId
+                                                        , $lat
+                                                        , $lon
+                                                        , intval(abs($data[2]))
+                                                        , $date);
+            $atLeastOneValidPoint = true;                                                                
+            if ($flightNeedDate) {
+                $query = "UPDATE flight SET start = '$date' WHERE id = '$flightId'";
+                mysql_query($query) or die ('Query error: ' . mysql_error());
+                $flightNeedDate = false;
+            }
         }
     }
-    // Remove the extra "," from the query end
-    $insert = rtrim ($insert, ",");
-    mysql_query($insert) or die ('Query error: ' . mysql_error());
+    if ($atLeastOneValidPoint) {
+        // Remove the extra "," from the query end
+        $insert = rtrim ($insert, ",");
+        mysql_query($insert) or die ('Query error: ' . mysql_error());
+    }
 }
 
 // Fill the flight end date on stop

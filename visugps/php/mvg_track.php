@@ -120,7 +120,7 @@ if (isset($_POST['gps'])) {
         $lon = floatval($data[1]);
         $lon = (intval($lon)) + ($lon - intval($lon)) * 100 / 60;
 
-        if ($lat>0 && $lon>0) {
+        if ($lat != 0 && $lon != 0) {
             $insert .= sprintf("(%d, %f, %f, %d, '%s'),", $flightId
                                                         , $lat
                                                         , $lon

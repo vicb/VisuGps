@@ -43,8 +43,7 @@ var VisuGps = new Class({
         measureCfd : true,
         maxSpeed : 80,
         maxVario : 10,
-        maxElev : 9999,
-        showIgnMap : true
+        maxElev : 9999
     },
     /*
     Property: initialize
@@ -64,8 +63,7 @@ var VisuGps = new Class({
             measureCfd - true to display CFD scoring in measurment mode
             maxSpeed - maximum value for the speed (min = 0)
             maxVario - maximum absolute value for the GR
-            maxElev - maximum value for the elevation (min = 0)
-            showIgnMap - wether or not to use IGN maps
+            maxElev - maximum value for the elevation (min = 0)            
     */
     initialize : function(options, route) {
         this.setOptions(options);
@@ -89,12 +87,7 @@ var VisuGps = new Class({
         this.mapTitle = 'VisuGps';
         this.ge = null;
         this.iFrameShim = false;
-        this.route = null;
-
-        this.mapSwitcher = null;
-        this.ignMap = null;
-        this.mapType = 'google';
-
+        this.route = null;        
         this.distPts = {};
         this.distState = 0;
         this.distLine = {};
@@ -112,7 +105,7 @@ var VisuGps = new Class({
             // Custom controls should be created first for stock controls to appear in front of them
             this._createTitleControl('VisuGps');
             this.map.addControl(this.titleCtrl);
-            // Add built-in controls            
+            // Add built-in controls
             this.map.addControl(new google.maps.LargeMapControl3D());
             this.map.addControl(new google.maps.ScaleControl());
             this.map.enableScrollWheelZoom();
@@ -130,13 +123,13 @@ var VisuGps = new Class({
             tileLayer.getTileUrl = function(tile, zoom) { return "http://maps.pgweb.cz/corr/" + zoom + "/" + tile.x + "/" + tile.y; };
             tileLayer.isPng = function() { return true; }
             tileLayer.getOpacity = function() { return 0.9; }
-            skyways = new GTileLayerOverlay(tileLayer);            
+            skyways = new GTileLayerOverlay(tileLayer);
             var more = new MoreControl(
             [
               { name: "Photos", obj: new GLayer("com.panoramio.all") },
               { name: "Webcams", obj: new GLayer("com.google.webcams")},
               { name: "AirSpace", obj: airspaces},
-              { name: "Sky ways", obj: skyways}              
+              { name: "Sky ways", obj: skyways}
             ]);
             this.map.addControl(more);
             // Handle the route
@@ -152,7 +145,6 @@ var VisuGps = new Class({
     */
     clean : function() {
         google.maps.Unload();
-        frames.ign.destroy();
         if (this.charts) this.charts.clean();
         window.removeEvents('resize');
     },
@@ -179,7 +171,7 @@ var VisuGps = new Class({
         this.track = track;
         var opt = this.options;
         var load = $(opt.loadDiv);
-        
+
         if (track.error != null) {
             if (load) {
                 load.set('html', track.error);
@@ -254,6 +246,8 @@ var VisuGps = new Class({
 
             this.mapTitle = [this.track.date.day, this.track.date.month, this.track.date.year].join('/');
 
+            this._createIgnMap();
+
             if ((this.mapTitle !== '0/0/0') &&
                 (typeOf(opt.weatherTileUrl) === 'array')) {
                 this._createModisMap(this.track.date.day, this.track.date.month, this.track.date.year);
@@ -265,7 +259,7 @@ var VisuGps = new Class({
             if (typeOf(opt.elevTileUrl) === 'array') {
                 this._createSrtmMap();
             }
-
+            
             // Increase info window size to fit the anim control
             var h = $('vgps-anim').getParent().getCoordinates().height +
                     $('vgps-anim').getCoordinates().height;
@@ -273,15 +267,11 @@ var VisuGps = new Class({
             $('vgps-anim').getParent().setStyle('height', h);
 
             this._initGraph();
-            
+
             // Remove the top most overlay from the map
             if (load) {
                 load.fade('out');
             }
-        }
-
-        if (opt.showIgnMap) {
-            document.getElementById('ign').src = './ign.html';
         }
 
         // Add common event handlers
@@ -292,7 +282,7 @@ var VisuGps = new Class({
 
         // Add map type selector
         this.map.addControl(new google.maps.MenuMapTypeControl());
-        
+
     },
 
     drawRoute: function() {
@@ -322,7 +312,7 @@ var VisuGps = new Class({
           tps.push(tp);
           bounds.extend(tp);
       });
-     
+
       ovs.push(new GPolyline(tps, "#00f", 1, 0.9));
 
       if (this.route.flightType && this.route.flightType.substr(-1) === 'c' ) {
@@ -351,56 +341,6 @@ var VisuGps = new Class({
 
       if ($(this.options.loadDiv)) { $(this.options.loadDiv).fade(); }
     },
-
-    /*
-    Property: initIgnMap
-            Initialize IGN map
-    */
-    initIgnMap : function() {
-        this.ignMap = frames.ign;
-        if (this.track.kmlUrl != null) {
-            this.ignMap.setTrackKml('php/vg_directproxy.php?url=', this.track.kmlUrl);
-        } else {
-            this.ignMap.setTrack(this.track.lat, this.track.lon);
-        }
-        // Add the map switcher control
-        this.mapSwitcher = new Element('div', {'id' : 'vgps-mapSwitcher'}).inject(this.options.chartDiv, 'top');
-        this.mapSwitcher.set('html', '<b>google</b> / ign');
-        this.mapSwitcher.addEvent('mousedown', this._switchMap.bind(this));
-        // Add the route layer
-        if (this.route) { this.ignMap.setRoute(
-            this.route.flightType,
-            this.route.turnpoints && JSON.decode(this.route.turnpoints),
-            this.route.start && JSON.decode(this.route.start),
-            this.route.end && JSON.decode(this.route.end)
-        );}
-    },
-    /*
-    Property: ignLeftClick
-            Called when a left click occurs on IGN map
-    */
-    ignLeftClick : function(lat, lon) {
-        this._leftClick(null, new google.maps.LatLng(lat, lon));
-    },
-    /*
-    Property: _switchMap
-            Switch between IGN anf Google maps
-    */
-    _switchMap : function(event) {
-        event.stopPropagation().preventDefault();
-        if (this.mapType == 'google') {
-            $('ignwrap').setStyle('left', 0);
-            $(this.options.mapDiv).setStyle('left', -5000);
-            this.mapSwitcher.set('html', 'google / <b>ign</b>');
-            this.mapType = 'ign';
-            this._resize();            
-        } else {
-            $('ignwrap').setStyle('left', -5000);
-            $(this.options.mapDiv).setStyle('left', 0);
-            this.mapType = 'google';
-            this.mapSwitcher.set('html', '<b>google</b> / ign');
-        }        
-    },
     /*
     Property: _gePluginInit (INTERNAL)
             Initialize GE plugin (add 3D track)
@@ -408,7 +348,7 @@ var VisuGps = new Class({
     Arguments:
             ge - GEPlugin object
 
-    
+
     */
     _gePluginInit : function(ge) {
         if (this.track.kmlUrl == null) {
@@ -427,7 +367,7 @@ var VisuGps = new Class({
             }
             ge.getFeatures().appendChild(lineStringPlacemark);
             lineString.setAltitudeMode(ge.ALTITUDE_ABSOLUTE);
-            
+
             google.earth.addEventListener(ge.getWindow(), "mousedown", this._leftClick3d.bind(this));
 
             if (!lineStringPlacemark.getStyleSelector()) {
@@ -557,10 +497,10 @@ var VisuGps = new Class({
      /*
     Property: _getTrackElevation (INTERNAL)
             Return interpolated elevation (elevation data are less accurate than position data)
-            
+
     Arguments:
             index: index (0 ... nbTrackPt - 1)
-            
+
     Returns:
             interpolated track elevation
     */
@@ -584,7 +524,7 @@ var VisuGps = new Class({
     downloadTrack : function(url) {
         new Request.JSON({
           'url' : 'php/vg_proxy.php?track=' + url,
-          onSuccess: this.setTrack.bind(this), 
+          onSuccess: this.setTrack.bind(this),
           method: 'get'}
         ).send();
     },
@@ -651,10 +591,10 @@ var VisuGps = new Class({
     /*
     Property: _rightclick (INTERNAL)
             Handle right click to measure distance on the map
-            
+
     Arguments:
             points: coordinate (px) of the clicked point.
-            
+
     Right clicks:
         1: Set starting point - start displaying distance from it
         2: Set ending point - display start - end distance
@@ -786,9 +726,6 @@ var VisuGps = new Class({
                     if (this.marker3d) {
                         this._set3dPosition(bestIdx);
                     }
-                    if (this.ignMap != null) {
-                        this.ignMap.setMarker(this.track.lat[bestIdx], this.track.lon[bestIdx]);
-                    }
                     var pos = (1000 * bestIdx / this.track.nbTrackPt).toInt();
                     this.charts.setCursor(pos);
                     this._showInfo(pos);
@@ -833,11 +770,7 @@ var VisuGps = new Class({
     _resize : function() {
         if (this.charts) this.charts.showCursor(false);
         if (this.timer) clearTimeout(this.timer);
-        this.timer = this._drawGraph.delay(100, this);        
-        if (this.ignMap != null) {
-            var size = $('ignwrap').getSize();
-            this.ignMap.reSize(size.x, size.y);
-        }
+        this.timer = this._drawGraph.delay(100, this);
     },
     /*
     Property: _drawGraph (INTERNAL)
@@ -987,7 +920,7 @@ var VisuGps = new Class({
                             this._NbToStrW(this.track.time.min[idx], 2) + ':' +
                             this._NbToStrW(this.track.time.sec[idx], 2) + '[Th]<br/>' +
                             'by suumit.com');
-                          
+
         if (this.ignMap) this.ignMap.setInfo(this.nfo.get('html'));
     },
     /*
@@ -1075,6 +1008,22 @@ var VisuGps = new Class({
         }
 
         this.infoCtrl = new InfoControl();
+    },
+    _createIgnMap : function() {
+        var ignCpy = new google.maps.Copyright(1, new google.maps.LatLngBounds(new google.maps.LatLng(-90, -180),
+                                                                                new google.maps.LatLng(90, 180)),
+                                                                                0, "Geoportail");
+
+        var ignCpyC = new google.maps.CopyrightCollection();
+        ignCpyC.addCopyright(ignCpy);
+
+        var ignTL = [new google.maps.TileLayer(ignCpyC, 0, 16)];
+        ignTL[0].getTileUrl = function(point, zoom){
+                return 'http://gpp3-wxs.ign.fr/6usqvehthxi0ck95g2s9sc36/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS&STYLE=normal&FORMAT=image/jpeg&TILEMATRIXSET=PM&TILEMATRIX='+zoom+'&TILEROW='+point.y+'&TILECOL='+point.x;
+            }
+        var ignMap = new google.maps.MapType(ignTL, new google.maps.MercatorProjection(16), 'IGN');
+
+        this.map.addMapType(ignMap);        
     },
     /*
     Property: _createSrtmMap (INTERNAL)

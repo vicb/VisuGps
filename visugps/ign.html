@@ -16,19 +16,22 @@
     }
   </style>
 
-  <script type="text/javascript" src="http://api.ign.fr/geoportail/api?v=1.2-e&key=5813011417347961637&instance=viewer"></script>
+  <script type="text/javascript" src="http://api.ign.fr/geoportail/api/js/2.0.0/GeoportalExtended.js"><!-- --></script>
 
   <script type="text/javascript">//<![CDATA[
-    var kMap, olMap,
-        marker,
-        markerLayer, trackLayer, tpLayer, routeLayer,
-        displayProjection,
-        infoControl;
+
+  var iv, viewer, kMap, olMap,
+          marker,
+          markerLayer, trackLayer, tpLayer, routeLayer,
+          displayProjection,
+          infoControl;
 
     /**
      * Automatically called when the script has loaded
      */
     function initGeoportalMap() {
+
+        viewer = iv.getViewer();
 
         OpenLayers.Control.Click = OpenLayers.Class(OpenLayers.Control, {
             defaultHandlerOptions: {
@@ -67,22 +70,32 @@
             CLASS_NAME: "Geoportal.Control.Info"
         });
 
-        geoportalLoadviewer('igndiv', 'normal', 'FXX');
-
         viewer.setInformationPanelVisibility(false);
 
         olMap = viewer.getMap();
 
-        var layers = olMap.allowedGeoportalLayers;
+//        var layers = olMap.allowedGeoportalLayers;
 
-        for (var i= 0; i< layers.length; i++) {
-            var layer = layers[i];
-            if (layer.match(/GEOGRAPHICALGRIDSYSTEMS.MAPS/)) {
-              viewer.addGeoportalLayer(layer, {visibility: true, opacity: 1});
-            } else {
-              viewer.addGeoportalLayer(layer, {visibility: false, opacity: 0.8});
-            }
-        }
+//        for (var i= 0; i< layers.length; i++) {
+//            var layer = layers[i];
+//            if (layer.match(/GEOGRAPHICALGRIDSYSTEMS.MAPS/)) {
+//              viewer.addGeoportalLayer(layer, {visibility: true, opacity: 1});
+//            } else {
+//              viewer.addGeoportalLayer(layer, {visibility: false, opacity: 0.8});
+//            }
+//        }
+
+
+        /**
+         iv.addGeoportalLayers([
+         'ORTHOIMAGERY.ORTHOPHOTOS',
+         'GEOGRAPHICALGRIDSYSTEMS.MAPS'
+         ], {}
+         );
+         **/
+
+        olMap.addControl(new Geoportal.Control.LayerSwitcher());
+
 
         olMap.addControl(infoControl = new Geoportal.Control.Info());
 
@@ -93,6 +106,30 @@
         kMap = parent.kMap;
         kMap.initIgnMap();
     }
+
+  window.onload = function() {
+
+      iv = Geoportal.load(
+              // div's ID:
+              'igndiv',
+              // API's keys:
+              ['xhg3mx9knl07vn5i81ncp7ss'],
+              {// map's center :
+                  // longitude:
+                  lon:2.731525,
+                  // latitude:
+                  lat:45.833333
+              },
+              //zoom level
+              null,
+              //options
+              {
+                  type:'js',
+                  onView: function() { initGeoportalMap(); }
+              }
+      );
+
+  };
 
     function setInfo(text) {
         infoControl.setText(text);
@@ -117,7 +154,7 @@
         markerLayer = new OpenLayers.Layer.Markers('Marker');
         setMarker(lon[0], lat[0]);
 
-        olMap.addLayers([trackLayer, markerLayer]);
+        olMap.addLayers([trackLayer , markerLayer]);
 
         setCenter(lat[0], lon[0]);
         olMap.zoomTo(10);

@@ -51,32 +51,32 @@ function ParseIgc($trackFile, &$trackData)
         $trackData['pilot'] = htmlentities(trim($m[1]));
     }
 
-    preg_match_all(
-      '/B
-      (?P<hour>\d{2})(?P<min>\d{2})(?P<sec>\d{2})
-      (?P<latE>\d{2})(?P<latD>\d{5})(?P<latS>\w)
-      (?P<lonE>\d{3})(?P<lonD>\d{5})(?P<lonS>\w).
-      (?P<elevP>\d{5}|(-\d{4}))(?P<elevG>\d{5})
-      /xim',
-      $trackFile,
-      $m
-    );
-
-    $nbPts = $trackData['nbPt'] = count($m[0]);
-
-    if ($nbPts > 5) {
-        // Extract latitude, longitude, altitudes and time in second
-        for ($i = 0; $i < $nbPts; $i++) {
-            $m['latD'][$i] = ("0." . $m['latD'][$i]) * 100 / 60;
-            $m['lonD'][$i] = ("0." . $m['lonD'][$i]) * 100 / 60;
-            $trackData['lat'][$i] = ($m['latE'][$i] + $m['latD'][$i]) * (strtoupper($m['latS'][$i]) == 'N'?1:-1);
-            $trackData['lon'][$i] = ($m['lonE'][$i] + $m['lonD'][$i]) * (strtoupper($m['lonS'][$i]) == 'E'?1:-1);
-            $trackData['elev'][$i] = intval($m['elevG'][$i]);
-            $trackData['time']['hour'][$i] = intval($m['hour'][$i]);
-            $trackData['time']['min'][$i] = intval($m['min'][$i]);
-            $trackData['time']['sec'][$i] = intval($m['sec'][$i]);
-        }
+    $nbPts = 0;
+  
+    foreach(preg_split('/[\n\r]+/', $trackFile, null, PREG_SPLIT_NO_EMPTY) as $line) {
+        if (preg_match(
+            '/B
+            (?P<hour>\d{2})(?P<min>\d{2})(?P<sec>\d{2})
+            (?P<latE>\d{2})(?P<latD>\d{5})(?P<latS>\w)
+            (?P<lonE>\d{3})(?P<lonD>\d{5})(?P<lonS>\w).
+            (?P<elevP>\d{5}|(-\d{4}))(?P<elevG>\d{5})
+            /xim',
+            $line,
+            $m)) {
+            $latD = floatval($m['latD']) / 60000;
+            $lonD = floatval($m['lonD']) / 60000;
+            $trackData['lat'][$nbPts] = floatval($m['latE'] + $latD) * (strtoupper($m['latS']) == 'N'? 1 : -1);
+            $trackData['lon'][$nbPts] = floatval($m['lonE'] + $lonD) * (strtoupper($m['lonS']) == 'E'? 1 : -1);
+            $trackData['elev'][$nbPts] = intval($m['elevG']);
+            $trackData['time']['hour'][$nbPts] = intval($m['hour']);
+            $trackData['time']['min'][$nbPts] = intval($m['min']);
+            $trackData['time']['sec'][$nbPts] = intval($m['sec']);
+            $nbPts++;
+        }        
     }
+    
+    $trackData['nbPt'] = $nbPts;
+    
     return $nbPts;
 }
 

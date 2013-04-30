@@ -54,15 +54,17 @@ function ParseIgc($trackFile, &$trackData)
     $nbPts = 0;
   
     foreach(preg_split('/[\n\r]+/', $trackFile, null, PREG_SPLIT_NO_EMPTY) as $line) {
-        if (preg_match(
-            '/B
-            (?P<hour>\d{2})(?P<min>\d{2})(?P<sec>\d{2})
-            (?P<latE>\d{2})(?P<latD>\d{5})(?P<latS>\w)
-            (?P<lonE>\d{3})(?P<lonD>\d{5})(?P<lonS>\w).
-            (?P<elevP>\d{5}|(-\d{4}))(?P<elevG>\d{5})
-            /xim',
-            $line,
-            $m)) {
+        if (
+            preg_match(
+                '/B
+                (?P<hour>\d{2})(?P<min>\d{2})(?P<sec>\d{2})
+                (?P<latE>\d{2})(?P<latD>\d{5})(?P<latS>\w)
+                (?P<lonE>\d{3})(?P<lonD>\d{5})(?P<lonS>\w).
+                (?P<elevP>\d{5}|(-\d{4}))(?P<elevG>\d{5})
+                /xim',
+                $line,
+                $m)
+        ) {
             $latD = floatval($m['latD']) / 60000;
             $lonD = floatval($m['lonD']) / 60000;
             $trackData['lat'][$nbPts] = floatval($m['latE'] + $latD) * (strtoupper($m['latS']) == 'N'? 1 : -1);
@@ -101,15 +103,18 @@ function ParseOzi($trackFile, &$trackData)
     $nbPts = 0;
 
     foreach(preg_split('/[\n\r]+/', $trackFile, null, PREG_SPLIT_NO_EMPTY) as $line) {
-        if (preg_match(
-            '/^\s+
-            (?P<lat>[-\d\.]+)[,\s]+
-            (?P<lon>[-\d\.]+)[,\s]+[01][,\s]+
-            (?P<elev>[-\d\.]+)[,\s]+
-            (?P<date>[\d\.]+).*$
-            /xim',
-            $line
-        )) {
+        if (
+            preg_match(
+                '/^\s+
+                (?P<lat>[-\d\.]+)[,\s]+
+                (?P<lon>[-\d\.]+)[,\s]+[01][,\s]+
+                (?P<elev>[-\d\.]+)[,\s]+
+                (?P<date>[\d\.]+).*$
+                /xim',
+                $line,
+                $m
+            )
+        ) {
             $trackData['lat'][$nbPts] = floatval($m['lat']);
             $trackData['lon'][$nbPts] = floatval($m['lon']);
             $trackData['elev'][$nbPts] = max(intval($m['elev'] * 0.3048), 0);
@@ -167,7 +172,8 @@ function ParseTrk($trackFile, &$trackData)
                 (?P<hour>\d{2}):(?P<min>\d{2}):(?P<sec>\d{2})\.\d+\s+.\s+
                 (?P<elev>\d+)
                 /xim',
-                $line
+                $line,
+                $m
             ) ||
             // T  N45.6321216 E003.1162763 19-JUL-10 14:33:59 00785
             preg_match(
@@ -178,7 +184,8 @@ function ParseTrk($trackFile, &$trackData)
                 (?P<hour>\d{2}):(?P<min>\d{2}):(?P<sec>\d{2})\s+
                 (?P<elev>\d+)
                 /xim',
-                $line
+                $line,
+                $m
             )
         ) {
             $trackData['lat'][$nbPts] = ($m['lat']) * (strtoupper($m['latS']) == 'N' ? 1 : -1);

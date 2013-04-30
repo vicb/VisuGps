@@ -136,7 +136,7 @@ function ParseOzi($trackFile, &$trackData)
     if ($nbPts > 5) {
         $date = date_create();
         date_date_set($date, 1899, 12, 30);
-        date_modify($date, intval($m['date'][0]) . ' days');
+        date_modify($date, intval($m['date']) . ' days');
         $trackData['date']['day'] = intval(date_format($date, 'j'));
         $trackData['date']['month'] = intval(date_format($date, 'n'));
         $trackData['date']['year'] = intval(date_format($date, 'Y'));
@@ -201,10 +201,10 @@ function ParseTrk($trackFile, &$trackData)
     if ($nbPts > 5) {
         $months = array('JAN' => 1, 'FEB' => 2, 'MAR' => 3, 'APR' => 4, 'MAY' => 5, 'JUN' => 6,
                         'JUL' => 7, 'AUG' => 8, 'SEP' => 9, 'OCT' => 10, 'NOV' => 11, 'DEC' => 12);
-        $trackData['date']['day'] = intval($m['day'][0]);
-        $month = strtoupper($m['month'][0]);
+        $trackData['date']['day'] = intval($m['day']);
+        $month = strtoupper($m['month']);
         $trackData['date']['month'] = in_array($month, $months) ? $months[$month] : 1;
-        $trackData['date']['year'] = intval($m['year'][0]) + (($m['year'][0] > 60)?1900:2000);
+        $trackData['date']['year'] = intval($m['year']) + (($m['year'] > 60)?1900:2000);
     }
 
     return $nbPts;
@@ -367,5 +367,3 @@ function IsKml($trackFile)
     }
 
 }
-
-?>

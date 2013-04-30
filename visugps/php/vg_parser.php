@@ -98,45 +98,47 @@ function ParseOzi($trackFile, &$trackData)
         return 0;
     }
 
-    preg_match_all(
-      '/^\s+
-      (?P<lat>[-\d\.]+)[,\s]+
-      (?P<lon>[-\d\.]+)[,\s]+[01][,\s]+
-      (?P<elev>[-\d\.]+)[,\s]+
-      (?P<date>[\d\.]+).*$
-      /xim',
-      $trackFile,
-      $m
-    );
+    $nbPts = 0;
 
-    $nbPts = $trackData['nbPt'] = count($m[0]);
+    foreach(preg_split('/[\n\r]+/', $trackFile, null, PREG_SPLIT_NO_EMPTY) as $line) {
+        if (preg_match(
+            '/^\s+
+            (?P<lat>[-\d\.]+)[,\s]+
+            (?P<lon>[-\d\.]+)[,\s]+[01][,\s]+
+            (?P<elev>[-\d\.]+)[,\s]+
+            (?P<date>[\d\.]+).*$
+            /xim',
+            $line
+        )) {
+            $trackData['lat'][$nbPts] = floatval($m['lat']);
+            $trackData['lon'][$nbPts] = floatval($m['lon']);
+            $trackData['elev'][$nbPts] = max(intval($m['elev'] * 0.3048), 0);
 
-    if ($nbPts > 5) {
-        // Extract latitude, longitude, altitudes and time in second
-        for ($i = 0; $i < $nbPts; $i++) {
-            $trackData['lat'][$i] = floatval($m['lat'][$i]);
-            $trackData['lon'][$i] = floatval($m['lon'][$i]);
-            $trackData['elev'][$i] = max(intval($m['elev'][$i] * 0.3048), 0);
-
-            $time = floatval($m['date'][$i]) - intval($m['date'][$i]);
+            $time = floatval($m['date']) - intval($m['date']);
             $time = $time * 24;
             $hour = intval($time);
             $time = ($time - $hour) * 60;
             $min = intval($time);
             $time = ($time - $min) * 60;
             $sec = intval($time);
-            $trackData['time']['hour'][$i] = $hour;
-            $trackData['time']['min'][$i] = $min;
-            $trackData['time']['sec'][$i] = $sec;
+            $trackData['time']['hour'][$nbPts] = $hour;
+            $trackData['time']['min'][$nbPts] = $min;
+            $trackData['time']['sec'][$nbPts] = $sec;
+            $nbPts++;
         }
-    $date = date_create();
-    date_date_set($date, 1899, 12, 30);
-    date_modify($date, intval($m['date'][0]) . ' days');
-    $trackData['date']['day'] = intval(date_format($date, 'j'));
-    $trackData['date']['month'] = intval(date_format($date, 'n'));
-    $trackData['date']['year'] = intval(date_format($date, 'Y'));
-
     }
+
+    if ($nbPts > 5) {
+        $date = date_create();
+        date_date_set($date, 1899, 12, 30);
+        date_modify($date, intval($m['date'][0]) . ' days');
+        $trackData['date']['day'] = intval(date_format($date, 'j'));
+        $trackData['date']['month'] = intval(date_format($date, 'n'));
+        $trackData['date']['year'] = intval(date_format($date, 'Y'));
+    }
+
+    $trackData['nbPt'] = $nbPts;
+
     return $nbPts;
 }
 

@@ -311,8 +311,15 @@ function MakeJsonTrack($track) {
         $jsTrack['time']['sec'][$i] = sprintf("%02d", $track['time']['sec'][$idx]);
     }
 
-    $jsTrack['lat'] = $track['lat'];
-    $jsTrack['lon'] = $track['lon'];
+    $jsTrack['lat'] = array();
+    foreach ($track['lat'] as $lat) {
+        $jsTrack['lat'][] = round($lat, 5);
+    }
+
+    $jsTrack['lon'] = array();
+    foreach ($track['lon'] as $lon) {
+        $jsTrack['lon'][] = round($lon, 5);
+    }
 
     $jsTrack['elevGnd'] = GetElevGnd($track, CHART_NBPTS);
     $jsTrack['speed'] = GetSpeed($track, CHART_NBPTS);
@@ -465,5 +472,3 @@ function GetDistance($lat1, $lon1, $lat2, $lon2, $precision = 4) {
 	return $distance;
 }
 
-
-?>

@@ -243,35 +243,39 @@ function ParseNmea($trackFile, &$trackData)
         $trackData['date']['year'] = intval($m['year']) + (($m['year'] > 60)? 1900 : 2000);
     }
 
-    // $GPGGA,134329.000,4902.174,N,00132.360,E,0,00,0.0,119.000,M,0.0,M,,*62
-    preg_match_all('
-      /^\$GPGGA,
-      (?P<hour>\d{2})(?P<min>\d{2})(?P<sec>\d{2})[\d.]*,
-      (?P<lat>[\d.]+),(?P<latS>[NS]),
-      (?P<lon>[\d.]+),(?P<lonS>[EW]),
-      \d+,
-      \d+,
-      [\d.]+,
-      (?P<elev>[\d.]+)
-      /xim', $trackFile, $m);
+    $nbPts = 0;
 
-    $nbPts = $trackData['nbPt'] = count($m[0]);
-
-    if ($nbPts > 5) {
-        // Extract latitude, longitude, altitudes and time in second
-        for ($i = 0; $i < $nbPts; $i++) {
-            $lonDeg= intval($m['lon'][$i] / 100);
-            $lonMin= $m['lon'][$i] - $lonDeg * 100;
-            $latDeg= intval($m['lat'][$i] / 100);
-            $latMin= $m['lat'][$i] - $latDeg * 100;
-            $trackData['lat'][$i] = ($latDeg + $latMin / 60) * (strtoupper($m['latS'][$i]) == 'N'? 1 : -1);
-            $trackData['lon'][$i] = ($lonDeg + $lonMin / 60) * (strtoupper($m['lonS'][$i]) == 'E'? 1 : -1);
-            $trackData['elev'][$i] = intval($m['elev'][$i]);
-            $trackData['time']['hour'][$i] = intval($m['hour'][$i]);
-            $trackData['time']['min'][$i] = intval($m['min'][$i]);
-            $trackData['time']['sec'][$i] = intval($m['sec'][$i]);
+    foreach(preg_split('/[\n\r]+/', $trackFile, null, PREG_SPLIT_NO_EMPTY) as $line) {
+        if (
+            // $GPGGA,134329.000,4902.174,N,00132.360,E,0,00,0.0,119.000,M,0.0,M,,*62
+            preg_match(
+                '/^\$GPGGA,
+                (?P<hour>\d{2})(?P<min>\d{2})(?P<sec>\d{2})[\d.]*,
+                (?P<lat>[\d.]+),(?P<latS>[NS]),
+                (?P<lon>[\d.]+),(?P<lonS>[EW]),
+                \d+,
+                \d+,
+                [\d.]+,
+                (?P<elev>[\d.]+)
+                /xim',
+                $line,
+                $m
+            )
+        ) {
+            $lonDeg= intval($m['lon'] / 100);
+            $lonMin= $m['lon'] - $lonDeg * 100;
+            $latDeg= intval($m['lat'] / 100);
+            $latMin= $m['lat'][$nbPts] - $latDeg * 100;
+            $trackData['lat'][$nbPts] = ($latDeg + $latMin / 60) * (strtoupper($m['latS']) == 'N'? 1 : -1);
+            $trackData['lon'][$nbPts] = ($lonDeg + $lonMin / 60) * (strtoupper($m['lonS']) == 'E'? 1 : -1);
+            $trackData['elev'][$nbPts] = intval($m['elev']);
+            $trackData['time']['hour'][$nbPts] = intval($m['hour']);
+            $trackData['time']['min'][$nbPts] = intval($m['min']);
+            $trackData['time']['sec'][$nbPts] = intval($m['sec']);
+            $nbPts++;
         }
     }
+
     return $nbPts;
 }
 

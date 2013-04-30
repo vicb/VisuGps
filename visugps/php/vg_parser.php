@@ -47,7 +47,7 @@ function ParseIgc($trackFile, &$trackData)
         $trackData['date']['year'] = intval($m[3]) + (($m[3] > 60)?1900:2000);
     }
 
-    if (preg_match('/HFPLTPILOT:([\x20-\x7e\x80-\xfe]+)/mi', $trackFile, $m)) {
+    if (preg_match('/^HFPLTPILOT:(.*)$/mi', $trackFile, $m)) {
         $trackData['pilot'] = htmlentities(trim($m[1]));
     }
 
@@ -74,9 +74,7 @@ function ParseIgc($trackFile, &$trackData)
             $nbPts++;
         }        
     }
-    
-    $trackData['nbPt'] = $nbPts;
-    
+
     return $nbPts;
 }
 

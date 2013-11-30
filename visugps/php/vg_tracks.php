@@ -259,7 +259,7 @@ function MakeTrack($url)
         }
 
         if ($nbPts < 5) {
-            if (IsKml($file)) {
+            if (IsKml($file) || preg_match('/kmz/i', $url)) {
                 $jsTrack['kmlUrl'] = $url;
             } else {
                 $jsTrack['error'] = 'Unsupported track format!';

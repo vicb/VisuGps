@@ -250,7 +250,7 @@ function getNearbyPlace($lat, $lon, &$status) {
     $location['place'] = '-';
     $location['country'] = '-';
     if (!$status) return $location;
-    $url = "http://ws.geonames.org/findNearbyPlaceNameJSON?lat=$lat&lng=$lon";
+    $url = "http://api.geonames.org/findNearbyPlaceNameJSON?lat=$lat&lng=$lon&username=vicb";
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_FAILONERROR, true);
@@ -270,7 +270,7 @@ function getNearbyPlace($lat, $lon, &$status) {
 
 function getTimeZone($lat, $lon, &$status) {
     if (!$status) return NULL;
-    $url = "http://ws.geonames.org/timezoneJSON?lat=$lat&lng=$lon";
+    $url = "http://api.geonames.org/timezoneJSON?lat=$lat&lng=$lon&username=vicb";
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_FAILONERROR, true);

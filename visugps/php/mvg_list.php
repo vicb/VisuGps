@@ -92,6 +92,7 @@ if (mysql_num_rows($result)) {
     while ($row = mysql_fetch_object($result)) {
         $track['name'] = $row->name;
         $track['flightId'] = $row->flightId;
+        $track['utc'] = $row->utc;
         $track['start']['time'] = $row->start;
         $track['end']['time'] = $row->end;
         $track['live'] = ($row->end == NULL);
@@ -169,7 +170,7 @@ function getFilterCondition($filter) {
                 case 'date' :
                     $day = date('Y-m-d', strtotime($filter[$i]['data']['value']));
                     switch ($filter[$i]['data']['comparison']) {
-                        case 'eq' :                            
+                        case 'eq' :
                             $where .= " AND $field > '$day 00:00:00' AND $field < '$day 23:59:59'";
                             break;
                         case 'lt' :
@@ -188,7 +189,7 @@ function getFilterCondition($filter) {
 
 function getFlightInfo(&$track, &$geoServerStatus) {
     $id = $track['flightId'];
-    
+
     $query = "SELECT * FROM flightInfo WHERE id='$id'";
     $result = mysql_query($query)  or die('Query error: ' . mysql_error());
     if (mysql_num_rows($result) == 1) {
@@ -200,7 +201,7 @@ function getFlightInfo(&$track, &$geoServerStatus) {
         $result = mysql_query($query)  or die('Query error: ' . mysql_error());
         $flightInfo = mysql_fetch_object($result);
     }
-    
+
     // Retrieve take-off information
     if ($flightInfo->startLocation == NULL) {
         $track['start']['location'] = getNearbyPlace($track['start']['lat'], $track['start']['lon'], $geoServerStatus);
@@ -215,7 +216,7 @@ function getFlightInfo(&$track, &$geoServerStatus) {
         $track['start']['location']['place'] = $flightInfo->startLocation;
         $track['start']['location']['country'] = $flightInfo->startCountry;
     }
-    
+
     // Retrieve position / landing information
     if ($flightInfo->endLocation == NULL || $track['live']) {
         $track['end']['location'] = getNearbyPlace($track['end']['lat'], $track['end']['lon'], $geoServerStatus);

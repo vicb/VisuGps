@@ -791,7 +791,7 @@ function generate_igc_track($jsonTrack) {
                     "HFDTM100GPSDATUM:WGS-1984\n",
                     $track['date']['day'],
                     $track['date']['month'],
-                    $track['date']['year'],
+                    substr(strval($track['date']['year']), -2),
                     $track['pilot']);
                     
     for ($i = 0; $i < $track['nbTrackPt']; $i++) {

@@ -46,7 +46,7 @@ function getSites($lat, $lon) {
     curl_close($ch);
 
     $xml = @simplexml_load_string($data);
-    
+
     if ($xml === false) {
         return "";
     }
@@ -61,4 +61,3 @@ function getSites($lat, $lon) {
 
 }
 
-?>

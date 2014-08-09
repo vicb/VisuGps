@@ -40,4 +40,3 @@ Copyright (c) 2007-2008 Victor Berchet, <http://www.victorb.fr>
     echo $xml;
     curl_close($session);
 
-?>

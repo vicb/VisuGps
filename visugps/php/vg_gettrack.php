@@ -97,7 +97,7 @@ switch ($format) {
         header('Cache-Control: no-cache, must-revalidate');
         header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
         echo generate_igc_track($jsonTrack);
-    
+
 }
 
 /*
@@ -136,7 +136,7 @@ function generate_kmllive_track($id) {
                    $track['pilot'],
                    "http://" . $_SERVER['SERVER_NAME'] . $_SERVER['PHP_SELF'],
                    $id);
-               
+
     return $file;
 }
 
@@ -188,7 +188,7 @@ function generate_kml_track($jsonTrack, $color = "ff00ffff") {
                     $track['pilot'],
                     $track['lon'][0],
                     $track['lat'][0]);
-                    
+
     $file .= generate_kml_linestring('Track', $track, $color);
 
     $file .= sprintf("<Placemark>\n" .
@@ -215,7 +215,7 @@ function generate_kml_track($jsonTrack, $color = "ff00ffff") {
                      $track['lon'][$track['nbTrackPt'] - 1],
                      $track['lat'][$track['nbTrackPt'] - 1],
                      $track['elev'][$track['nbChartPt'] - 1]);
-                     
+
     return $file;
 }
 
@@ -376,11 +376,11 @@ function generate_kml_task($task, $delay, $utcOffset) {
             "    </IconStyle>\n" .
             "</Style>\n" .
             "<name>Pilots</name>\n";
-                    
+
     $ids = GetTaskFlights($task, $utcOffset);
-    
+
     $maxPilots = max(5, count($ids));
-    
+
     for ($i = 0; $i < count($ids); $i++) {
           $jsonTrack = GetDatabaseTrack($ids[$i], $delay, $utcOffset);
           $track = @json_decode($jsonTrack, true);
@@ -390,7 +390,7 @@ function generate_kml_task($task, $delay, $utcOffset) {
               $file .= generate_kml_point($track['pilot'], end($track['lat']), end($track['lon']), end($track['elev']));
           }
     }
-/*    
+/*
     $file .= "</Folder><Folder><name>Turn points</name>\n" .
     "<Placemark>\n" .
     "    <name>Start 12:30</name>\n" .
@@ -431,7 +431,7 @@ function generate_kml_task($task, $delay, $utcOffset) {
     "        6.557838, 43.944109, 3000\n" .
     "        </coordinates>\n" .
     "    </Point>\n" .
-    "</Placemark>\n" .    
+    "</Placemark>\n" .
     "<Placemark>\n" .
     "    <name>Goal</name>\n" .
     "    <Point>\n" .
@@ -441,8 +441,8 @@ function generate_kml_task($task, $delay, $utcOffset) {
     "    </Point>\n" .
     "</Placemark>\n" .
     "</Folder>\n</Document>\n</kml>";
-*/    
-    
+*/
+
     $file .= "</Folder>\n" .
              "</Document>\n" .
              "</kml>";
@@ -602,7 +602,7 @@ Returns:
 */
 function imagepng2string($image) {
     $contents = ob_get_contents();
-    if ($contents !== false) ob_clean(); 
+    if ($contents !== false) ob_clean();
     else ob_start();
     imagepng($image);
     $data = ob_get_contents();
@@ -747,7 +747,7 @@ function generate_colored_track($jsonTrack, $idxSerie, $unit, &$minValue, &$maxV
                      $track['lon'][$track['nbTrackPt'] - 1],
                      $track['lat'][$track['nbTrackPt'] - 1],
                      $track['elev'][$track['nbChartPt'] - 1]);
-                     
+
     return $file;
 }
 
@@ -793,7 +793,7 @@ function generate_igc_track($jsonTrack) {
                     $track['date']['month'],
                     substr(strval($track['date']['year']), -2),
                     $track['pilot']);
-                    
+
     for ($i = 0; $i < $track['nbTrackPt']; $i++) {
         $chartIdx = $i * ($track['nbChartPt'] - 1) / ($track['nbTrackPt'] - 1);
         $lat = intval($track['lat'][$i]) + ($track['lat'][$i] - intval($track['lat'][$i])) * 60 / 100;
@@ -842,4 +842,3 @@ function value2color($value, $min, $max) {
    return $k;
 }
 
-?>

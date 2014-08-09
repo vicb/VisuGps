@@ -111,9 +111,9 @@ function MakeTile($image, $x, $y, $zoom)
 
     for ($latIdx = 0; $latIdx < $j; $latIdx++) {
         for ($lonIdx = 0; $lonIdx < $i; $lonIdx++) {
-            MakeBlock($image, 
-                      $lonBound[$lonIdx], $lonBound[$lonIdx + 1], 
-                      $latBound[$latIdx], $latBound[$latIdx + 1], 
+            MakeBlock($image,
+                      $lonBound[$lonIdx], $lonBound[$lonIdx + 1],
+                      $latBound[$latIdx], $latBound[$latIdx + 1],
                       $proj);
         }
     }
@@ -273,4 +273,3 @@ function DebugLog($msg)
     $y += 15;
 }
 
-?>

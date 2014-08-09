@@ -126,7 +126,7 @@ if (isset($_POST['gps'])) {
                                                         , $lon
                                                         , intval(abs($data[2]))
                                                         , $date);
-            $atLeastOneValidPoint = true;                                                                
+            $atLeastOneValidPoint = true;
             if ($flightNeedDate) {
                 $query = "UPDATE flight SET start = '$date' WHERE id = '$flightId'";
                 mysql_query($query) or die ('Query error: ' . mysql_error());
@@ -167,4 +167,3 @@ function format_mysql($text) {
     return mysql_real_escape_string($text);
 }
 
-?>

@@ -31,7 +31,7 @@ require('vg_log.php');
 /*
 Class: Cache
         Provide a cache mechanism
-*/        
+*/
 class Cache {
 
     // Private members
@@ -52,11 +52,11 @@ class Cache {
     /*
     Method: __construct
             Class constructor.
-            
+
     Arguments:
         dir - folder to be used for storing cache data
         capacity - size of the cache
-        gzlevel - compression level (0 = none ... 9 = max)                   
+        gzlevel - compression level (0 = none ... 9 = max)
     */
     public function __construct($dir = "cache/", $capacity = 50, $gzlevel = 0) {
         $this->fileDir = $dir;
@@ -76,7 +76,7 @@ class Cache {
     }
     /*
     Method: __destruct
-            Class destructor.           
+            Class destructor.
     */
     public function __destruct() {
         $this->log->msg("- Cache destructor");
@@ -84,13 +84,13 @@ class Cache {
     /*
     Method: get
             Check if the data is in the cache
-            
+
     Arguments:
             data - data (modified if in cache)
             id - uid of the data to check
 
     Returns:
-            true if the data is found in cache, false otherwise                                  
+            true if the data is found in cache, false otherwise
     */
     public function get(&$data, $id) {
         if (!CACHE_ENABLED) {
@@ -142,10 +142,10 @@ class Cache {
     /*
     Method: set
             Populate the cache
-            
+
     Arguments:
             data - data
-            id - uid of the data                                
+            id - uid of the data
     */
     public function set($data, $id) {
         if (!CACHE_ENABLED) {
@@ -200,8 +200,8 @@ class Cache {
     // Private functions
     /*
     Method: getFileName
-            Returns an inexisting file name.           
-    */    
+            Returns an inexisting file name.
+    */
     private function getFileName() {
         $count = 0;
         do {
@@ -214,11 +214,11 @@ class Cache {
     Method: purge
             Purge the cache when (current + required) size exceeds
             cache capacity
-            
+
     Arguments:
             index - cache index
-            add - space required in cache                       
-    */    
+            add - space required in cache
+    */
     private function purge(&$index, $add = 0) {
         $extraCount = (count($index) + $add) - $this->capacity;
         $this->log->msg("Purge $extraCount files");
@@ -231,4 +231,3 @@ class Cache {
     }
 }
 
-?>

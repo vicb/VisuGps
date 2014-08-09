@@ -52,4 +52,3 @@ if (mysql_num_rows($result)) {
 
 echo @json_encode($tests);
 
-?>

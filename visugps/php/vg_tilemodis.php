@@ -285,7 +285,7 @@ class Euclide {
     /*
     Method: __construct
             Class constructor
-            
+
     Arguments:
             zoom - zoom level
             tileSize - tile size in pixels
@@ -356,34 +356,33 @@ class Euclide {
 /*
 Function: PngToString
         Return a PNG file as a string
-        
+
 Arguments:
         image - the image
-        
+
 Returns:
         Image in PNG format as a string
 */
 function PngToString($image)
 {
     $contents = ob_get_contents();
-    
+
     if ($contents !== false) {
         ob_clean();
     } else {
         ob_start();
     }
-    
+
     imagepng($image);
     $data = ob_get_contents();
-    
+
     if ($contents !== false) {
         ob_clean();
         echo $contents;
     } else {
         ob_end_clean();
     }
-    
+
     return $data;
 }
 
-?>

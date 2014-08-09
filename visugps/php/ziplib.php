@@ -13,10 +13,10 @@ class zipfile { // phpMyAdmin\libraries\zip.lib.php
             $timearray['hours']   = 0;
             $timearray['minutes'] = 0;
             $timearray['seconds'] = 0;
-        } 
+        }
         return (($timearray['year'] - 1980) << 25) | ($timearray['mon'] << 21) | ($timearray['mday'] << 16) |
                 ($timearray['hours'] << 11) | ($timearray['minutes'] << 5) | ($timearray['seconds'] >> 1);
-    } 
+    }
     function addFile($data, $name, $time = 0) {
         $name     = str_replace('\\', '/', $name);
         $dtime    = dechex($this->unix2DosTime($time));
@@ -27,19 +27,19 @@ class zipfile { // phpMyAdmin\libraries\zip.lib.php
         $unc_len = strlen($data);
         $crc     = crc32($data);
         $zdata   = gzcompress($data);
-        $zdata   = substr(substr($zdata, 0, strlen($zdata) - 4), 2); 
+        $zdata   = substr(substr($zdata, 0, strlen($zdata) - 4), 2);
         $c_len   = strlen($zdata);
-        $fr      .= pack('V', $crc) . pack('V', $c_len) . pack('V', $unc_len) 
+        $fr      .= pack('V', $crc) . pack('V', $c_len) . pack('V', $unc_len)
                  . pack('v', strlen($name)) . pack('v', 0) . $name;
         $fr .= $zdata;
         $this -> datasec[] = $fr;
-        $cdrec = "\x50\x4b\x01\x02\x00\x00\x14\x00\x00\x00\x08\x00" . $hexdtime . pack('V', $crc) . pack('V', $c_len) 
-               . pack('V', $unc_len) . pack('v', strlen($name) ) . pack('v', 0 ) . pack('v', 0 ) . pack('v', 0 ) 
-               . pack('v', 0 ) . pack('V', 32 ) . pack('V', $this -> old_offset ); 
+        $cdrec = "\x50\x4b\x01\x02\x00\x00\x14\x00\x00\x00\x08\x00" . $hexdtime . pack('V', $crc) . pack('V', $c_len)
+               . pack('V', $unc_len) . pack('v', strlen($name) ) . pack('v', 0 ) . pack('v', 0 ) . pack('v', 0 )
+               . pack('v', 0 ) . pack('V', 32 ) . pack('V', $this -> old_offset );
         $this -> old_offset += strlen($fr);
         $cdrec .= $name;
         $this -> ctrl_dir[] = $cdrec;
-    } 
+    }
     function file()
     {
         $data    = implode('', $this -> datasec);
@@ -47,8 +47,7 @@ class zipfile { // phpMyAdmin\libraries\zip.lib.php
         return
             $data .
             $ctrldir .
-            $this -> eof_ctrl_dir . pack('v', sizeof($this -> ctrl_dir)) . pack('v', sizeof($this -> ctrl_dir)) . 
-            pack('V', strlen($ctrldir)) . pack('V', strlen($data)) . "\x00\x00"; 
+            $this -> eof_ctrl_dir . pack('v', sizeof($this -> ctrl_dir)) . pack('v', sizeof($this -> ctrl_dir)) .
+            pack('V', strlen($ctrldir)) . pack('V', strlen($data)) . "\x00\x00";
     }
 }
-?>

@@ -24,7 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 Copyright (c) 2007 Victor Berchet, <http://www.victorb.fr>
 
 */
- 
+
 /*
 Class: Log
         Simple logging class
@@ -38,11 +38,11 @@ class Log {
     /*
     Method: __construct
             Class constructor
-    
+
     Arguments:
             name - name of the log file
             on - true to enable logging (default to false)
-    
+
     */
     public function __construct($name = "log", $on = false) {
         $this->on = $on;
@@ -80,4 +80,3 @@ class Log {
         if ($this->on) fclose($this->handle);
     }
 }
-?>

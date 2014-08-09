@@ -307,4 +307,3 @@ function mysql2timestamp($datetime){
                       intval($date[1]), intval($date[2]), intval($date[0]));
 }
 
-?>

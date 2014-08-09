@@ -41,4 +41,3 @@ if (isset($_GET['track'])) {
     echo @json_encode(array('error' => 'invalid URL'));
 }
 
-?>

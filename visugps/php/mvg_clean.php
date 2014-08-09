@@ -119,6 +119,3 @@ function getCurrentIds() {
     }
     return $ids;
 }
-
-
-?>

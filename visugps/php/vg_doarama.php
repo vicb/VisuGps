@@ -1,6 +1,6 @@
 <?php
 
-namespace doarama;
+namespace Doarama;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -25,7 +25,11 @@ class Doarama {
         $this->apiKey = $apiKey;
     }
 
-    public function uploadActivity(Activity $activity) {
+    /**
+     * @param Activity $activity
+     * @return String The url of the visualization, null on error
+     */
+    public function createActivity(Activity $activity) {
         if ($activity->trackData == null) return;
         if (count($activity->trackData['lat']) < 1) return;
 
@@ -40,23 +44,47 @@ class Doarama {
 
         try {
             // create an activity
+            /** @var Response $response */
             $response = $client->post('api/0.2/activity/create',
                                       ['json' => $createOptions]);
-            $activityId = $response->json()['id'];
-            $client->post('/api/0.2/activity/' . $activityId,
+            if (!$this->isSuccessfulResponse($response)) {
+                return null;
+            }
+            $activity->id = $response->json()['id'];
+            $client->post('/api/0.2/activity/' . $activity->id,
                           ['json' => ['activityTypeId' => $activity->type]]);
             // create a visualization
             $response = $client->post('api/0.2/visualisation',
-                                      ['json' => ['activityIds' => [ $activityId]]]);
+                                      ['json' => ['activityIds' => [ $activity->id]]]);
+            if (!$this->isSuccessfulResponse($response)) {
+                return null;
+            }
             $visId = $response->json()['id'];
             // get the visualization url
             $response = $client->get("/api/0.2/visualisation/" . $visId . "/url");
+            if (!$this->isSuccessfulResponse($response)) {
+                return null;
+            }
             $url = $response->json()['url'];
 
+        } catch (\RuntimeException $exc) {
+        }
+
+        return $url;
+    }
+
+    public function uploadAtivity(Activity $activity, $finishRequest = false) {
+        if (function_exists('fastcgi_finish_request')) {
+            fastcgi_finish_request();
+        }
+        $client = $this->getClient();
+        if (null === $activity->id) {
+            throw new \RuntimeException("The activity id must be set before uploading the fixes");
+        }
+        try {
             $requests = [];
             $len = count($activity->trackData['lat']);
             for ($start = 0; $start < $len; $start += 200) {
-                echo 'Start:' . $start;
                 $end = min($start + 200, $len);
                 $samples = [];
                 for ($i = $start; $i < $end; $i++) {
@@ -72,26 +100,16 @@ class Doarama {
                 $requests[] = $client->createRequest('POST', '/api/0.2/activity/record',
                     ['json' => [
                         'samples' => $samples,
-                        'activityId' => $activityId,
+                        'activityId' => $activity->id,
                         'altitudeReference' => 'WGS84'
                     ]]
                 );
-                break;
             }
-            echo 'sendall';
             $client->sendAll($requests);
-
-
-
-            return $url;
-
         } catch (\RuntimeException $exc) {
+            return false;
         }
-
-
-
-
-
+        return true;
     }
 
 
@@ -116,6 +134,11 @@ class Doarama {
         return $this->client;
     }
 
+    private function isSuccessfulResponse(Response $response) {
+        $statusCode = $response->getStatusCode();
+        return $statusCode >= 200 && $statusCode <= 300;
+    }
+
 }
 
 class Activity {
@@ -125,6 +148,8 @@ class Activity {
     public $type;
 
     public $trackData;
+
+    public $id;
 
     public function __construct($trackData, $type = self::TYPE_PARAGLIDER) {
         $this->trackData = $trackData;
@@ -149,4 +174,11 @@ $data = '{"time":{"label":["10h14","12h00","13h47","15h34","17h21"],"hour":["10"
 
 $activity = new Activity(json_decode($data, true));
 
-echo $do->uploadActivity($activity);
+$url = $do->createActivity($activity);
+
+if ($url !== null) {
+    echo $url;
+    $do->uploadAtivity($activity, true);
+}
+
+

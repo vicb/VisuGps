@@ -25,7 +25,12 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 
 */
 
-include_once('mvg_db.inc.php');
+include_once 'mvg_db.inc.php';
+require 'vg_cfg.inc.php';
+require 'vg_doarama.php';
+
+use Doarama\Activity;
+use Doarama\Doarama;
 
 /*
 Function: GetTaskFlights
@@ -240,7 +245,7 @@ function MakeTrack($url)
 
         require('vg_parser.php');
 
-        $track['date'] = array('day' => 0, 'month' => 0, 'year' => 0);
+        $track['date'] = array('day' => date('j'), 'month' => date('n'), 'year' => date('Y'));
         $track['pilot'] = '';
 
         $nbPts = ParseIgc($file, $track);
@@ -265,12 +270,18 @@ function MakeTrack($url)
                 $jsTrack['error'] = 'Unsupported track format!';
             }
         } else {
+            $doarama = new Doarama(getenv(DOARAMA_API_NAME_VAR), getenv(DOARAMA_API_KEY_VAR));
+            $activity = new Activity($track);
+            $activityUrl = $doarama->createActivity($activity);
             $jsTrack = MakeJsonTrack($track);
+            if ($activityUrl !== null) {
+                $jsTrack['doaramaUrl'] = $activityUrl;
+                $doarama->uploadAtivity($activity);
+            }
         }
 
         $data = @json_encode($jsTrack);
-        if (!isset($jsTrack['error']) &&
-            !isset($jsTrack['kmlUrl'])) {
+        if (!isset($jsTrack['error']) && !isset($jsTrack['kmlUrl'])) {
             $cache->set($data, $url);
         }
 

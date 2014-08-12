@@ -19,7 +19,6 @@ class Doarama {
     private $apiName;
     private $apiKey;
 
-
     public function __construct($apiName, $apiKey) {
         $this->apiName = $apiName;
         $this->apiKey = $apiKey;
@@ -112,7 +111,6 @@ class Doarama {
         return true;
     }
 
-
     /**
      * @return Client
      */
@@ -138,7 +136,6 @@ class Doarama {
         $statusCode = $response->getStatusCode();
         return $statusCode >= 200 && $statusCode <= 300;
     }
-
 }
 
 class Activity {
@@ -158,10 +155,17 @@ class Activity {
 
     public function getTimeMs($index) {
         $time = $this->trackData['time'];
-        $date = $this->trackData['date'];
+        if (array_key_exists($this->trackData, 'date')) {
+            $date = ['date'];
+        } else {
+            $date = [
+                'month' => date('n'),
+                'day' => date('j'),
+                'year' => date('Y'),
+            ];
+        }
+
         return gmmktime($time['hour'][$index], $time['min'][$index], $time['sec'][$index],
                         $date['month'], $date['day'], $date ['year']);
     }
-
-
 }

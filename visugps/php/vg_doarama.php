@@ -155,8 +155,9 @@ class Activity {
 
     public function getTimeMs($index) {
         $time = $this->trackData['time'];
-        if (array_key_exists($this->trackData, 'date')) {
-            $date = ['date'];
+
+        if (array_key_exists('date', $this->trackData)) {
+            $date = $this->trackData['date'];
         } else {
             $date = [
                 'month' => date('n'),
@@ -165,7 +166,8 @@ class Activity {
             ];
         }
 
-        return gmmktime($time['hour'][$index], $time['min'][$index], $time['sec'][$index],
-                        $date['month'], $date['day'], $date ['year']);
+        return 1000 * gmmktime($time['hour'][$index], $time['min'][$index], $time['sec'][$index],
+                               $date['month'], $date['day'], $date ['year']);
+
     }
 }

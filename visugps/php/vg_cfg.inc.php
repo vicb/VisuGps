@@ -29,13 +29,13 @@ Copyright (c) 2007 Victor Berchet, <http://www.victorb.fr>
 
     // Google maps tile size (pixels)
     define('G_TILE_SIZE', 256);
-    
+
     // PHP folder to PJT folder
     define('PJT_FOLDER_FROM_PHP', '../');
 
     // Google Maps API key (for statis maps)
     define('GMAPS_KEY', 'ABQIAAAAJPvmQMZVrrV3inIwT2t4RBQf-JSUIEMNUNF63gcoYgskNGvaZRQmUvzGcFUdj4nlylxP8SK4sRKYsg');
-    
+
     // SRTM tile size (pixels)
     define('SRTM_TILE_SIZE_PX', 6000);
     // SRTM tile size (degre)
@@ -74,4 +74,6 @@ Copyright (c) 2007 Victor Berchet, <http://www.victorb.fr>
     define('CHART_NBLBL', 5);
     define('CHART_NBPTS', 800);
 
-?>
+    // DoArama
+    define('DOARAMA_API_NAME_VAR', 'REDIRECT_DOARAMA_API_NAME');
+    define('DOARAMA_API_KEY_VAR', 'REDIRECT_DOARAMA_API_KEY');

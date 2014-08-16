@@ -188,7 +188,7 @@ function GetDatabaseTrack($trackId, $delay = 0, $utcOffset = 0) {
             $track['pilot'] = $row->name;
         }
 
-        $jsTrack = MakeJsonTrack($track);
+        $jsTrack = buildJsonTrack($track);
     } else {
         $jsTrack['error'] = 'Invalid track';
     }
@@ -271,7 +271,7 @@ function buildActivity($url)
 }
 
 /*
-Function: MakeJsonTrack
+Function: buildJsonTrack
         Convert a track to JSON format
 
 Arguments:

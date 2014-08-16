@@ -6,8 +6,8 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Message\Response;
 
-require 'vg_cfg.inc.php';
-require 'vendor/autoload.php';
+require_once 'vg_cfg.inc.php';
+require_once 'vendor/autoload.php';
 
 
 class Doarama {
@@ -26,11 +26,11 @@ class Doarama {
 
     /**
      * @param Activity $activity
-     * @return String The url of the visualization, null on error
+     * @return int The id of the visualization
      */
-    public function createActivity(Activity $activity) {
+    public function createVisualization(Activity $activity) {
         if ($activity->trackData == null) return;
-        if (count($activity->trackData['lat']) < 1) return;
+        if (count($activity->trackData['lat']) < 5) return;
 
         $client = $this->getClient();
 
@@ -58,28 +58,15 @@ class Doarama {
             if (!$this->isSuccessfulResponse($response)) {
                 return null;
             }
-            $visId = $response->json()['id'];
-            // get the visualization url
-            $response = $client->get("/api/0.2/visualisation/" . $visId . "/url");
-            if (!$this->isSuccessfulResponse($response)) {
-                return null;
-            }
-            $url = $response->json()['url'];
-
+            return $response->json()['id'];
         } catch (\RuntimeException $exc) {
+            return null;
         }
-
-        return $url;
     }
 
-    public function uploadAtivity(Activity $activity, $finishRequest = false) {
-        if (function_exists('fastcgi_finish_request')) {
-            fastcgi_finish_request();
-        }
+    public function uploadActivity(Activity $activity) {
+        if (null === $activity->id) return;
         $client = $this->getClient();
-        if (null === $activity->id) {
-            throw new \RuntimeException("The activity id must be set before uploading the fixes");
-        }
         try {
             $requests = [];
             $len = count($activity->trackData['lat']);
@@ -109,6 +96,25 @@ class Doarama {
             return false;
         }
         return true;
+    }
+
+    public function getVisualizationUrl($id) {
+        if (null == $id) return null;
+
+        $client = $this->getClient();
+        $url =  null;
+
+        try {
+            // get the visualization url
+            $response = $client->get("/api/0.2/visualisation/" . $id . "/url");
+            if (!$this->isSuccessfulResponse($response)) {
+                return null;
+            }
+            return $response->json()['url'];
+
+        } catch (\RuntimeException $exc) {
+            return null;
+        }
     }
 
     /**
@@ -168,6 +174,5 @@ class Activity {
 
         return 1000 * gmmktime($time['hour'][$index], $time['min'][$index], $time['sec'][$index],
                                $date['month'], $date['day'], $date ['year']);
-
     }
 }

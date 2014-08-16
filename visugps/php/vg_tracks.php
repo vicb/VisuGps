@@ -26,8 +26,9 @@ Copyright (c) 2008 Victor Berchet, <http://www.victorb.fr>
 */
 
 include_once 'mvg_db.inc.php';
-require 'vg_cfg.inc.php';
-require 'vg_doarama.php';
+require_once 'vg_cfg.inc.php';
+require_once 'vg_doarama.php';
+require_once 'vg_parser.php';
 
 use Doarama\Activity;
 use Doarama\Doarama;
@@ -116,7 +117,7 @@ function GetDatabaseTrack($trackId, $delay = 0, $utcOffset = 0) {
     $link = mysql_connect(dbHost, dbUser, dbPassword) or die ('Could not connect: ' . mysql_error());
     mysql_select_db(dbName) or die ('Database does not exist');
 
-    // Track shoud be long enough to be valid
+    // Track should be long enough to be valid
     $query = "SELECT latitude FROM point WHERE flightId = $trackId";
     $result = mysql_query($query) or die('Query error: ' . mysql_error());
     if (mysql_num_rows($result) > 5) {
@@ -225,68 +226,48 @@ Track format:
         nbChartPt - number of points in elev, elevGnd, speed, vario
         nbChartLbl - number of labels (time.labels)
 */
-function MakeTrack($url)
+function buildActivity($url)
 {
-    require('vg_cache.php');
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $_GET['track']);
+    curl_setopt($ch, CURLOPT_FAILONERROR, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+    $file = curl_exec($ch);
+    curl_close($ch);
 
-    $cache = new Cache(CACHE_BASE_FOLDER . CACHE_FOLDER_TRACK, CACHE_NB_TRACK, 9);
+    $track['date'] = array('day' => date('j'), 'month' => date('n'), 'year' => date('Y'));
+    $track['pilot'] = '';
 
-    if ($cache->get($data, $url)) {
-        return $data;
-    } else {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $_GET['track']);
-        curl_setopt($ch, CURLOPT_FAILONERROR, true);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-        $file = curl_exec($ch);
-        curl_close($ch);
+    $nbPts = ParseIgc($file, $track);
 
-        require('vg_parser.php');
-
-        $track['date'] = array('day' => date('j'), 'month' => date('n'), 'year' => date('Y'));
-        $track['pilot'] = '';
-
-        $nbPts = ParseIgc($file, $track);
-
-        if ($nbPts < 5) {
-            $nbPts = ParseGpx($file, $track);
-        }
-        if ($nbPts < 5) {
-            $nbPts = ParseTrk($file, $track);
-        }
-        if ($nbPts < 5) {
-            $nbPts = ParseNmea($file, $track);
-        }
-        if ($nbPts < 5) {
-            $nbPts = ParseOzi($file, $track);
-        }
-
-        if ($nbPts < 5) {
-            if (IsKml($file) || preg_match('/kmz/i', $url)) {
-                $jsTrack['kmlUrl'] = $url;
-            } else {
-                $jsTrack['error'] = 'Unsupported track format!';
-            }
-        } else {
-            $doarama = new Doarama(getenv(DOARAMA_API_NAME_VAR), getenv(DOARAMA_API_KEY_VAR));
-            $activity = new Activity($track);
-            $activityUrl = $doarama->createActivity($activity);
-            $jsTrack = MakeJsonTrack($track);
-            if ($activityUrl !== null) {
-                $jsTrack['doaramaUrl'] = $activityUrl;
-                $doarama->uploadAtivity($activity);
-            }
-        }
-
-        $data = @json_encode($jsTrack);
-        if (!isset($jsTrack['error']) && !isset($jsTrack['kmlUrl'])) {
-            $cache->set($data, $url);
-        }
-
-        return $data;
+    if ($nbPts < 5) {
+        $nbPts = ParseGpx($file, $track);
     }
+    if ($nbPts < 5) {
+        $nbPts = ParseTrk($file, $track);
+    }
+    if ($nbPts < 5) {
+        $nbPts = ParseNmea($file, $track);
+    }
+    if ($nbPts < 5) {
+        $nbPts = ParseOzi($file, $track);
+    }
+
+    if ($nbPts < 5) {
+        if (IsKml($file) || preg_match('/kmz/i', $url)) {
+            $track['kmlUrl'] = $url;
+        } else {
+            $track['error'] = 'Unsupported track format!';
+        }
+    }
+
+    $doarama = new Doarama(getenv(DOARAMA_API_NAME_VAR), getenv(DOARAMA_API_KEY_VAR));
+    $activity = new Activity($track);
+    $activity->trackData['doaramaVId'] = $doarama->createVisualization($activity);
+
+    return $activity;
 }
 
 /*
@@ -299,7 +280,15 @@ Arguments:
 Return:
         The track in JSON format
 */
-function MakeJsonTrack($track) {
+function buildJsonTrack($track) {
+    if (array_key_exists('kmlUrl', $track)) {
+        return ['kmlUrl' => $track['kmlUrl']];
+    }
+
+    if (array_key_exists('error', $track)) {
+        return ['error' => $track['error']];
+    }
+
     $track['nbPt'] = $nbPts = count($track['lat']);
 
     // Generate the time in second
@@ -341,6 +330,8 @@ function MakeJsonTrack($track) {
     $jsTrack['nbChartLbl'] = CHART_NBLBL;
     $jsTrack['date'] = $track['date'];
     $jsTrack['pilot'] = $track['pilot'];
+
+    $jsTrack['doaramaVId'] = $track['doaramaVId'];
 
     return $jsTrack;
 }

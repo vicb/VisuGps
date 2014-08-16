@@ -30,11 +30,33 @@ header('Content-type: text/plain; charset=ISO-8859-1');
 header('Cache-Control: no-cache, must-revalidate');
 header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
 
-require('vg_cfg.inc.php');
-require('vg_tracks.php');
+require_once 'vg_cfg.inc.php';
+require_once 'vg_tracks.php';
+require_once 'vg_doarama.php';
+require_once 'vg_cache.php';
+
+use Doarama\Doarama;
 
 if (isset($_GET['track'])) {
-    echo MakeTrack($_GET['track']);
+    $doarama = new Doarama(getenv(DOARAMA_API_NAME_VAR), getenv(DOARAMA_API_KEY_VAR));
+    $cache = new Cache(CACHE_BASE_FOLDER . CACHE_FOLDER_TRACK, CACHE_NB_TRACK, 9);
+
+    $url = $_GET['track'];
+
+    if ($cache->get($data, $url)) {
+        $jsTrack = json_decode($data, true);
+    } else {
+        $activity = buildActivity($url);
+        $doarama->uploadActivity($activity); // todo: send later
+        $jsTrack = buildJsonTrack($activity->trackData);
+        if (!isset($jsTrack['error']) && !isset($jsTrack['kmlUrl'])) {
+            $cache->set(@json_encode($jsTrack), $url);
+        }
+    }
+    $visuId = $jsTrack['doaramaVId'];
+    unset($jsTrack['doaramaVId']);
+    $jsTrack['doaramaUrl'] = $doarama->getVisualizationUrl($visuId);
+    echo @json_encode($jsTrack);
 } else if (isset($_GET['trackid'])) {
     echo GetDatabaseTrack(intval($_GET['trackid']));
 } else {

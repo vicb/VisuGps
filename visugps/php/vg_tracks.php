@@ -194,6 +194,7 @@ function GetDatabaseTrack($trackId, $delay = 0, $utcOffset = 0) {
     }
 
     $data = @json_encode($jsTrack);
+
     return $data;
 }
 
@@ -281,11 +282,11 @@ Return:
         The track in JSON format
 */
 function buildJsonTrack($track) {
-    if (array_key_exists('kmlUrl', $track)) {
+    if (isset($track['kmlUrl'])) {
         return ['kmlUrl' => $track['kmlUrl']];
     }
 
-    if (array_key_exists('error', $track)) {
+    if (isset($track['error'])) {
         return ['error' => $track['error']];
     }
 
@@ -331,7 +332,7 @@ function buildJsonTrack($track) {
     $jsTrack['date'] = $track['date'];
     $jsTrack['pilot'] = $track['pilot'];
 
-    $jsTrack['doaramaVId'] = $track['doaramaVId'];
+    $jsTrack['doaramaVId'] = isset($track['doaramaVId']) ? $track['doaramaVId'] : null;
 
     return $jsTrack;
 }
@@ -410,7 +411,7 @@ function GetSpeed($track, $dstPts) {
             $count++;
         }
 
-        $speed[$i] = ($time > 0)?floor(3600 * $dist / $time):0;
+        $speed[$i] = ($time > 0)? floor(3600 * $dist / $time) : 0;
     }
 
     return $speed;

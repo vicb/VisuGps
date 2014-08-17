@@ -352,6 +352,7 @@ Return:
 function GetElevGnd($track, $dstPts)
 {
     $elevGnd = array_fill(0, $dstPts, 0);
+    $elev = [];
 
     for ($i = 0, $idx = 0, $step = ($track['nbPt'] - 1) / ($dstPts - 1); $i < $dstPts; $i++, $idx += $step) {
         $lat = $track['lat'][$idx];

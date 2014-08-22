@@ -412,7 +412,7 @@ function GetSpeed($track, $dstPts) {
             $count++;
         }
 
-        $speed[$i] = ($time > 0)? floor(3600 * $dist / $time) : 0;
+        $speed[$i] = $time > 0 ? floor(3600 * $dist / $time) : 0;
     }
 
     return $speed;
@@ -445,7 +445,7 @@ function GetVario($track, $dstPts) {
             $count++;
         }
 
-        $vario[$i] = ($time > 0)?round($elev / $time, 1):0;
+        $vario[$i] = $time > 0 ? round($elev / $time, 1) : 0;
     }
 
     return $vario;
@@ -473,6 +473,6 @@ function GetDistance($lat1, $lon1, $lat2, $lon2, $precision = 4) {
 	$theta = $lon1 - $lon2;
 	$rawdistance = sin($lat1) * sin($lat2) + cos($lat1) * cos($lat2) * cos($theta);
 	$distance = round(6367.2 * acos($rawdistance), $precision);
-	return $distance;
+	return is_nan($distance) ? 0 : $distance;
 }
 

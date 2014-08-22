@@ -172,8 +172,12 @@ class Cache {
                 if ($index[$idx][self::idTag] === $id) {
                     $this->log->msg("$id found in cache");
                     $content = $index[$idx];
+                    // bring in back on top
                     unset($index[$idx]);
                     array_unshift($index, $content);
+                    // update the value
+                    $fname = $this->fileDir . $content[self::fileTag];
+                    file_put_contents($fname, gzdeflate($data, $this->gzlevel));
                     $found = true;
                 }
             }

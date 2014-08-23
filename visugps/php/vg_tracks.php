@@ -266,7 +266,7 @@ function buildActivity($url)
 
     $doarama = new Doarama(getenv(DOARAMA_API_NAME_VAR), getenv(DOARAMA_API_KEY_VAR));
     $activity = new Activity($track);
-    $activity->trackData['doaramaVId'] = $doarama->createVisualization($activity);
+    $activity->trackData['doaramaVKey'] = $doarama->createVisualization($activity);
 
     return $activity;
 }
@@ -332,7 +332,7 @@ function buildJsonTrack($track) {
     $jsTrack['date'] = $track['date'];
     $jsTrack['pilot'] = $track['pilot'];
 
-    $jsTrack['doaramaVId'] = isset($track['doaramaVId']) ? $track['doaramaVId'] : null;
+    $jsTrack['doaramaVKey'] = isset($track['doaramaVKey']) ? $track['doaramaVKey'] : null;
 
     return $jsTrack;
 }

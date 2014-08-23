@@ -11,7 +11,9 @@ require_once 'vendor/autoload.php';
 
 
 class Doarama {
-    const API_BASE_URL = 'https://api.doarama.com';
+    //const API_BASE_URL = 'https://api.doarama.com';
+    // TODO: switch back to the main server when it is ready
+    const API_BASE_URL = 'http://doarama-thirdparty-dev.herokuapp.com';
 
     /** @var Client */
     private $client;
@@ -26,7 +28,7 @@ class Doarama {
 
     /**
      * @param Activity $activity
-     * @return int The id of the visualization
+     * @return String The key of the visualization
      */
     public function createVisualization(Activity $activity) {
         if ($activity->trackData == null) return;
@@ -58,7 +60,7 @@ class Doarama {
             if (!$this->isSuccessfulResponse($response)) {
                 return null;
             }
-            return $response->json()['id'];
+            return $response->json()['key'];
         } catch (\RuntimeException $exc) {
             return null;
         }
@@ -98,23 +100,8 @@ class Doarama {
         return true;
     }
 
-    public function getVisualizationUrl($id) {
-        if (null == $id) return null;
-
-        $client = $this->getClient();
-        $url =  null;
-
-        try {
-            // get the visualization url
-            $response = $client->get("/api/0.2/visualisation/" . $id . "/url");
-            if (!$this->isSuccessfulResponse($response)) {
-                return null;
-            }
-            return $response->json()['url'];
-
-        } catch (\RuntimeException $exc) {
-            return null;
-        }
+    public function getVisualizationUrl($key) {
+        return static::API_BASE_URL . '/api/0.2/visualisation?k=' . $key;
     }
 
     /**
@@ -147,6 +134,7 @@ class Doarama {
 class Activity {
     const TYPE_UNDEFINED = 0;
     const TYPE_PARAGLIDER = 29;
+    const TYPE_GLIDER = 11;
 
     public $type;
 
@@ -154,7 +142,8 @@ class Activity {
 
     public $id;
 
-    public function __construct($trackData, $type = self::TYPE_PARAGLIDER) {
+    // TODO Switch back to PARAGLIDER (not supported on the staging server)
+    public function __construct($trackData, $type = self::TYPE_GLIDER) {
         $this->trackData = $trackData;
         $this->type = $type;
     }

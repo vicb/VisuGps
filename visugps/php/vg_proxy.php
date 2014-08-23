@@ -48,43 +48,25 @@ if (isset($_GET['track'])) {
             $cache->set(@json_encode($jsTrack), $url);
         }
     }
-    $visuId = $jsTrack['doaramaVId'];
-    unset($jsTrack['doaramaVId']);
-    $jsTrack['doaramaUrl'] = $doarama->getVisualizationUrl($visuId);
-
-
-    // Delay the upload of the GPS fixes
-    // see http://stackoverflow.com/questions/138374/close-a-connection-early/14950738#14950738
-    if(!ob_start("ob_gzhandler")) {
-        define('NO_GZ_BUFFER', true);
-        ob_start();
+    if (isset($jsTrack['doaramaVKey'])) {
+        $visuKey = $jsTrack['doaramaVKey'];
+        unset($jsTrack['doaramaVKey']);
+        $jsTrack['doaramaUrl'] = $doarama->getVisualizationUrl($visuKey);
     }
+
+    ob_end_clean();
+    header("Connection: close");
+    ignore_user_abort(true);
+    ob_start();
 
     echo @json_encode($jsTrack);
 
-    //Flush here before getting content length if ob_gzhandler was used.
-    if(!defined('NO_GZ_BUFFER')){
-        ob_end_flush();
-    }
-
-    // get the size of the output
-    $size = ob_get_length();
-
-    // send headers to tell the browser to close the connection
-    header('Connection: close');
+    header("Content-Length: $size");
     header('Content-type: text/plain; charset=ISO-8859-1');
     header('Cache-Control: no-cache, must-revalidate');
-    header('Content-Length: $size');
 
-
-    // flush all output
     ob_end_flush();
-    ob_flush();
     flush();
-
-    // if you're using sessions, this prevents subsequent requests
-    // from hanging while the background process executes
-    if (session_id()) session_write_close();
 
     if ($activity !== null) {
         $doarama->uploadActivity($activity);

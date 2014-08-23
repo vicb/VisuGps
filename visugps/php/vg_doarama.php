@@ -14,6 +14,7 @@ class Doarama {
     //const API_BASE_URL = 'https://api.doarama.com';
     // TODO: switch back to the main server when it is ready
     const API_BASE_URL = 'http://doarama-thirdparty-dev.herokuapp.com';
+    const DOARAMA_CHUNK_LENGTH = 150;
 
     /** @var Client */
     private $client;
@@ -72,8 +73,8 @@ class Doarama {
         try {
             $requests = [];
             $len = count($activity->trackData['lat']);
-            for ($start = 0; $start < $len; $start += 200) {
-                $end = min($start + 200, $len);
+            for ($start = 0; $start < $len; $start += static::DOARAMA_CHUNK_LENGTH) {
+                $end = min($start + static::DOARAMA_CHUNK_LENGTH, $len);
                 $samples = [];
                 for ($i = $start; $i < $end; $i++) {
                     $samples[] = [

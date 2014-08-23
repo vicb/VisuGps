@@ -264,11 +264,7 @@ function buildActivity($url)
         }
     }
 
-    $doarama = new Doarama(getenv(DOARAMA_API_NAME_VAR), getenv(DOARAMA_API_KEY_VAR));
-    $activity = new Activity($track);
-    $activity->trackData['doaramaVKey'] = $doarama->createVisualization($activity);
-
-    return $activity;
+    return new Activity($track);
 }
 
 /*
@@ -331,8 +327,6 @@ function buildJsonTrack($track) {
     $jsTrack['nbChartLbl'] = CHART_NBLBL;
     $jsTrack['date'] = $track['date'];
     $jsTrack['pilot'] = $track['pilot'];
-
-    $jsTrack['doaramaVKey'] = isset($track['doaramaVKey']) ? $track['doaramaVKey'] : null;
 
     return $jsTrack;
 }

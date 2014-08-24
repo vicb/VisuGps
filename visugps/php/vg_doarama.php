@@ -94,7 +94,7 @@ class Doarama {
                     ]]
                 );
             }
-            $client->sendAll($requests);
+            $client->sendAll($requests, ['parallel' => 3]);
         } catch (\RuntimeException $exc) {
             return false;
         }

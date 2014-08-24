@@ -1,5 +1,6 @@
 {
     "require": {
-        "guzzlehttp/guzzle": "~4"
+        "guzzlehttp/guzzle": "~4",
+        "guzzlehttp/retry-subscriber": "~1.0"
     }
 }

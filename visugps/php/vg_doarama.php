@@ -5,6 +5,7 @@ namespace Doarama;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Message\Response;
+use GuzzleHttp\Subscriber\Retry\RetrySubscriber;
 
 require_once 'vg_cfg.inc.php';
 require_once 'vendor/autoload.php';
@@ -121,6 +122,11 @@ class Doarama {
                     ],
                 ]
             ]);
+            $retry = new RetrySubscriber([
+                'filter' => RetrySubscriber::createStatusFilter(),
+                'max' => 3
+            ]);
+            $this->client->getEmitter()->attach($retry);
         }
 
         return $this->client;

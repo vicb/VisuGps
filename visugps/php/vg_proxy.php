@@ -68,7 +68,7 @@ if (isset($_GET['track'])) {
             $visuKey = $doarama->createVisualization($activity);
             $jsTrack['doaramaVId'] = $activity->id;
             $jsTrack['doaramaUrl'] = $doarama->getVisualizationUrl($visuKey);
-            if (!isset($jsTrack['error']) && !isset($jsTrack['kmlUrl'])) {
+            if (!isset($jsTrack['error']) && !isset($jsTrack['kmlUrl']) && $activity->id != null) {
                 $cache->set(@json_encode($jsTrack), $url);
             }
         }

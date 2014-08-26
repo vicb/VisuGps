@@ -184,11 +184,14 @@ class Cache {
 
             if (!$found) {
                 $this->purge($index, 1);
-                $content = array(self::idTag => $id, self::fileTag => $this->getFileName($id));
-                $fname = $this->fileDir . $content[self::fileTag];
-                $this->log->msg("$id added in cache in [$fname]");
-                array_unshift($index, $content);
-                file_put_contents($fname, gzdeflate($data, $this->gzlevel));
+                $baseName = $this->getFileName($id);
+                if ($baseName !== null) {
+                    $content = array(self::idTag => $id, self::fileTag => $baseName);
+                    $fname = $this->fileDir . $baseName;
+                    $this->log->msg("$id added in cache in [$fname]");
+                    array_unshift($index, $content);
+                    file_put_contents($fname, gzdeflate($data, $this->gzlevel));
+                }
             }
 
             rewind($handle);
@@ -207,11 +210,14 @@ class Cache {
             Returns an inexisting file name.
     */
     private function getFileName($key) {
-        $count = 0;
-        do {
+        for ($count = 0; $count < 20; $count++) {
             $name = self::baseName . '-' . md5($key . microtime(true));
-            $count++;
-        } while (is_file($this->fileDir . $name));
+            if (is_file($this->fileDir . $name)) {
+                $name = null;
+            } else {
+                break;
+            }
+        }
         return $name;
     }
     /*

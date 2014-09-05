@@ -12,9 +12,7 @@ require_once 'vendor/autoload.php';
 
 
 class Doarama {
-    //const API_BASE_URL = 'https://api.doarama.com';
-    // TODO: switch back to the main server when it is ready
-    const API_BASE_URL = 'http://doarama-thirdparty-dev.herokuapp.com';
+    const API_BASE_URL = 'https://api.doarama.com';
     const DOARAMA_CHUNK_LENGTH = 150;
 
     /** @var Client */
@@ -149,8 +147,7 @@ class Activity {
 
     public $id;
 
-    // TODO Switch back to PARAGLIDER (not supported on the staging server)
-    public function __construct($trackData, $type = self::TYPE_GLIDER) {
+    public function __construct($trackData, $type = self::TYPE_PARAGLIDER) {
         $this->trackData = $trackData;
         $this->type = $type;
     }

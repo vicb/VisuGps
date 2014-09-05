@@ -211,7 +211,7 @@ class Cache {
     */
     private function getFileName($key) {
         for ($count = 0; $count < 20; $count++) {
-            $name = self::baseName . '-' . md5($key . microtime(true));
+            $name = self::baseName . '-' . md5($key . rand(10000, 99999));
             if (is_file($this->fileDir . $name)) {
                 $name = null;
             } else {

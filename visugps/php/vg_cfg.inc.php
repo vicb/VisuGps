@@ -68,7 +68,7 @@ Copyright (c) 2007 Victor Berchet, <http://www.victorb.fr>
     // Track cache folder
     define('CACHE_FOLDER_TRACK', 'cache_track/');
     // Track cache size
-    define('CACHE_NB_TRACK', 1000);
+    define('CACHE_NB_TRACK', 5000);
 
     // Chart size
     define('CHART_NBLBL', 5);

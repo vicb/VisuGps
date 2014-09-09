@@ -32,6 +32,9 @@ require_once 'vg_cache.php';
 
 use Doarama\Doarama;
 
+// We do not want to cache live tracks!
+$isLive = array_key_exists('live', $_GET);
+
 if (isset($_GET['track'])) {
     $doarama = new Doarama(getenv(DOARAMA_API_NAME_VAR), getenv(DOARAMA_API_KEY_VAR));
     $cache = new Cache(CACHE_BASE_FOLDER . CACHE_FOLDER_TRACK, CACHE_NB_TRACK, 9);
@@ -59,20 +62,23 @@ if (isset($_GET['track'])) {
         }
     } else {
         $activity = null;
-
-        if ($cache->get($data, $url)) {
+        if (!isLive && $cache->get($data, $url)) {
             $jsTrack = json_decode($data, true);
         } else {
             $activity = buildActivity($url);
             $jsTrack = buildJsonTrack($activity->trackData);
-            $visuKey = $doarama->createVisualization($activity);
-            $jsTrack['doaramaVId'] = $activity->id;
-            $jsTrack['doaramaUrl'] = $doarama->getVisualizationUrl($visuKey);
-            if (!isset($jsTrack['error']) && !isset($jsTrack['kmlUrl']) && $activity->id != null) {
+            if (!isLive) {
+                $visuKey = $doarama->createVisualization($activity);
+                $jsTrack['doaramaVId'] = $activity->id;
+                $jsTrack['doaramaUrl'] = $doarama->getVisualizationUrl($visuKey);
+            }
+            if (!isLive &&
+                !isset($jsTrack['error']) &&
+                !isset($jsTrack['kmlUrl']) &&
+                $activity->id != null) {
                 $cache->set(@json_encode($jsTrack), $url);
             }
         }
-
         echo @json_encode($jsTrack);
     }
 } else if (isset($_GET['trackid'])) {

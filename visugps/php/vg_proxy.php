@@ -62,17 +62,17 @@ if (isset($_GET['track'])) {
         }
     } else {
         $activity = null;
-        if (!isLive && $cache->get($data, $url)) {
+        if (!$isLive && $cache->get($data, $url)) {
             $jsTrack = json_decode($data, true);
         } else {
             $activity = buildActivity($url);
             $jsTrack = buildJsonTrack($activity->trackData);
-            if (!isLive) {
+            if (!$isLive) {
                 $visuKey = $doarama->createVisualization($activity);
                 $jsTrack['doaramaVId'] = $activity->id;
                 $jsTrack['doaramaUrl'] = $doarama->getVisualizationUrl($visuKey);
             }
-            if (!isLive &&
+            if (!$isLive &&
                 !isset($jsTrack['error']) &&
                 !isset($jsTrack['kmlUrl']) &&
                 $activity->id != null) {

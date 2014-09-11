@@ -238,26 +238,31 @@ function buildActivity($url)
     $file = curl_exec($ch);
     curl_close($ch);
 
+    return buildActivityFromContent($file, $url);
+}
+
+function buildActivityFromContent($content, $url = null)
+{
     $track['date'] = array('day' => date('j'), 'month' => date('n'), 'year' => date('Y'));
     $track['pilot'] = '';
 
-    $nbPts = ParseIgc($file, $track);
+    $nbPts = ParseIgc($content, $track);
 
     if ($nbPts < 5) {
-        $nbPts = ParseGpx($file, $track);
+        $nbPts = ParseGpx($content, $track);
     }
     if ($nbPts < 5) {
-        $nbPts = ParseTrk($file, $track);
+        $nbPts = ParseTrk($content, $track);
     }
     if ($nbPts < 5) {
-        $nbPts = ParseNmea($file, $track);
+        $nbPts = ParseNmea($content, $track);
     }
     if ($nbPts < 5) {
-        $nbPts = ParseOzi($file, $track);
+        $nbPts = ParseOzi($content, $track);
     }
 
     if ($nbPts < 5) {
-        if (IsKml($file) || preg_match('/kmz/i', $url)) {
+        if (IsKml($content) || preg_match('/kmz/i', $url)) {
             $track['kmlUrl'] = $url;
         } else {
             $track['error'] = 'Unsupported track format!';

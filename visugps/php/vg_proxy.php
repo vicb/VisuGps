@@ -41,25 +41,8 @@ if (isset($_GET['track'])) {
     $url = $_GET['track'];
 
     if (isset($_GET['doaramaUpload'])) {
-        // The track has been uploaded and is in cache - this request is triggered by the
-        // doarama plugin to upload the fixes
-        if ($cache->get($data, $url)) {
-            $jsTrack = json_decode($data, true);
-            // Assume the doarama upload will be fine
-            $jsTrack['doaramaUpload'] = true;
-            $activity = buildActivity($url);
-            if (isset($jsTrack['doaramaVId'])) {
-                $doarama = new Doarama(getenv(DOARAMA_API_NAME_VAR), getenv(DOARAMA_API_KEY_VAR));
-                $activity->id = $jsTrack['doaramaVId'];
-                // Update the cache with a success upload status (doaramaUpload = true)
-                $cache->set(@json_encode($jsTrack), $url);
-                if (!$doarama->uploadActivity($activity)) {
-                    // Set the upload status to false on failure
-                    $jsTrack['doaramaUpload'] = false;
-                    $cache->set(@json_encode($jsTrack), $url);
-                }
-            }
-        }
+        // do nothing in this case            
+        // TODO: update the DoArama plugin not to send this request
     } else {
         $activity = null;
         if (!$isLive && $cache->get($data, $url)) {

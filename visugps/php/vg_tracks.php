@@ -230,7 +230,7 @@ Track format:
 function buildActivity($url)
 {
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $_GET['track']);
+    curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_FAILONERROR, true);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -246,12 +246,15 @@ function buildActivityFromContent($content, $url = null)
     $track['date'] = array('day' => date('j'), 'month' => date('n'), 'year' => date('Y'));
     $track['pilot'] = '';
 
+    // DoArama suppports IGC & GPX
+    $supportedFormat = true;
     $nbPts = ParseIgc($content, $track);
-
     if ($nbPts < 5) {
         $nbPts = ParseGpx($content, $track);
     }
+
     if ($nbPts < 5) {
+        $supportedFormat = false;
         $nbPts = ParseTrk($content, $track);
     }
     if ($nbPts < 5) {
@@ -269,7 +272,7 @@ function buildActivityFromContent($content, $url = null)
         }
     }
 
-    return new Activity($track);
+    return new Activity($track, $content, $supportedFormat);
 }
 
 /*

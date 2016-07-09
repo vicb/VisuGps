@@ -3,6 +3,7 @@
 namespace Doarama;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Post\PostFile;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Message\Response;
 use GuzzleHttp\Subscriber\Retry\RetrySubscriber;
@@ -13,11 +14,9 @@ require_once 'vendor/autoload.php';
 
 class Doarama {
     const API_BASE_URL = 'https://api.doarama.com';
-    const DOARAMA_CHUNK_LENGTH = 150;
 
     /** @var Client */
     private $client;
-
     private $apiName;
     private $apiKey;
 
@@ -34,70 +33,36 @@ class Doarama {
         if ($activity->trackData == null) return;
         if (count($activity->trackData['lat']) < 5) return;
 
-        $client = $this->getClient();
-
-        // Create an activity
-        $createOptions = [
-            'startLatitude' => $activity->trackData['lat'][0],
-            'startLongitude' => $activity->trackData['lon'][0],
-            'startTime' => $activity->getTimeMs(0),
-        ];
+        $client = $this->getClient();            
 
         try {
-            // create an activity
+            // create activity
+            $request = $client->createRequest('POST', 'api/0.2/activity');
+            $postBody = $request->getBody();
+            $postBody->addFile(new PostFile('gps_track', $activity->rawTrack));
             /** @var Response $response */
-            $response = $client->post('api/0.2/activity/create',
-                                      ['json' => $createOptions]);
+            $response = $client->send($request);
+                       
             if (!$this->isSuccessfulResponse($response)) {
                 return null;
             }
+
             $activity->id = $response->json()['id'];
+            
             $client->post('/api/0.2/activity/' . $activity->id,
                           ['json' => ['activityTypeId' => $activity->type]]);
+
             // create a visualization
             $response = $client->post('api/0.2/visualisation',
                                       ['json' => ['activityIds' => [ $activity->id]]]);
             if (!$this->isSuccessfulResponse($response)) {
                 return null;
             }
+
             return $response->json()['key'];
         } catch (\RuntimeException $exc) {
             return null;
         }
-    }
-
-    public function uploadActivity(Activity $activity) {
-        if (null === $activity->id) return;
-        $client = $this->getClient();
-        try {
-            $requests = [];
-            $len = count($activity->trackData['lat']);
-            for ($start = 0; $start < $len; $start += static::DOARAMA_CHUNK_LENGTH) {
-                $end = min($start + static::DOARAMA_CHUNK_LENGTH, $len);
-                $samples = [];
-                for ($i = $start; $i < $end; $i++) {
-                    $samples[] = [
-                        'time' => $activity->getTimeMs($i),
-                        'coords' => [
-                            'latitude' => $activity->trackData['lat'][$i],
-                            'longitude' => $activity->trackData['lon'][$i],
-                            'altitude' => $activity->trackData['elev'][$i],
-                        ]
-                    ];
-                }
-                $requests[] = $client->createRequest('POST', '/api/0.2/activity/record',
-                    ['json' => [
-                        'samples' => $samples,
-                        'activityId' => $activity->id,
-                        'altitudeReference' => 'WGS84'
-                    ]]
-                );
-            }
-            $client->sendAll($requests, ['parallel' => 3]);
-        } catch (\RuntimeException $exc) {
-            return false;
-        }
-        return true;
     }
 
     public function getVisualizationUrl($key) {
@@ -142,14 +107,16 @@ class Activity {
     const TYPE_GLIDER = 11;
 
     public $type;
-
     public $trackData;
-
+    public $rawTrack;
+    public $supported;
     public $id;
 
-    public function __construct($trackData, $type = self::TYPE_PARAGLIDER) {
+    public function __construct($trackData, $rawTrack, $supported, $type = self::TYPE_PARAGLIDER) {
         $this->trackData = $trackData;
         $this->type = $type;
+        $this->rawTrack = $rawTrack;
+        $this->supported = $supported;
     }
 
     public function getTimeMs($index) {

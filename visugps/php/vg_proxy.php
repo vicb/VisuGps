@@ -27,19 +27,12 @@ Copyright (c) 2007-2008 Victor Berchet, <http://www.victorb.fr>
 
 require_once 'vg_cfg.inc.php';
 require_once 'vg_tracks.php';
-require_once 'vg_doarama.php';
 require_once 'vg_cache.php';
-
-use Doarama\Doarama;
-
 // We do not want to cache live tracks!
 $isLive = array_key_exists('live', $_GET);
-
 if (isset($_GET['track'])) {
-    $doarama = new Doarama(getenv(DOARAMA_API_NAME_VAR), getenv(DOARAMA_API_KEY_VAR));
     $cache = new Cache(CACHE_BASE_FOLDER . CACHE_FOLDER_TRACK, CACHE_NB_TRACK, 9);
     $url = $_GET['track'];
-
     if (isset($_GET['doaramaUpload'])) {
         // do nothing in this case            
         // TODO: update the DoArama plugin not to send this request
@@ -50,11 +43,6 @@ if (isset($_GET['track'])) {
         } else {
             $activity = buildActivity($url);
             $jsTrack = buildJsonTrack($activity->trackData);
-            if (!$isLive) {
-                $visuKey = $doarama->createVisualization($activity);
-                $jsTrack['doaramaVId'] = $activity->id;
-                $jsTrack['doaramaUrl'] = $doarama->getVisualizationUrl($visuKey);
-            }
             if (!$isLive &&
                 !isset($jsTrack['error']) &&
                 !isset($jsTrack['kmlUrl']) &&
@@ -73,5 +61,3 @@ if (isset($_GET['track'])) {
     header('Cache-Control: no-cache, must-revalidate');
     echo @json_encode(array('error' => 'invalid URL'));
 }
-
-

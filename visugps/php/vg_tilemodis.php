@@ -385,4 +385,3 @@ function PngToString($image)
 
     return $data;
 }
-

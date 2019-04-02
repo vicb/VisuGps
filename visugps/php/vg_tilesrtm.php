@@ -272,4 +272,3 @@ function DebugLog($msg)
     imagestring($image, 5, 5, $y, $msg, $cMap[100]);
     $y += 15;
 }
-

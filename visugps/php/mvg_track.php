@@ -166,4 +166,3 @@ function format_mysql($text) {
     }
     return mysql_real_escape_string($text);
 }
-

@@ -60,4 +60,3 @@ function getSites($lat, $lon) {
     return $msg;
 
 }
-

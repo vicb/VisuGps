@@ -42,4 +42,3 @@ if (isset($_GET['track'])) {
 }
 
 echo "var trackData = JSON.parse(" . @json_encode($track) . ');';
-

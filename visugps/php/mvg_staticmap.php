@@ -48,3 +48,4 @@ function getMap($params) {
     curl_close($ch);
     return $data;
 }
+

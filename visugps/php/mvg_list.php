@@ -92,10 +92,10 @@ if (mysql_num_rows($result)) {
     while ($row = mysql_fetch_object($result)) {
         $track['name'] = $row->name;
         $track['flightId'] = $row->flightId;
-        $track['utc'] = $row->utc;
         $track['start']['time'] = $row->start;
         $track['end']['time'] = $row->end;
         $track['live'] = ($row->end == NULL);
+        $track['utc'] = $row->utc;
 
         // Get take-off information
         $query = "SELECT latitude, longitude FROM point " .
@@ -306,4 +306,3 @@ function mysql2timestamp($datetime){
        return @mktime(intval($time[0]), intval($time[1]), intval($time[2]),
                       intval($date[1]), intval($date[2]), intval($date[0]));
 }
-

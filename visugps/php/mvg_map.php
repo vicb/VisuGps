@@ -194,5 +194,3 @@ class Mercator {
 
 echo "</body>\n" .
      "</html>";
-
-

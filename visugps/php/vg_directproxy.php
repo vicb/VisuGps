@@ -39,4 +39,3 @@ Copyright (c) 2007-2008 Victor Berchet, <http://www.victorb.fr>
     header("Content-Type: text/xml");
     echo $xml;
     curl_close($session);
-

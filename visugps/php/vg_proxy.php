@@ -34,7 +34,7 @@ if (isset($_GET['track'])) {
     $cache = new Cache(CACHE_BASE_FOLDER . CACHE_FOLDER_TRACK, CACHE_NB_TRACK, 9);
     $url = $_GET['track'];
     if (isset($_GET['doaramaUpload'])) {
-        // do nothing in this case            
+        // do nothing in this case
         // TODO: update the DoArama plugin not to send this request
     } else {
         $activity = null;

@@ -173,5 +173,3 @@ function stripAccentedChar($msg) {
     $replace = explode(",","c,ae,oe,a,e,i,o,u,a,e,i,o,u,a,e,i,o,u,y,a,e,i,o,u,a,e,i,o,u");
     return str_replace($search, $replace, $msg);
 }
-
-?>

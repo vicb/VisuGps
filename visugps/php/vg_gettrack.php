@@ -36,7 +36,8 @@ if (isset($_GET['format'])) {
 }
 
 if (isset($_GET['track'])) {
-    $jsonTrack = MakeTrack($_GET['track']);
+    $activity = buildActivity($_GET['track']);
+    $jsonTrack = @json_encode(buildJsonTrack($activity->trackData));
 } else if (isset($_GET['trackid'])) {
     if ($format != 'kmllive') {
         // Do not generate the track for live formats
@@ -179,8 +180,8 @@ function generate_kml_track($jsonTrack, $color = "ff00ffff") {
                     "<Folder>\n" .
                     "<name>%s</name>\n" .
                     "<LookAt>\n" .
-                    "    <longitude>%010.6f</longitude>\n" .
-                    "    <latitude>%010.6f</latitude>\n" .
+                    "    <longitude>%.6f</longitude>\n" .
+                    "    <latitude>%.6f</latitude>\n" .
                     "    <range>32000</range>\n" .
                     "    <tilt>64</tilt>\n" .
                     "    <heading>0</heading>\n" .
@@ -195,7 +196,7 @@ function generate_kml_track($jsonTrack, $color = "ff00ffff") {
                      "    <name>Deco</name>\n" .
                      "    <Point>\n" .
                      "        <coordinates>\n" .
-                     "          %010.6f, %010.6f, %05d\n" .
+                     "          %.6f,%.6f,%d\n" .
                      "        </coordinates>\n" .
                      "    </Point>\n" .
                      "</Placemark>\n" .
@@ -203,7 +204,7 @@ function generate_kml_track($jsonTrack, $color = "ff00ffff") {
                      "    <name>Atterro</name>\n" .
                      "    <Point>\n" .
                      "        <coordinates>\n" .
-                     "          %010.6f, %010.6f, %05d\n" .
+                     "          %.6f,%.6f,%d\n" .
                      "        </coordinates>\n" .
                      "    </Point>\n" .
                      "</Placemark>\n" .
@@ -248,7 +249,7 @@ function generate_kml_linestring($name, $track, $color, $width = 1) {
             "        <coordinates>\n";
 
     for ($i = 0; $i < $track['nbTrackPt']; $i++) {
-        $line .= sprintf("        %010.6f, %010.6f, %05d\n",
+        $line .= sprintf("        %.6f,%.6f,%d\n",
                          $track['lon'][$i],
                          $track['lat'][$i],
                          get_track_elevation($track, $i));
@@ -280,7 +281,7 @@ function generate_kml_point($name, $lat, $lon, $elev) {
                      "        <extrude>1</extrude>\n" .
                      "        <altitudeMode>absolute</altitudeMode>\n" .
                      "        <coordinates>\n" .
-                     "            %010.6f, %010.6f, %05d\n" .
+                     "            %.6f,%.6f,%d\n" .
                      "        </coordinates>\n" .
                      "    </Point>\n".
                      "</Placemark>\n",
@@ -390,58 +391,7 @@ function generate_kml_task($task, $delay, $utcOffset) {
               $file .= generate_kml_point($track['pilot'], end($track['lat']), end($track['lon']), end($track['elev']));
           }
     }
-/*
-    $file .= "</Folder><Folder><name>Turn points</name>\n" .
-    "<Placemark>\n" .
-    "    <name>Start 12:30</name>\n" .
-    "    <Point>\n" .
-    "        <coordinates>\n" .
-    "        6.456398, 44.013995, 3000\n" .
-    "        </coordinates>\n" .
-    "    </Point>\n" .
-    "</Placemark>\n" .
-    "<Placemark>\n" .
-    "    <name>B2</name>\n" .
-    "    <Point>\n" .
-    "        <coordinates>\n" .
-    "        6.470938, 43.961758, 3000\n" .
-    "        </coordinates>\n" .
-    "    </Point>\n" .
-    "</Placemark>\n" .
-    "<Placemark>\n" .
-    "    <name>B3</name>\n" .
-    "    <Point>\n" .
-    "        <coordinates>\n" .
-    "        6.443883, 44.047477, 3000\n" .
-    "        </coordinates>\n" .
-    "    </Point>\n" .
-    "</Placemark>\n" .
-    "<Placemark>\n" .
-    "    <name>B4</name>\n" .
-    "    <Point>\n" .
-    "        <coordinates>\n" .
-    "        6.383936, 43.961208, 3000\n" .
-    "        </coordinates>\n" .
-    "    </Point>\n" .
-    "</Placemark>\n" .
-    "<Placemark>\n" .
-    "    <name>B5</name>\n" .
-    "    <Point>\n" .
-    "        <coordinates>\n" .
-    "        6.557838, 43.944109, 3000\n" .
-    "        </coordinates>\n" .
-    "    </Point>\n" .
-    "</Placemark>\n" .
-    "<Placemark>\n" .
-    "    <name>Goal</name>\n" .
-    "    <Point>\n" .
-    "        <coordinates>\n" .
-    "        6.510494, 43.958585, 3000\n" .
-    "        </coordinates>\n" .
-    "    </Point>\n" .
-    "</Placemark>\n" .
-    "</Folder>\n</Document>\n</kml>";
-*/
+
 
     $file .= "</Folder>\n" .
              "</Document>\n" .
@@ -502,8 +452,8 @@ function generate_kmz_track($jsonTrack) {
                     "    <Document>\n" .
                     "        <name><![CDATA[%s]]></name>\n" .
                     "        <LookAt>\n" .
-                    "           <longitude>%010.6f</longitude>\n" .
-                    "           <latitude>%010.6f</latitude>\n" .
+                    "           <longitude>%.6f</longitude>\n" .
+                    "           <latitude>%.6f</latitude>\n" .
                     "           <range>32000</range>\n" .
                     "           <tilt>64</tilt>\n" .
                     "           <heading>0</heading>\n" .
@@ -659,8 +609,8 @@ function generate_colored_track($jsonTrack, $idxSerie, $unit, &$minValue, &$maxV
                     "<Folder>\n" .
                     "<name>%s</name>\n" .
                     "<LookAt>\n" .
-                    "    <longitude>%010.6f</longitude>\n" .
-                    "    <latitude>%010.6f</latitude>\n" .
+                    "    <longitude>%.6f</longitude>\n" .
+                    "    <latitude>%.6f</latitude>\n" .
                     "    <range>32000</range>\n" .
                     "    <tilt>64</tilt>\n" .
                     "    <heading>0</heading>\n" .
@@ -701,14 +651,14 @@ function generate_colored_track($jsonTrack, $idxSerie, $unit, &$minValue, &$maxV
                  $track['time']['min'][$chartIndex],
                  $track['time']['sec'][$chartIndex]);
 
-        $file .= sprintf("        %010.6f, %010.6f, %05d\n",
+        $file .= sprintf("        %.6f,%.6f,%d\n",
                          $track['lon'][$point - 1],
                          $track['lat'][$point - 1],
                          get_track_elevation($track, $point - 1));
 
         while (1) {
             $chartIndex = $point * ($track['nbChartPt'] - 1) / ($track['nbTrackPt'] - 1);
-            $file .= sprintf("        %010.6f, %010.6f, %05d\n",
+            $file .= sprintf("        %.6f,%.6f,%d\n",
                              $track['lon'][$point],
                              $track['lat'][$point],
                              get_track_elevation($track, $point));
@@ -727,7 +677,7 @@ function generate_colored_track($jsonTrack, $idxSerie, $unit, &$minValue, &$maxV
                      "    <name>Deco</name>\n" .
                      "    <Point>\n" .
                      "        <coordinates>\n" .
-                     "          %010.6f, %010.6f, %05d\n" .
+                     "          %.6f,%.6f,%d\n" .
                      "        </coordinates>\n" .
                      "    </Point>\n" .
                      "</Placemark>\n" .
@@ -735,7 +685,7 @@ function generate_colored_track($jsonTrack, $idxSerie, $unit, &$minValue, &$maxV
                      "    <name>Atterro</name>\n" .
                      "    <Point>\n" .
                      "        <coordinates>\n" .
-                     "          %010.6f, %010.6f, %05d\n" .
+                     "          %.6f,%.6f,%d\n" .
                      "        </coordinates>\n" .
                      "    </Point>\n" .
                      "</Placemark>\n" .
